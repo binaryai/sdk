@@ -1,6 +1,6 @@
 # BinaryAI Python SDK
 
-![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg)
+![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg) ![](https://github.com/binaryai/sdk/workflows/TEST/badge.svg)
 
 ## Installation
 
