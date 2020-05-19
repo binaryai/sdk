@@ -1,52 +1,119 @@
 # coding: utf-8
-import idc
+import os
+import json
 import idaapi
 import idautils
 import binaryai as bai
 
 
-BINAYRAI_TOKEN = "PLEASE INPUT YOUR TOKEN HERE"
-BINAYRAI_URL = "https://api.binaryai.tencent.com/v1/endpoint"
+class BinaryAIManager:
+    Default = {
+        'token': '',
+        'url': '',
+        'funcset': '',
+        'topk': 10,
+        'minsize': 3,
+        'threshold': 0.8
+    }
+
+    def __init__(self):
+        self.name = "BinaryAI"
+        cfg_dir = os.path.join(idaapi.get_user_idadir(), idaapi.CFG_SUBDIR)
+        os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
+        self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
+        self._client = None
+
+    @property
+    def client(self):
+        if self._client is None:
+            if not self.cfg['token']:
+                self.cfg['token'] = idaapi.ask_str("", 0, "{} Token:".format(self.name))
+            assert self.cfg['token']
+            if self.cfg['url']:
+                self._client = bai.client.Client(self.cfg['token'], self.cfg['url'])
+            else:
+                self._client = bai.client.Client(self.cfg['token'])
+        return self._client
+
+    def retrieve_function(self, ea, topk):
+        func_feat = bai.ida.get_func_feature(ea)
+        func_name = idaapi.get_func_name(ea)
+        if func_feat:
+            func_id = bai.function.upload_function(self.client, func_name, func_feat)
+            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
+            return targets
+        return None
+
+    def retrieve_selected_functions(self, funcs):
+        for ea in funcs:
+            pfn = idaapi.get_func(ea)
+            func_name = idaapi.get_func_name(ea)
+            if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+                continue
+            targets = self.retrieve_function(ea, topk=1)
+            if targets is None:
+                print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
+                continue
+            func = targets[0]
+            if func['score'] < self.cfg['threshold']:
+                print("[{}] {} is skipped because top1_score lower than threshold({})".format(
+                    self.name, func_name, self.cfg['threshold']))
+                continue
+            pfn.flags |= idaapi.FUNC_LUMINA
+            idaapi.update_func(pfn)
+            comment = SourceCodeViewer.source_code_comment(func_name, func)
+            idaapi.set_func_cmt(pfn, comment, 0)
+
+    def binaryai_calllback(self, __):
+        print("[{}] v{}".format(self.name, bai.__version__))
+
+    def retrieve_function_callback(self, __, ea=None):
+        func_ea = idaapi.get_screen_ea() if ea is None else ea
+        func_name = idaapi.get_func_name(func_ea)
+        widget_title = "{} - {}".format(self.name, func_name)
+        widget = idaapi.find_widget(widget_title)
+        if widget:
+            idaapi.activate_widget(widget, True)
+            return
+        targets = self.retrieve_function(func_ea, self.cfg['topk'])
+        if targets is None:
+            print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
+            return
+        cv = SourceCodeViewer(func_name, targets)
+        cv.Create(widget_title)
+        cv.refresh()
+        # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
+        cv = idaapi.create_code_viewer(cv.GetWidget(), 0x4)
+        idaapi.set_code_viewer_is_source(cv)
+        idaapi.display_widget(cv, idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+
+    def retrieve_all_callback(self, __):
+        self.retrieve_selected_functions(idautils.Functions())
 
 
-class ActionHandler(idaapi.action_handler_t):
-    def __init__(self, id, name, hotkey, callback, icon=199, tooltip=""):
-        idaapi.action_handler_t.__init__(self)
-        self.id = id
-        self.name = name
-        self.hotkey = hotkey
-        self.callback = callback
-        self.icon = icon
-        self.tooltip = tooltip
+class Config(dict):
+    def __init__(self, path, default):
+        self.path = path
+        if not os.path.exists(path):
+            json.dump(default, open(self.path, 'w'), indent=4)
+        self.cfg = json.load(open(path))
 
-    def register_action(self):
-        action_desc = idaapi.action_desc_t(self.id, self.name, self, self.hotkey, self.tooltip, self.icon)
-        if not idaapi.register_action(action_desc):
-            return False
-        if not idaapi.attach_action_to_toolbar("SearchToolBar", self.id):
-            return False
-        return True
+    def __getitem__(self, key):
+        return self.cfg[key]
 
-    def de_register_action(self):
-        idaapi.detach_action_from_toolbar("SearchToolBar", self.id)
-        idaapi.unregister_action(self.id)
-
-    def activate(self, ctx):
-        self.callback()
-
-    def update(self, arg):
-        return idaapi.AST_ENABLE_ALWAYS
+    def __setitem__(self, key, val):
+        self.cfg[key] = val
+        json.dump(self.cfg, open(self.path, 'w'), indent=4)
 
 
 class SourceCodeViewer(idaapi.simplecustviewer_t):
     @staticmethod
-    def source_code_comment(query, func):
+    def source_code_comment(query, func, idx=0):
         return """/*
     query:  {}
-    target: {}
+    target[{}]: {}
     score:  {}
-    id:     {}
-*/\n""".format(query, func['function']['name'], func['score'], func['function']['id'])
+*/\n""".format(query, idx, func['function']['name'], func['score'])
 
     @staticmethod
     def source_code_body(func):
@@ -55,94 +122,94 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
 
     def __init__(self, query, targets):
         idaapi.simplecustviewer_t.__init__(self)
-        self.Create("BinaryAI - {}".format(query))
-        func = targets[0]
-        for line in self.source_code_comment(query, func).split("\n"):
+        self.idx = 0
+        self.query = query
+        self.targets = targets
+
+    def refresh(self):
+        self.ClearLines()
+        func = self.targets[self.idx]
+        for line in self.source_code_comment(self.query, func, self.idx).split("\n"):
             self.AddLine(idaapi.COLSTR(line, idaapi.SCOLOR_RPTCMT))
         for line in self.source_code_body(func):
             self.AddLine(str(line))
+        self.Refresh()
+
+    def OnKeydown(self, vkey, shift):
+        if shift == 0 and vkey == ord("K"):
+            self.idx = (self.idx + len(self.targets) - 1) % len(self.targets)
+            self.refresh()
+        elif shift == 0 and vkey == ord("J"):
+            self.idx = (self.idx + 1) % len(self.targets)
+            self.refresh()
 
 
-class BinaryAIManager:
-    def __init__(self, token, url):
-        self.client = bai.client.Client(token, url)
+class UIManager:
+    class UIHooks(idaapi.UI_Hooks):
+        def finish_populating_widget_popup(self, widget, popup):
+            if idaapi.get_widget_type(widget) == idaapi.BWN_FUNCS:
+                idaapi.attach_action_to_popup(widget, popup, "BinaryAI:RetrieveSelected", "BinaryAI/")
+
+    class ActionHandler(idaapi.action_handler_t):
+        def __init__(self, name, label, shortcut=None, tooltip=None, icon=-1, flags=0):
+            idaapi.action_handler_t.__init__(self)
+            self.name = name
+            self.action_desc = idaapi.action_desc_t(name, label, self, shortcut, tooltip, icon, flags)
+
+        def register_action(self, callback, toolbar_name=None, menupath=None):
+            self.callback = callback
+            if not idaapi.register_action(self.action_desc):
+                return False
+            if toolbar_name and not idaapi.attach_action_to_toolbar(toolbar_name, self.name):
+                return False
+            if menupath and not idaapi.attach_action_to_menu(menupath, self.name, idaapi.SETMENU_APP):
+                return False
+            return True
+
+        def activate(self, ctx):
+            self.callback(ctx)
+
+        def update(self, ctx):
+            return idaapi.AST_ENABLE_ALWAYS
+
+    def __init__(self, name):
+        self.name = name
+        self.mgr = BinaryAIManager()
+        self.hooks = UIManager.UIHooks()
 
     def register_actions(self):
-        action1 = ActionHandler(
-            'BinaryAI:queryFunction',
-            '[BinaryAI] Query function',
-            "Ctrl+Shift+d",
-            self.query_function_callback,
-            icon=199
-        )
-        action2 = ActionHandler(
-            'BinaryAI:queryAll',
-            '[BinaryAI] Query all functions',
-            "Ctrl+Shift+a",
-            self.query_all_callback,
-            icon=188
-        )
-        if not action1.register_action():
-            return False
-        if not action2.register_action():
-            return False
-        return True
+        toolbar_name, menupath = self.name, self.name
+        idaapi.create_toolbar(toolbar_name, self.name)
+        idaapi.create_menu(menupath, self.name, "Help")
+        action1 = UIManager.ActionHandler(self.name, self.name)
+        action2 = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=199)
+        action3 = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
+        action4 = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
+        if action1.register_action(self.mgr.binaryai_calllback, toolbar_name) and \
+            action2.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath) and \
+                action3.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath) and \
+                action4.register_action(self.retrieve_selected_callback):
+            self.hooks.hook()
+            return True
+        return False
 
-    def query_function(self, ea, topk=1):
-        func_feat = bai.ida.get_func_feature(ea)
-        func_name = idaapi.get_func_name(ea)
-        if func_feat:
-            func_id = bai.function.upload_function(self.client, func_name, func_feat)
-            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
-            return targets
-        return None
-        
-
-    def query_function_callback(self, threshold=0.4):
-        func_ea = idaapi.get_screen_ea()
-        targets = self.query_function(func_ea)
-        func_name = idaapi.get_func_name(func_ea)
-        if targets[0]['score'] < threshold:
-            print("[BinaryAI] {} is skipped because top1_score lower than threshold({})".format(func_name, threshold))
-            return
-        SourceCodeViewer(func_name, targets).Show()
-
-    def query_all_callback(self, threshold=0.8, minsize=3):
-        for ea in idautils.Functions():
-            pfn = idaapi.get_func(ea)
-            func_name = idaapi.get_func_name(ea)
-            if idaapi.FlowChart(pfn).size < minsize:
-                print("[BinaryAI] {} is skipped because basicblock size lower than minsize({})".format(func_name, minsize))
-                continue
-            funcs = self.query_function(ea)
-            if funcs is None:
-                print("[BinaryAI] {} is skipped because get function feature error".format(func_name, threshold))
-                continue
-            func = funcs[0]              
-            if func['score'] < threshold:
-                print("[BinaryAI] {} is skipped because top1_score lower than threshold({})".format(func_name, threshold))
-                continue
-            idc.set_color(ea, idc.CIC_FUNC, 0xFFFFE1)
-            idc.set_func_flags(ea, idc.get_func_flags(ea) | 0x10000)
-            comment = SourceCodeViewer.source_code_comment(func_name, func)
-            idaapi.set_func_cmt(pfn, comment, 0)
+    def retrieve_selected_callback(self, ctx):
+        funcs = map(idaapi.getn_func, ctx.chooser_selection)
+        funcs = map(lambda func: func.start_ea, funcs)
+        self.mgr.retrieve_selected_functions(funcs)
 
 
-class BinaryAIPlugin(idaapi.plugin_t):
-    comment = "BinaryAI"
+class Plugin(idaapi.plugin_t):
     wanted_name = "BinaryAI"
-    help = "BinaryAI"
-    wanted_hotkey = ""
-    flags = idaapi.PLUGIN_KEEP
+    comment, help, wanted_hotkey = "", "", ""
+    flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
 
     def init(self):
-        if not idaapi.init_hexrays_plugin():
-            return idaapi.PLUGIN_SKIP
-        mgr = BinaryAIManager(BINAYRAI_TOKEN, BINAYRAI_URL)
-        if not mgr.register_actions():
-            return idaapi.PLUGIN_SKIP
-        print('[BinaryAI] v{}'.format(bai.__version__))
-        return idaapi.PLUGIN_OK
+        if idaapi.init_hexrays_plugin():
+            mgr = UIManager(Plugin.wanted_name)
+            if mgr.register_actions():
+                return idaapi.PLUGIN_OK
+        return idaapi.PLUGIN_SKIP
 
     def run(self, ctx):
         return
@@ -152,4 +219,4 @@ class BinaryAIPlugin(idaapi.plugin_t):
 
 
 def PLUGIN_ENTRY():
-    return BinaryAIPlugin()
+    return Plugin()
