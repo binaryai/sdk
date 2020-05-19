@@ -10,7 +10,7 @@ import json
 
 
 M_MAX = 0x49  # first unused opcode
-All_STR = dict(map(lambda i: [i.ea, str(i)], idautils.Strings()))
+All_STR = dict(map(lambda i: (i.ea, str(i)), idautils.Strings()))
 
 
 class Graph:
