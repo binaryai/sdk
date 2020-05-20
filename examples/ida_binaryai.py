@@ -38,7 +38,7 @@ class BinaryAIManager:
     def retrieve_function(self, ea, topk):
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
-        if func_feat:
+        if func_feat and func_name:
             func_id = bai.function.upload_function(self.client, func_name, func_feat)
             targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
             return targets
