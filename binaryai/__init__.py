@@ -1,19 +1,15 @@
 from binaryai import client, function
 
 
-def _get_version(default='x.x.x.dev'):
+def _get_version(default='version not found'):
     try:
         from pkg_resources import DistributionNotFound, get_distribution
     except ImportError:
         return default
     else:
         try:
-            return get_distribution(__package__).version
-        except DistributionNotFound:  # Run without install
-            return default
-        except ValueError:  # Python 3 setup
-            return default
-        except TypeError:  # Python 2 setup
+            return get_distribution(__name__).version
+        except DistributionNotFound:
             return default
 
 
@@ -27,7 +23,7 @@ __all__ = [
 try:
     import idaapi
     from binaryai import ida
-except:
+except ImportError:
     pass
 else:
     __all__.append('ida')
