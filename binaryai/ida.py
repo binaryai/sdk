@@ -19,8 +19,8 @@ class Graph:
         self.nodes_num = 0
         self.edges_num = 0
 
-    def add_node(self, serial, feat, raw_data):
-        self.graph["nodes"].append({"id": serial, "feat": feat, "raw_data": raw_data})
+    def add_node(self, serial, feat):
+        self.graph["nodes"].append({"id": serial, "feat": feat})
         self.nodes_num += 1
 
     def add_edge(self, serial, succ):
@@ -142,10 +142,7 @@ def parse_func(pfn):
             blk.append(ins)
             minsn = minsn.next
 
-        vp = idaapi.qstring_printer_t(None, True)
-        mb._print(vp)
-
-        G.add_node(mb.serial, feat=blk, raw_data=vp.s)
+        G.add_node(mb.serial, feat=blk)
         for succ in mb.succset:
             G.add_edge(mb.serial, succ)
     G.remove_featempty_nodes()
