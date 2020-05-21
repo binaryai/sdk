@@ -22,6 +22,7 @@ class BinaryAIManager:
         os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         self._client = None
+        self.cv = None
 
     @property
     def client(self):
@@ -70,22 +71,30 @@ class BinaryAIManager:
     def retrieve_function_callback(self, __, ea=None):
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
-        widget_title = "{} - {}".format(self.name, func_name)
-        widget = idaapi.find_widget(widget_title)
-        if widget:
-            idaapi.activate_widget(widget, True)
-            return
         targets = self.retrieve_function(func_ea, self.cfg['topk'])
         if targets is None:
             print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
             return
-        cv = SourceCodeViewer(func_name, targets)
-        cv.Create(widget_title)
-        cv.refresh()
-        # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
-        cv = idaapi.create_code_viewer(cv.GetWidget(), 0x4)
-        idaapi.set_code_viewer_is_source(cv)
-        idaapi.display_widget(cv, idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+
+        if not (self.cv and self.cv.is_alive()):
+            self.cv = SourceCodeViewer(self.name)
+            # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
+            cv = idaapi.create_code_viewer(self.cv.GetWidget(), 0x4)
+            idaapi.set_code_viewer_is_source(cv)
+        self.cv.set_user_data(func_name, targets)
+
+        widget = idaapi.get_current_widget()
+        if idaapi.get_widget_title(widget) == self.name:
+            return 
+        
+        if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
+            pseudo = idaapi.open_pseudocode(func_ea, 1)
+            pseudo.refresh_view(0)
+        pseudo_title = idaapi.get_widget_title(widget)
+            
+        idaapi.display_widget(self.cv.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+        idaapi.set_dock_pos(self.name, pseudo_title, idaapi.DP_RIGHT)
+        return
 
     def retrieve_all_callback(self, __):
         self.retrieve_selected_functions(idautils.Functions())
@@ -120,13 +129,24 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         body = func['function']['sourceCode'].split("\n")
         return filter(lambda l: not l.lstrip().startswith('#'), body)
 
-    def __init__(self, query, targets):
+    def __init__(self, title):
         idaapi.simplecustviewer_t.__init__(self)
+        self.idx = 0
+        self.query = None
+        self.targets = None
+        self.alive = True
+        self.Create(title)
+
+    def is_alive(self):
+        return self.alive
+
+    def set_user_data(self, query, targets):
         self.idx = 0
         self.query = query
         self.targets = targets
+        self._repaint()
 
-    def refresh(self):
+    def _repaint(self):
         self.ClearLines()
         func = self.targets[self.idx]
         for line in self.source_code_comment(self.query, func, self.idx).split("\n"):
@@ -135,13 +155,16 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
             self.AddLine(str(line))
         self.Refresh()
 
+    def OnClose(self):
+        self.alive = False
+
     def OnKeydown(self, vkey, shift):
         if shift == 0 and vkey == ord("K"):
             self.idx = (self.idx + len(self.targets) - 1) % len(self.targets)
-            self.refresh()
+            self._repaint()
         elif shift == 0 and vkey == ord("J"):
             self.idx = (self.idx + 1) % len(self.targets)
-            self.refresh()
+            self._repaint()
 
 
 class UIManager:
