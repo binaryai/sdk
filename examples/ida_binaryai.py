@@ -36,22 +36,40 @@ class BinaryAIManager:
                 self._client = bai.client.Client(self.cfg['token'])
         return self._client
 
-    def retrieve_function(self, ea, topk):
+    @property
+    def funcset_id(self):
+        if not self.cfg['funcset']:
+            self.cfg['funcset'] = bai.function.create_function_set(self.client)
+        assert self.cfg['funcset']
+        return self.cfg['funcset']
+
+    def upload_function(self, ea, funcset_id):
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
+        hf = idaapi.hexrays_failure_t()
+        cfunc = idaapi.decompile(ea, hf)
         if func_feat and func_name:
-            func_id = bai.function.upload_function(self.client, func_name, func_feat)
-            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
+            func_id = bai.function.upload_function(
+                self.client, func_name, func_feat, source_code=str(cfunc), funcset_id=funcset_id)
+            return func_id
+
+    def retrieve_function(self, ea, topk, funcset_ids):
+        func_id = self.upload_function(ea, None)
+        if func_id:
+            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
             return targets
-        return None
 
     def retrieve_selected_functions(self, funcs):
+        retval = idaapi.ask_yn(idaapi.ASKBTN_NO, "Search in Private FunctionSet?")
+        if retval == -1:
+            return
+        funcset_ids = [self.funcset_id] if retval else None
         for ea in funcs:
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
                 continue
-            targets = self.retrieve_function(ea, topk=1)
+            targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
             if targets is None:
                 print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
                 continue
@@ -63,24 +81,34 @@ class BinaryAIManager:
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
 
-    def upload_function(self, ea):
-        func_name = idaapi.get_func_name(ea)
-        print("upload_function: {}, Not implemented".format(func_name))
-
     def upload_selected_functions(self, funcs):
+        succ, skip, fail = 0, 0, 0
         for ea in funcs:
             pfn = idaapi.get_func(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+                skip += 1
                 continue
-            self.upload_function(ea)
+            func_id = self.upload_function(ea, self.funcset_id)
+            func_name = idaapi.get_func_name(ea)
+            if not func_id:
+                print("[{}] {} is skipped because upload error".format(self.name, func_name))
+                fail += 1
+                continue
+            succ += 1
+        print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
+            self.name, succ, fail, skip))
 
     def binaryai_calllback(self, __):
         print("[{}] v{}".format(self.name, bai.__version__))
 
     def retrieve_function_callback(self, __, ea=None):
+        retval = idaapi.ask_yn(idaapi.ASKBTN_NO, "Search in Private FunctionSet?")
+        if retval == -1:
+            return
+        funcset_ids = [self.funcset_id] if retval else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
-        targets = self.retrieve_function(func_ea, self.cfg['topk'])
+        targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
         if targets is None:
             print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
             return
@@ -108,7 +136,12 @@ class BinaryAIManager:
 
     def upload_function_callback(self, __, ea=None):
         func_ea = idaapi.get_screen_ea() if ea is None else ea
-        self.upload_function(func_ea)
+        func_id = self.upload_function(func_ea, self.funcset_id)
+        func_name = idaapi.get_func_name(func_ea)
+        if not func_id:
+            print("[{}] {} is skipped because upload error".format(self.name, func_name))
+        else:
+            print("[{}] {} successfully uploaded".format(self.name, func_name))
 
     def upload_all_callback(self, __):
         self.upload_selected_functions(idautils.Functions())
