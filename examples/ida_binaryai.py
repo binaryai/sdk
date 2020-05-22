@@ -96,8 +96,7 @@ class BinaryAIManager:
             return
 
         if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
-            pseudo = idaapi.open_pseudocode(func_ea, 1)
-            pseudo.refresh_view(0)
+            widget = idaapi.open_pseudocode(func_ea, 1).toplevel
         pseudo_title = idaapi.get_widget_title(widget)
 
         idaapi.display_widget(self.cview.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
