@@ -22,7 +22,7 @@ class BinaryAIManager:
         os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         self._client = None
-        self.cv = None
+        self.cview = None
 
     @property
     def client(self):
@@ -57,13 +57,22 @@ class BinaryAIManager:
                 continue
             func = targets[0]
             if func['score'] < self.cfg['threshold']:
-                print("[{}] {} is skipped because top1_score lower than threshold({})".format(
-                    self.name, func_name, self.cfg['threshold']))
                 continue
             pfn.flags |= idaapi.FUNC_LUMINA
             idaapi.update_func(pfn)
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
+
+    def upload_function(self, ea):
+        func_name = idaapi.get_func_name(ea)
+        print("upload_function: {}, Not implemented".format(func_name))
+
+    def upload_selected_functions(self, funcs):
+        for ea in funcs:
+            pfn = idaapi.get_func(ea)
+            if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+                continue
+            self.upload_function(ea)
 
     def binaryai_calllback(self, __):
         print("[{}] v{}".format(self.name, bai.__version__))
@@ -76,28 +85,34 @@ class BinaryAIManager:
             print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
             return
 
-        if not (self.cv and self.cv.is_alive()):
-            self.cv = SourceCodeViewer(self.name)
+        if not (self.cview and self.cview.is_alive()):
+            self.cview = SourceCodeViewer(self.name)
             # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
-            cv = idaapi.create_code_viewer(self.cv.GetWidget(), 0x4)
-            idaapi.set_code_viewer_is_source(cv)
-        self.cv.set_user_data(func_name, targets)
+            idaapi.set_code_viewer_is_source(idaapi.create_code_viewer(self.cview.GetWidget(), 0x4))
+        self.cview.set_user_data(func_name, targets)
 
         widget = idaapi.get_current_widget()
         if idaapi.get_widget_title(widget) == self.name:
-            return 
-        
+            return
+
         if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
             pseudo = idaapi.open_pseudocode(func_ea, 1)
             pseudo.refresh_view(0)
         pseudo_title = idaapi.get_widget_title(widget)
-            
-        idaapi.display_widget(self.cv.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+
+        idaapi.display_widget(self.cview.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
         idaapi.set_dock_pos(self.name, pseudo_title, idaapi.DP_RIGHT)
         return
 
     def retrieve_all_callback(self, __):
         self.retrieve_selected_functions(idautils.Functions())
+
+    def upload_function_callback(self, __, ea=None):
+        func_ea = idaapi.get_screen_ea() if ea is None else ea
+        self.upload_function(func_ea)
+
+    def upload_all_callback(self, __):
+        self.upload_selected_functions(idautils.Functions())
 
 
 class Config(dict):
@@ -131,9 +146,6 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
 
     def __init__(self, title):
         idaapi.simplecustviewer_t.__init__(self)
-        self.idx = 0
-        self.query = None
-        self.targets = None
         self.alive = True
         self.Create(title)
 
@@ -172,6 +184,7 @@ class UIManager:
         def finish_populating_widget_popup(self, widget, popup):
             if idaapi.get_widget_type(widget) == idaapi.BWN_FUNCS:
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:RetrieveSelected", "BinaryAI/")
+                idaapi.attach_action_to_popup(widget, popup, "BinaryAI:UploadSelected", "BinaryAI/")
 
     class ActionHandler(idaapi.action_handler_t):
         def __init__(self, name, label, shortcut=None, tooltip=None, icon=-1, flags=0):
@@ -204,22 +217,32 @@ class UIManager:
         toolbar_name, menupath = self.name, self.name
         idaapi.create_toolbar(toolbar_name, self.name)
         idaapi.create_menu(menupath, self.name, "Help")
-        action1 = UIManager.ActionHandler(self.name, self.name)
-        action2 = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=199)
-        action3 = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
-        action4 = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
-        if action1.register_action(self.mgr.binaryai_calllback, toolbar_name) and \
-            action2.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath) and \
-                action3.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath) and \
-                action4.register_action(self.retrieve_selected_callback):
+
+        UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_calllback, toolbar_name)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
+        action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
+        action.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
+        action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
+        action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
+
+        retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
+        upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
+        if retrieve_action.register_action(self.selected_callback) and \
+                upload_action.register_action(self.selected_callback):
             self.hooks.hook()
             return True
         return False
 
-    def retrieve_selected_callback(self, ctx):
+    def selected_callback(self, ctx):
         funcs = map(idaapi.getn_func, ctx.chooser_selection)
         funcs = map(lambda func: func.start_ea, funcs)
-        self.mgr.retrieve_selected_functions(funcs)
+        if ctx.action == "BinaryAI:RetrieveSelected":
+            self.mgr.retrieve_selected_functions(funcs)
+        if ctx.action == "BinaryAI:UploadSelected":
+            self.mgr.upload_selected_functions(funcs)
 
 
 class Plugin(idaapi.plugin_t):
