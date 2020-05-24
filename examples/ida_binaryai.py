@@ -60,10 +60,10 @@ class BinaryAIManager:
             return targets
 
     def retrieve_selected_functions(self, funcs):
-        retval = idaapi.ask_yn(idaapi.ASKBTN_NO, "Search in Private FunctionSet?")
-        if retval == -1:
+        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
+        if btn_type == idaapi.ASKBTN_CANCEL:
             return
-        funcset_ids = [self.funcset_id] if retval else None
+        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
         for ea in funcs:
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
@@ -102,10 +102,10 @@ class BinaryAIManager:
         print("[{}] v{}".format(self.name, bai.__version__))
 
     def retrieve_function_callback(self, __, ea=None):
-        retval = idaapi.ask_yn(idaapi.ASKBTN_NO, "Search in Private FunctionSet?")
-        if retval == -1:
+        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
+        if btn_type == idaapi.ASKBTN_CANCEL:
             return
-        funcset_ids = [self.funcset_id] if retval else None
+        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
         targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
