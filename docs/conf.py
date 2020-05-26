@@ -16,6 +16,7 @@
 
 from m2r import MdInclude
 import recommonmark
+from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 import sphinx_rtd_theme
 import binaryai
@@ -48,7 +49,7 @@ master_doc = 'index'
 
 from recommonmark.parser import CommonMarkParser
 source_parsers = {
-    '.md': 'CommonMarkParser'
+    '.md': CommonMarkParser
 }
 source_suffix = ['.rst', '.md']
 
