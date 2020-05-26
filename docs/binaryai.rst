@@ -1,4 +1,4 @@
-binaryai package
+binaryai
 ================
 
 binaryai.client module
