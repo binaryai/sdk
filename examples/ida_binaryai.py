@@ -3,8 +3,9 @@ import os
 import json
 import idaapi
 import idautils
+import idc
+import ida_kernwin
 import binaryai as bai
-
 
 class BinaryAIManager:
     Default = {
@@ -13,7 +14,8 @@ class BinaryAIManager:
         'funcset': '',
         'topk': 10,
         'minsize': 3,
-        'threshold': 0.8
+        'threshold': 0.8,
+        'funccolor': 0xDACC00
     }
 
     def __init__(self):
@@ -59,10 +61,12 @@ class BinaryAIManager:
                 print("[{}] {} is skipped because top1_score lower than threshold({})".format(
                     self.name, func_name, self.cfg['threshold']))
                 continue
-            pfn.flags |= idaapi.FUNC_LUMINA
-            idaapi.update_func(pfn)
+            idc.set_color(ea, idc.CIC_FUNC, self.get_binaryai_function_color())
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
+
+    def get_binaryai_function_color(self):
+        return self.cfg['funccolor'] if 'funccolor' in self.cfg else BinaryAIManager.Default['funccolor']
 
     def binaryai_calllback(self, __):
         print("[{}] v{}".format(self.name, bai.__version__))
@@ -86,6 +90,7 @@ class BinaryAIManager:
         cv = idaapi.create_code_viewer(cv.GetWidget(), 0x4)
         idaapi.set_code_viewer_is_source(cv)
         idaapi.display_widget(cv, idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+        ida_kernwin.refresh_navband(True)
 
     def retrieve_all_callback(self, __):
         self.retrieve_selected_functions(idautils.Functions())
@@ -176,6 +181,7 @@ class UIManager:
         self.name = name
         self.mgr = BinaryAIManager()
         self.hooks = UIManager.UIHooks()
+        self._ida_nav_colorizer = ida_kernwin.set_nav_colorizer(self.nav_colorizer)
 
     def register_actions(self):
         toolbar_name, menupath = self.name, self.name
@@ -197,6 +203,18 @@ class UIManager:
         funcs = map(idaapi.getn_func, ctx.chooser_selection)
         funcs = map(lambda func: func.start_ea, funcs)
         self.mgr.retrieve_selected_functions(funcs)
+
+    def nav_colorizer(self, ea, nbytes):
+        # if the function color is the binaryai one, we want also the navigator
+        # to display it
+        if idc.get_color(ea, idc.CIC_FUNC) == self.mgr.get_binaryai_function_color():
+            return int(self.mgr.get_binaryai_function_color())
+        else:
+            # Otherwise we use the original color
+            orig = ida_kernwin.call_nav_colorizer(
+                        self._ida_nav_colorizer, ea, nbytes
+            )
+            return int(orig)
 
 
 class Plugin(idaapi.plugin_t):
