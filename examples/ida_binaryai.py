@@ -68,7 +68,7 @@ class BinaryAIManager:
     def get_binaryai_function_color(self):
         return self.cfg['funccolor'] if 'funccolor' in self.cfg else BinaryAIManager.Default['funccolor']
 
-    def binaryai_calllback(self, __):
+    def binaryai_callback(self, __):
         print("[{}] v{}".format(self.name, bai.__version__))
 
     def retrieve_function_callback(self, __, ea=None):
@@ -191,7 +191,7 @@ class UIManager:
         action2 = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=199)
         action3 = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
         action4 = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
-        if action1.register_action(self.mgr.binaryai_calllback, toolbar_name) and \
+        if action1.register_action(self.mgr.binaryai_callback, toolbar_name) and \
             action2.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath) and \
                 action3.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath) and \
                 action4.register_action(self.retrieve_selected_callback):
