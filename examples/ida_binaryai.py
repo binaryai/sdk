@@ -5,6 +5,7 @@ import idaapi
 import idautils
 import idc
 import ida_kernwin
+from ida_netnode import Netnode
 import binaryai as bai
 
 class BinaryAIManager:
@@ -18,12 +19,15 @@ class BinaryAIManager:
         'funccolor': 0xDACC00
     }
 
+    BINARYAI_NETNODE_NAMESPACE = '$ binaryai'
+
     def __init__(self):
         self.name = "BinaryAI"
         cfg_dir = os.path.join(idaapi.get_user_idadir(), idaapi.CFG_SUBDIR)
         os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         self._client = None
+        self._netnode = Netnode(BinaryAIManager.BINARYAI_NETNODE_NAMESPACE)
 
     @property
     def client(self):
@@ -62,8 +66,20 @@ class BinaryAIManager:
                     self.name, func_name, self.cfg['threshold']))
                 continue
             idc.set_color(ea, idc.CIC_FUNC, self.get_binaryai_function_color())
+            self.mark_function_as_binaryai(ea)
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
+
+    def mark_function_as_binaryai(self, ea):
+        pfn = idaapi.get_func(ea)
+        if pfn is not None:
+            self._netnode[pfn.startEA] = True
+
+    def is_function_marked_binaryai(self, ea):
+        pfn = idaapi.get_func(ea)
+        if pfn is not None:
+            return pfn.startEA in self._netnode
+        return False
 
     def get_binaryai_function_color(self):
         return self.cfg['funccolor'] if 'funccolor' in self.cfg else BinaryAIManager.Default['funccolor']
@@ -205,12 +221,11 @@ class UIManager:
         self.mgr.retrieve_selected_functions(funcs)
 
     def nav_colorizer(self, ea, nbytes):
-        # if the function color is the binaryai one, we want also the navigator
-        # to display it
-        if idc.get_color(ea, idc.CIC_FUNC) == self.mgr.get_binaryai_function_color():
+        # if the function is marked as binaryai one, we want also to display it in the navigator
+        if self.mgr.is_function_marked_binaryai(ea):
             return int(self.mgr.get_binaryai_function_color())
         else:
-            # Otherwise we use the original color
+            # Otherwise we use the original navigator color
             orig = ida_kernwin.call_nav_colorizer(
                         self._ida_nav_colorizer, ea, nbytes
             )
