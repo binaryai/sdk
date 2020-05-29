@@ -17,7 +17,7 @@ def cli(ctx, url, token, help, version):
             click.echo(binaryai.__version__)
             ctx.exit()
         else:
-            banner = '''
+            banner = r'''
  ____  _                           _    ___ 
 | __ )(_)_ __   __ _ _ __ _   _   / \  |_ _|
 |  _ \| | '_ \ / _` | '__| | | | / _ \  | | 

@@ -1,8 +1,9 @@
+from .error import BinaryAIException
 try:
     import idaapi
     import idautils
 except ImportError:
-    raise ImportError("Please make sure that you are running under IDA Pro.")
+    raise BinaryAIException("SDK_ERROR", "Failed to import idaapi or idautils", None, None)
 
 import ctypes
 import hashlib

@@ -17,7 +17,8 @@ __version__ = _get_version()
 
 __all__ = [
     'client',
-    'function'
+    'function',
+    'error'
 ]
 
 try:

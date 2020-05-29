@@ -1,0 +1,19 @@
+class BinaryAIException(Exception):
+    def __init__(self, code, msg, data, raw):
+        super().__init__()
+        self._code = code
+        self._msg = msg
+        self._data = data
+        self._raw = raw
+
+    @property
+    def code(self):
+        return self._code
+
+    @property
+    def data(self):
+        return self._data
+
+    def __str__(self):
+        return "{}: {}".format(self._code, self._msg)
+        
