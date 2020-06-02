@@ -1,5 +1,4 @@
 # coding: utf-8
-import idc
 import idaapi
 import idautils
 import binaryai as bai
