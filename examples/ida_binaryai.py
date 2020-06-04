@@ -4,7 +4,7 @@ import json
 import idaapi
 import idautils
 import binaryai as bai
-from binaryai.error import BinaryAIException
+from binaryai import BinaryAIException
 
 
 class BinaryAIManager:

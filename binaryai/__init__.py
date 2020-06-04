@@ -1,4 +1,5 @@
 from binaryai import client, function
+from .error import BinaryAIException
 
 
 def _get_version(default='version not found'):
@@ -18,7 +19,7 @@ __version__ = _get_version()
 __all__ = [
     'client',
     'function',
-    'error'
+    'BinaryAIException'
 ]
 
 try:
