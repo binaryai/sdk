@@ -2,7 +2,7 @@ import os
 import json
 import pandas as pd
 import binaryai as bai
-from binaryai.error import BinaryAIException
+from binaryai import BinaryAIException
 
 
 def test_official_funset_1(client, testdata):
