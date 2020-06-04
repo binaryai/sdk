@@ -4,6 +4,7 @@ import json
 import idaapi
 import idautils
 import binaryai as bai
+from binaryai import BinaryAIException
 
 
 class BinaryAIManager:
@@ -40,8 +41,14 @@ class BinaryAIManager:
         func_name = idaapi.get_func_name(ea)
         if func_feat and func_name:
             func_id = bai.function.upload_function(self.client, func_name, func_feat)
-            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
-            return targets
+            try:
+                targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
+            except BinaryAIException as e:
+                print(e)
+                if e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY":
+                    return e.data
+            else:
+                return targets
         return None
 
     def retrieve_selected_functions(self, funcs):
