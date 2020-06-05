@@ -1,0 +1,34 @@
+# This workflow will install Python dependencies, run tests and lint with a single version of Python
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
+
+name: TEST
+
+on:
+  pull_request:
+    branches: [ temp ]
+    types: [ closed ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: github.event.pull_request.merged == 'true'
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.8
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.8
+    - name: Install dependencies
+      env:
+        MERGED: ${{ github.event.pull_request.merged }}
+      run: |
+        echo "$MERGED"
+        python -m pip install --upgrade pip
+        pip install pytest binaryai pandas pytest-xdist
+    - name: Test with pytest
+      env:
+        URL: ${{ secrets.TEST_URL }}
+        TOKEN: ${{ secrets.TEST_TOKEN }}
+      run: |
+        pytest -v -n auto tests/test_cli --url $URL --token $TOKEN
+        pytest -v -n auto tests/test_function --url $URL --token $TOKEN
