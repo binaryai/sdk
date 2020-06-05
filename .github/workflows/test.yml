@@ -22,13 +22,13 @@ jobs:
       env:
         MERGED: ${{ github.event.pull_request.merged }}
       run: |
-        echo "$env:MERGED"
+        echo "$MERGED"
         python -m pip install --upgrade pip
-        pip install pytest binaryai
+        pip install pytest binaryai pandas pytest-xdist
     - name: Test with pytest
       env:
         URL: ${{ secrets.TEST_URL }}
         TOKEN: ${{ secrets.TEST_TOKEN }}
       run: |
-        pytest -v -n auto tests/test_cli --url "$env:URL" --token "$env:TOKEN"
-        pytest -v -n auto tests/test_function --url "$env:URL" --token "$env:TOKEN"
+        pytest -v -n auto tests/test_cli --url $URL --token $TOKEN
+        pytest -v -n auto tests/test_function --url $URL --token $TOKEN
