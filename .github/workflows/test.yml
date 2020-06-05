@@ -11,9 +11,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: github.event.pull_request.merged == 'true'
     steps:
     - uses: actions/checkout@v2
+    - name: echo merged status
+      if: github.event.pull_request.merged == 'true'
+      env:
+        MERGED: ${{ github.event.pull_request.merged }}
+      run: |
+        echo "$MERGED"
     - name: Set up Python 3.8
       uses: actions/setup-python@v2
       with:
