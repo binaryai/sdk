@@ -10,7 +10,6 @@ on:
 
 jobs:
   build:
-    if: ${{ github.event.pull_request.merged == 'true' }}
     runs-on: ubuntu-latest
 
     steps:
@@ -20,7 +19,10 @@ jobs:
       with:
         python-version: 3.8
     - name: Install dependencies
+      env:
+        MERGED: ${{ github.event.pull_request.merged }}
       run: |
+        echo "$env:MERGED"
         python -m pip install --upgrade pip
         pip install pytest binaryai
     - name: Test with pytest
