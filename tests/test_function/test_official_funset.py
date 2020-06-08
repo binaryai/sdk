@@ -2,7 +2,6 @@ import os
 import json
 import pandas as pd
 import binaryai as bai
-from binaryai import BinaryAIException
 
 
 def test_official_funset_1(client, testdata):
@@ -14,25 +13,6 @@ def test_official_funset_1(client, testdata):
         func_id, topk=5
     )
     assert len(sim) == 5
-
-    try:
-        sim = bai.function.search_sim_funcs(client, func_id, topk=0)
-    except BinaryAIException as e:
-        assert str(e) == "INVALID_ARGUMENT: Argument topK can not be zero or negative"
-    else:
-        raise RuntimeError("Backend didn't catch \"INVALID_ARGUMENT: Argument topK can not be zero or negative\"")
-
-    try:
-        sim = bai.function.search_sim_funcs(
-            client,
-            func_id, topk=1234567890
-        )
-    except BinaryAIException as e:
-        assert e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"
-        sim = e.data
-        assert sim is not None
-    else:
-        raise RuntimeError("Backend didn't catch \"INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY\"")
 
 
 def test_official_funset_2(client, testdata):
