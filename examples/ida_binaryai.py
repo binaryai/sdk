@@ -66,7 +66,6 @@ class BinaryAIManager:
             else:
                 return targets
 
-
     def retrieve_selected_functions(self, funcs):
         btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
         if btn_type == idaapi.ASKBTN_CANCEL:
