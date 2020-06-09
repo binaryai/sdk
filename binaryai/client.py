@@ -1,5 +1,6 @@
 import requests
 import json
+from .error import BinaryAIException
 
 
 class Client(object):
@@ -54,17 +55,18 @@ class Client(object):
             response = self.session.post(self.url, data=json.dumps(
                 data), headers=self.headers, timeout=self.timeout)
         except Exception as e:
-            raise RuntimeError("Request failed with exception: {}".format(e))
+            raise BinaryAIException("SDK_ERROR", "Request failed with exception: {}".format(e), None, None)
 
         try:
             jdata = json.loads(response.content)
         except Exception:
-            raise RuntimeError("Invalid response: {}".format(response.content))
+            raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content), None, None)
 
         if "errors" in jdata.keys():
-            raise RuntimeError("{}".format(jdata["errors"][0]["message"]))
+            errors = jdata["errors"][0]
+            raise BinaryAIException(errors['extensions']['code'], errors['message'], jdata['data'], jdata)
 
         if "data" not in jdata.keys():
-            raise RuntimeError("Invalid response from server: {}".format(response.content))
+            raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content), None, None)
 
         return jdata["data"]

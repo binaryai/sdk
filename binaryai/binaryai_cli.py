@@ -17,13 +17,13 @@ def cli(ctx, url, token, help, version):
             click.echo(binaryai.__version__)
             ctx.exit()
         else:
-            banner = '''
- ____  _                           _    ___ 
+            banner = r'''
+ ____  _                           _    ___
 | __ )(_)_ __   __ _ _ __ _   _   / \  |_ _|
-|  _ \| | '_ \ / _` | '__| | | | / _ \  | | 
-| |_) | | | | | (_| | |  | |_| |/ ___ \ | | 
+|  _ \| | '_ \ / _` | '__| | | | / _ \  | |
+| |_) | | | | | (_| | |  | |_| |/ ___ \ | |
 |____/|_|_| |_|\__,_|_|   \__, /_/   \_\___|
-                          |___/             
+                          |___/
         '''
             click.echo(banner)
             click.echo(ctx.get_help())

@@ -1,5 +1,6 @@
 from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_query_function_set, q_search_func_similarity
 from .client import Client
+from .error import BinaryAIException
 
 
 def upload_function(
@@ -29,7 +30,7 @@ def upload_function(
         * **id** (string) -- id of this function
     '''
     if not isinstance(client, Client):
-        raise RuntimeError("Invalid client")
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
         'name': name,
         'feature': feature,
@@ -55,13 +56,13 @@ def query_function(client, function_id):
         * **function** (dict) -- Function's information
     '''
     if not isinstance(client, Client):
-        raise RuntimeError("Invalid client")
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
         'funcId': function_id
     }
     r = client.execute(q_query_function, var)
     if r['function'] and function_id != r['function']['id']:
-        raise RuntimeError("Response function id not equal to the function_id")
+        raise BinaryAIException("SDK_ERROR", "Response function id not equal to the function_id", r, None)
     return r['function']
 
 
@@ -77,7 +78,7 @@ def create_function_set(client, function_ids=None):
         * **id** (string) -- id of the function set
     '''
     if not isinstance(client, Client):
-        raise RuntimeError("Invalid client")
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
         'functionIds': function_ids
     }
@@ -97,13 +98,13 @@ def query_function_set(client, funcset_id):
         * **functionSet** (dict) -- functionSet's information
     '''
     if not isinstance(client, Client):
-        raise RuntimeError("Invalid client")
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
         'funcSetId': funcset_id
     }
     r = client.execute(q_query_function_set, var)
     if funcset_id != r['functionSet']['id']:
-        raise RuntimeError("Response function set id not equal to the funcset_id")
+        raise BinaryAIException("SDK_ERROR", "Response function set id not equal to the funcset_id", r, None)
     return r['functionSet']
 
 
@@ -121,7 +122,7 @@ def search_sim_funcs(client, function_id, funcset_ids=None, topk=1):
         * **similarity** (list): list of the top similarity functions
     '''
     if not isinstance(client, Client):
-        raise RuntimeError("Invalid client")
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
         'funcId': function_id,
         'setId': funcset_ids,

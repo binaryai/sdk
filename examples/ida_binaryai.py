@@ -4,6 +4,7 @@ import json
 import idaapi
 import idautils
 import binaryai as bai
+from binaryai import BinaryAIException
 
 
 class BinaryAIManager:
@@ -58,6 +59,7 @@ class BinaryAIManager:
         if func_id:
             targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
             return targets
+
 
     def retrieve_selected_functions(self, funcs):
         btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
