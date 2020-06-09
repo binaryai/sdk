@@ -4,6 +4,7 @@ import json
 import idaapi
 import idautils
 import binaryai as bai
+from binaryai import BinaryAIException
 
 
 class BinaryAIManager:
@@ -56,8 +57,14 @@ class BinaryAIManager:
     def retrieve_function(self, ea, topk, funcset_ids):
         func_id = self.upload_function(ea, None)
         if func_id:
-            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
-            return targets
+            try:
+                targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
+            except BinaryAIException as e:
+                print(e)
+                if e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY":
+                    return e.data['function']['similarity']
+            else:
+                return targets
 
     def retrieve_selected_functions(self, funcs):
         btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
