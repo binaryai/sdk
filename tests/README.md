@@ -2,7 +2,9 @@
 
 ## requirement
 python == 3.8
-pandas, pytest, pytest-xdist
+```shell
+$ pip install -r requirements.txt
+```
 
 ## usage
 
