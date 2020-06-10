@@ -23,6 +23,7 @@ class BinaryAIManager:
         os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         self._client = None
+        self.cview = None
 
     @property
     def client(self):
@@ -36,66 +37,121 @@ class BinaryAIManager:
                 self._client = bai.client.Client(self.cfg['token'])
         return self._client
 
-    def retrieve_function(self, ea, topk):
+    @property
+    def funcset_id(self):
+        if not self.cfg['funcset']:
+            self.cfg['funcset'] = bai.function.create_function_set(self.client)
+        assert self.cfg['funcset']
+        return self.cfg['funcset']
+
+    def upload_function(self, ea, funcset_id):
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
+        hf = idaapi.hexrays_failure_t()
+        cfunc = idaapi.decompile(ea, hf)
         if func_feat and func_name:
-            func_id = bai.function.upload_function(self.client, func_name, func_feat)
+            func_id = bai.function.upload_function(
+                self.client, func_name, func_feat, source_code=str(cfunc), funcset_id=funcset_id)
+            return func_id
+
+    def retrieve_function(self, ea, topk, funcset_ids):
+        func_id = self.upload_function(ea, None)
+        if func_id:
             try:
-                targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=None, topk=topk)
+                targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
             except BinaryAIException as e:
                 print(e)
                 if e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY":
-                    return e.data
+                    return e.data['function']['similarity']
             else:
                 return targets
-        return None
 
     def retrieve_selected_functions(self, funcs):
+        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
+        if btn_type == idaapi.ASKBTN_CANCEL:
+            return
+        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
         for ea in funcs:
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
                 continue
-            targets = self.retrieve_function(ea, topk=1)
+            targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
             if targets is None:
                 print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
                 continue
             func = targets[0]
             if func['score'] < self.cfg['threshold']:
-                print("[{}] {} is skipped because top1_score lower than threshold({})".format(
-                    self.name, func_name, self.cfg['threshold']))
                 continue
             pfn.flags |= idaapi.FUNC_LUMINA
             idaapi.update_func(pfn)
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
 
+    def upload_selected_functions(self, funcs):
+        succ, skip, fail = 0, 0, 0
+        for ea in funcs:
+            pfn = idaapi.get_func(ea)
+            if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+                skip += 1
+                continue
+            func_id = self.upload_function(ea, self.funcset_id)
+            func_name = idaapi.get_func_name(ea)
+            if not func_id:
+                print("[{}] {} is skipped because upload error".format(self.name, func_name))
+                fail += 1
+                continue
+            succ += 1
+        print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
+            self.name, succ, fail, skip))
+
     def binaryai_calllback(self, __):
         print("[{}] v{}".format(self.name, bai.__version__))
 
     def retrieve_function_callback(self, __, ea=None):
+        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
+        if btn_type == idaapi.ASKBTN_CANCEL:
+            return
+        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
-        widget_title = "{} - {}".format(self.name, func_name)
-        widget = idaapi.find_widget(widget_title)
-        if widget:
-            idaapi.activate_widget(widget, True)
-            return
-        targets = self.retrieve_function(func_ea, self.cfg['topk'])
+        targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
         if targets is None:
             print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
             return
-        cv = SourceCodeViewer(func_name, targets)
-        cv.Create(widget_title)
-        cv.refresh()
-        # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
-        cv = idaapi.create_code_viewer(cv.GetWidget(), 0x4)
-        idaapi.set_code_viewer_is_source(cv)
-        idaapi.display_widget(cv, idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+
+        if not (self.cview and self.cview.is_alive()):
+            self.cview = SourceCodeViewer(self.name)
+            # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
+            idaapi.set_code_viewer_is_source(idaapi.create_code_viewer(self.cview.GetWidget(), 0x4))
+        self.cview.set_user_data(func_name, targets)
+
+        widget = idaapi.get_current_widget()
+        if idaapi.get_widget_title(widget) == self.name:
+            return
+
+        if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
+            widget = idaapi.open_pseudocode(func_ea, 1).toplevel
+        pseudo_title = idaapi.get_widget_title(widget)
+
+        idaapi.display_widget(self.cview.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+        idaapi.set_dock_pos(self.name, pseudo_title, idaapi.DP_RIGHT)
+        return
 
     def retrieve_all_callback(self, __):
         self.retrieve_selected_functions(idautils.Functions())
+
+    def upload_function_callback(self, __, ea=None):
+        func_ea = idaapi.get_screen_ea() if ea is None else ea
+        func_id = self.upload_function(func_ea, self.funcset_id)
+        func_name = idaapi.get_func_name(func_ea)
+        if not func_id:
+            print("[{}] {} is skipped because upload error".format(self.name, func_name))
+        else:
+            print("[{}] {} successfully uploaded".format(self.name, func_name))
+
+    def upload_all_callback(self, __):
+        self.upload_selected_functions(idautils.Functions())
 
 
 class Config(dict):
@@ -127,13 +183,21 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         body = func['function']['sourceCode'].split("\n")
         return filter(lambda l: not l.lstrip().startswith('#'), body)
 
-    def __init__(self, query, targets):
+    def __init__(self, title):
         idaapi.simplecustviewer_t.__init__(self)
+        self.alive = True
+        self.Create(title)
+
+    def is_alive(self):
+        return self.alive
+
+    def set_user_data(self, query, targets):
         self.idx = 0
         self.query = query
         self.targets = targets
+        self._repaint()
 
-    def refresh(self):
+    def _repaint(self):
         self.ClearLines()
         func = self.targets[self.idx]
         for line in self.source_code_comment(self.query, func, self.idx).split("\n"):
@@ -142,13 +206,16 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
             self.AddLine(str(line))
         self.Refresh()
 
+    def OnClose(self):
+        self.alive = False
+
     def OnKeydown(self, vkey, shift):
         if shift == 0 and vkey == ord("K"):
             self.idx = (self.idx + len(self.targets) - 1) % len(self.targets)
-            self.refresh()
+            self._repaint()
         elif shift == 0 and vkey == ord("J"):
             self.idx = (self.idx + 1) % len(self.targets)
-            self.refresh()
+            self._repaint()
 
 
 class UIManager:
@@ -156,6 +223,7 @@ class UIManager:
         def finish_populating_widget_popup(self, widget, popup):
             if idaapi.get_widget_type(widget) == idaapi.BWN_FUNCS:
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:RetrieveSelected", "BinaryAI/")
+                idaapi.attach_action_to_popup(widget, popup, "BinaryAI:UploadSelected", "BinaryAI/")
 
     class ActionHandler(idaapi.action_handler_t):
         def __init__(self, name, label, shortcut=None, tooltip=None, icon=-1, flags=0):
@@ -188,22 +256,32 @@ class UIManager:
         toolbar_name, menupath = self.name, self.name
         idaapi.create_toolbar(toolbar_name, self.name)
         idaapi.create_menu(menupath, self.name, "Help")
-        action1 = UIManager.ActionHandler(self.name, self.name)
-        action2 = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=199)
-        action3 = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
-        action4 = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
-        if action1.register_action(self.mgr.binaryai_calllback, toolbar_name) and \
-            action2.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath) and \
-                action3.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath) and \
-                action4.register_action(self.retrieve_selected_callback):
+
+        UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_calllback, toolbar_name)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
+        action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
+        action.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
+        action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
+        action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
+
+        retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
+        upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
+        if retrieve_action.register_action(self.selected_callback) and \
+                upload_action.register_action(self.selected_callback):
             self.hooks.hook()
             return True
         return False
 
-    def retrieve_selected_callback(self, ctx):
+    def selected_callback(self, ctx):
         funcs = map(idaapi.getn_func, ctx.chooser_selection)
         funcs = map(lambda func: func.start_ea, funcs)
-        self.mgr.retrieve_selected_functions(funcs)
+        if ctx.action == "BinaryAI:RetrieveSelected":
+            self.mgr.retrieve_selected_functions(funcs)
+        if ctx.action == "BinaryAI:UploadSelected":
+            self.mgr.upload_selected_functions(funcs)
 
 
 class Plugin(idaapi.plugin_t):
