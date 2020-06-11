@@ -2,13 +2,54 @@
 
 ![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg)
 
+
 ## Installation
 
 `$ pip install binaryai`
 
-## Usage
+For IDA Pro, please download [ida_binaryai.py](https://github.com/binaryai/sdk/releases/latest/download/ida_binaryai.py) and put it to IDA plugins directory.
 
-### command line
+
+## IDA Pro
+
+### Shortcuts
+
+|   Shortcut   |          Action           |      Scope      |
+| :----------: | :-----------------------: | :-------------: |
+| Ctrl+Shift+D | Retrieve current function |     Global      |
+|      j       |       Next function       | BinaryAI Widget |
+|      k       |     Previous function     | BinaryAI Widget |
+
+
+
+### Config
+
+To modify the default options, please edit  `binaryai.cfg`, the default path is as follows.
+
+|     OS      |                 Config File                 |
+| :---------: | :-----------------------------------------: |
+|   Windows   | %APPDATA%/Hex-Rays/IDA Pro/cfg/binaryai.cfg |
+| Linux/macOS |     $HOME/.idapro/plugins/binaryai.cfg      |
+
+the supported options are listed below.
+
+```json
+{
+    "token": "",
+    "url": "",
+    "funcset": "",
+    "topk": 10,
+    "minsize": 3,
+    "threshold": 0.8
+}
+```
+
+### SDK Reference
+
+Please refer to  [BinaryAI SDK Reference](https://binaryai.readthedocs.io/en/latest/binaryai.html#)
+
+
+## Command Line
 
 ```shell
 $ binaryai --help
