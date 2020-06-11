@@ -15,7 +15,6 @@
 # sys.path.insert(0, os.path.abspath('..'))
 
 from m2r import MdInclude
-import recommonmark
 from recommonmark.parser import CommonMarkParser
 from recommonmark.transform import AutoStructify
 import sphinx_rtd_theme
@@ -24,9 +23,9 @@ import binaryai
 
 # -- Project information -----------------------------------------------------
 
-project = 'binaryai'
-copyright = '2020, KEEN Security Lab'
-author = 'KEEN Security Lab'
+project = 'BinaryAI'
+copyright = '2020, Tencent Security KEEN Lab'
+author = 'BinaryAI Team'
 version = binaryai.__version__
 
 
@@ -35,12 +34,13 @@ version = binaryai.__version__
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
-extensions = ['sphinx.ext.autodoc',
+extensions = [
+    'sphinx.ext.autodoc',
     'sphinx.ext.mathjax',
     'sphinx.ext.napoleon',
     'sphinx.ext.intersphinx',
     'sphinx_markdown_tables',
-    'recommonmark',
+    'recommonmark'
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -48,7 +48,6 @@ templates_path = ['_templates']
 
 master_doc = 'index'
 
-from recommonmark.parser import CommonMarkParser
 source_parsers = {
     '.md': CommonMarkParser
 }
@@ -57,8 +56,9 @@ source_suffix = ['.rst', '.md']
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store', 'README.md']
 
+autodoc_mock_imports = ["idaapi", 'idautils']
 
 # -- Options for HTML output -------------------------------------------------
 

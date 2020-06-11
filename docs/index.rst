@@ -1,35 +1,36 @@
-.. binaryai documentation master file, created by
-   sphinx-quickstart on Tue May 26 12:59:04 2020.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+BinaryAI: The Neural Search Engine for Binaries
+===============================================
 
-Welcome to binaryai's documentation!
-====================================
+.. warning::
+   The BinaryAI backend is still in active development, there will be breaking changes in the future, and the user data is at risk of loss.
+
+Quick start video
+-----------------
+
+.. raw:: html
+
+   <div style="text-align: center; margin-bottom: 2em;">
+   <iframe width="100%" height="600" src="https://player.bilibili.com/player.html?aid=413193735&bvid=BV1XV411k7km&cid=192841620&page=1" scrolling="no" border="0" frameborder="no" framespacing="0" allowfullscreen="true"> </iframe>
+   </div>
 
 .. toctree::
    :hidden:
 
-   introduction
-
-.. mdinclude:: ./introduction.md
-
-INSTALLATION
-==================
-
-.. toctree::
    installation
 
-USAGE
-==================
+.. mdinclude:: ./installation.md
+
 
 .. toctree::
-   :maxdepth: 2
+   :hidden:
 
    usage
 
-SDK REFERENCE
-=================
+.. mdinclude:: ./usage.md
 
+
+SDK REFERENCE
+-------------
 .. toctree::
    :maxdepth: 2
 
@@ -37,7 +38,7 @@ SDK REFERENCE
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

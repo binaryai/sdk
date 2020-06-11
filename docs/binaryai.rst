@@ -1,5 +1,5 @@
-binaryai
-================
+SDK REFERENCE
+=============
 
 binaryai.client module
 ----------------------

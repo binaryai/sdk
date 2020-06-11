@@ -1,12 +1,7 @@
-# Usage
+# USAGE
+
 
 ## IDA Pro
-
-### Plugin Usage
-
-
-
-
 
 ### Shortcuts
 
@@ -29,7 +24,7 @@ To modify the default options, please edit  `binaryai.cfg`, the default path is 
 
 the supported options are listed below.
 
- ```json
+```json
 {
     "token": "",
     "url": "",
@@ -38,14 +33,7 @@ the supported options are listed below.
     "minsize": 3,
     "threshold": 0.8
 }
- ```
-
-
-
-### API Usage
-
-Please refer to  [BinaryAI Online Documentation](https://docs.binaryai.tencent.com)
-
+```
 
 
 ## Command Line
