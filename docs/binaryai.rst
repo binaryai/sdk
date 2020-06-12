@@ -22,6 +22,6 @@ binaryai.ida module
 
 .. automodule:: binaryai.ida
    :members:
-   :undoc-members:
+   :no-undoc-members:
    :show-inheritance:
 
