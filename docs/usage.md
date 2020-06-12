@@ -1,13 +1,4 @@
-# BinaryAI Python SDK
-
-![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg)
-
-
-## Installation
-
-`$ pip install binaryai`
-
-For IDA Pro, please download [ida_binaryai.py](https://github.com/binaryai/sdk/releases/latest/download/ida_binaryai.py) and put it to IDA plugins directory.
+# USAGE
 
 
 ## IDA Pro
@@ -43,10 +34,6 @@ the supported options are listed below.
     "threshold": 0.8
 }
 ```
-
-### SDK Reference
-
-Please refer to  [BinaryAI SDK Reference](https://binaryai.readthedocs.io/en/latest/binaryai.html#)
 
 
 ## Command Line
