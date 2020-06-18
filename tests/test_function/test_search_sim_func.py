@@ -2,8 +2,8 @@ import json
 import binaryai as bai
 
 
-def test_search_sim_func_1(client, testdata):
-    func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
+def test_search_sim_func_1(client, data_1):
+    func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     funcset_id = bai.function.create_function_set(client)
     func = json.loads(func_feat)
     func_name = func['graph']['name']
@@ -15,11 +15,11 @@ def test_search_sim_func_1(client, testdata):
     assert sim[0]['score'] >= 0.9999
 
 
-def test_search_sim_func_2(client, testdata):
-    df1 = testdata.sample(1, axis=1)
+def test_search_sim_func_2(client, data_1):
+    df1 = data_1.sample(1, axis=1)
     df2 = df1
     while df2.columns[0] == df1.columns[0]:
-        df2 = testdata.sample(1, axis=1)
+        df2 = data_1.sample(1, axis=1)
 
     corpus_set = bai.function.create_function_set(client)
     for _, row in df1.iterrows():

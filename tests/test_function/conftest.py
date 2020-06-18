@@ -16,6 +16,11 @@ def client(request):
 
 
 @pytest.fixture(scope="module")
-def testdata():
+def data_1():
     import pandas
     return pandas.read_pickle("{}/../testdata/test.pkl".format(os.path.dirname(__file__)))
+
+@pytest.fixture(scope="module")
+def data_2():
+    import pandas
+    return pandas.read_pickle("{}/../testdata/test_official.pkl".format(os.path.dirname(__file__)))

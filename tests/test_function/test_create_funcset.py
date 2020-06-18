@@ -2,8 +2,8 @@ import json
 import binaryai as bai
 
 
-def test_create_funcset_1(client, testdata):
-    func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
+def test_create_funcset_1(client, data_1):
+    func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     func = json.loads(func_feat)
     func_name = func['graph']['name']
     func_id = bai.function.upload_function(client, func_name, func_feat)
@@ -17,8 +17,8 @@ def test_create_funcset_1(client, testdata):
     assert func_id == funcs[0]['id']
 
 
-def test_create_funcset_2(client, testdata):
-    func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
+def test_create_funcset_2(client, data_1):
+    func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     funcset_id = bai.function.create_function_set(client)
     assert funcset_id is not None
     func = json.loads(func_feat)
@@ -33,8 +33,8 @@ def test_create_funcset_2(client, testdata):
     assert func_id == funcs[0]['id']
 
 
-def test_create_funcset_3(client, testdata):
-    func_feats = testdata.sample(1).iloc[0].values
+def test_create_funcset_3(client, data_1):
+    func_feats = data_1.sample(1).iloc[0].values
     func_ids = []
     for func_feat in func_feats:
         func = json.loads(func_feat)
