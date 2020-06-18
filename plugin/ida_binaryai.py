@@ -105,7 +105,7 @@ class BinaryAIManager:
         print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
 
-    def binaryai_calllback(self, __):
+    def binaryai_callback(self, __):
         print("[{}] v{}".format(self.name, bai.__version__))
 
     def retrieve_function_callback(self, __, ea=None):
@@ -257,7 +257,7 @@ class UIManager:
         idaapi.create_toolbar(toolbar_name, self.name)
         idaapi.create_menu(menupath, self.name, "Help")
 
-        UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_calllback, toolbar_name)
+        UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_callback, toolbar_name)
         action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
         action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
