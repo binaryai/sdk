@@ -1,7 +1,6 @@
 # binaryai test
 
 ## requirement
-python == 3.8
 ```shell
 $ pip install -r requirements.txt
 ```
