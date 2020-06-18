@@ -3,8 +3,8 @@ import binaryai as bai
 from binaryai import BinaryAIException
 
 
-def test_upload_and_query(client, testdata):
-    func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
+def test_upload_and_query(client, data_1):
+    func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     func = json.loads(func_feat)
     func_name = func['graph']['name']
     func_id = bai.function.upload_function(client, func_name, func_feat)
@@ -14,8 +14,8 @@ def test_upload_and_query(client, testdata):
     assert func_name == res['name']
 
 
-def test_remove_duplicate_funcid(client, testdata):
-    func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
+def test_remove_duplicate_funcid(client, data_1):
+    func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     func = json.loads(func_feat)
     func_name = func['graph']['name']
     func_id1 = bai.function.upload_function(client, func_name, func_feat)
@@ -23,8 +23,8 @@ def test_remove_duplicate_funcid(client, testdata):
     assert func_id1 == func_id2
 
 
-def test_query_with_topk(client, testdata):
-    func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
+def test_query_with_topk(client, data_1):
+    func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     func_id = bai.function.upload_function(client, "foo", func_feat)
 
     sim = bai.function.search_sim_funcs(client, func_id, topk=0)
