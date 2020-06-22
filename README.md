@@ -1,6 +1,7 @@
 # BinaryAI Python SDK
 
 ![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg)
+[![Gitter](https://badges.gitter.im/binaryai/community.svg)](https://gitter.im/binaryai/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 
 ## Installation
