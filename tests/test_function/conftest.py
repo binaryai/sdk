@@ -20,6 +20,7 @@ def data_1():
     import pandas
     return pandas.read_pickle("{}/../testdata/test.pkl".format(os.path.dirname(__file__)))
 
+
 @pytest.fixture(scope="module")
 def data_2():
     import pandas

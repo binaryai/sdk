@@ -21,7 +21,7 @@ setup(
         "Operating System :: OS Independent",
     ],
     project_urls={
-        "Documentation": "https://binaryai.tencent.com",
+        "Documentation": "https://binaryai.readthedocs.io/",
         "Source": "https://github.com/binaryai/sdk",
     },
     python_requires=">=2.7",

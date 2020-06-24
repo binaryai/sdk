@@ -58,7 +58,7 @@ def test_query_funcset(url, token, testdata):
     assert response.exit_code == 0
     result = json.loads(format_response(response.output))
     assert len(result['functions']) == 1
-    
+
 
 def test_search_sim_func(url, token, testdata):
     client = bai.client.Client(url=url, token=token)
