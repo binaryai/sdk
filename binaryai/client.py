@@ -8,27 +8,34 @@ class Client(object):
     BinaryAI api client
 
     Attributes:
-        token(string): token used for query
         url(string): BinaryAI api endpoint url, default is https://api.binaryai.tencent.com/v1/endpoint
         timeout(int): seconds of timeout, default is 1000
     '''
 
     def __init__(
         self,
-        token,
         url="https://api.binaryai.tencent.com/v1/endpoint",
         timeout=1000,
     ):
         self.url = url
         self.headers = {
-            "Content-Type": "application/json",
-            "token": token
+            "Content-Type": "application/json"
         }
-        self.session = self._token_verify()
+        self.session = None
         self.GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
         self.timeout = timeout
 
-    def _token_verify(self):
+    def _gen_gql_data(self, query, var):
+        data = {
+            "operationName": None,
+            "variables": var,
+            "query": query
+        }
+        return data
+
+    def token_verify(self, token=None):
+        if token:
+            self.headers['token'] = token
         session = requests.Session()
         try:
             response = session.get(self.url, headers=self.headers)
@@ -38,20 +45,13 @@ class Client(object):
             if response.status_code == 401:
                 raise BinaryAIException("SDK_ERROR", "UNAUTHENTICATED: Invalid token")
             elif response.status_code == 200:
-                return session
+                self.session = session
+                return True
             else:
                 raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
                     response.status_code, response.content))
         finally:
-            return
-
-    def _gen_gql_data(self, query, var):
-        data = {
-            "operationName": None,
-            "variables": var,
-            "query": query
-        }
-        return data
+            return False
 
     def execute(self, query, var):
         '''
