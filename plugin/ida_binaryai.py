@@ -38,11 +38,10 @@ class BinaryAIManager:
 
         while not self._client.token_verify(self.cfg['token']):
             idaapi.warning("Wrong token! Please try again.")
-            token = idaapi.ask_str("", 0, "{} Token:".format(self.name))
+            token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
             if not token:
-                assert 0
+                assert False, "[BinaryAI] Token is not specified."
             self.cfg['token'] = token
-
         return self._client
 
     @property

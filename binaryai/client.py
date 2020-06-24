@@ -54,8 +54,7 @@ class Client(object):
             else:
                 raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
                     response.status_code, response.content))
-        finally:
-            return False
+        return False
 
     def execute(self, query, var):
         '''
