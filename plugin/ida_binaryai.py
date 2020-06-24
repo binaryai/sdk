@@ -28,13 +28,18 @@ class BinaryAIManager:
     @property
     def client(self):
         if self._client is None:
+            self.cfg['token'] = ''
+            self._client = bai.client.Client(self.cfg['url'])
+
             if not self.cfg['token']:
                 self.cfg['token'] = idaapi.ask_str("", 0, "{} Token:".format(self.name))
-            assert self.cfg['token']
-            if self.cfg['url']:
-                self._client = bai.client.Client(self.cfg['token'], self.cfg['url'])
-            else:
-                self._client = bai.client.Client(self.cfg['token'])
+
+        while not self._client.token_verify(self.cfg['token']):
+            idaapi.warning("Wrong token! Please try again.")
+            self.cfg['token'] = idaapi.ask_str("", 0, "{} Token:".format(self.name))
+            if not self.cfg['token']:
+                assert 0
+
         return self._client
 
     @property
