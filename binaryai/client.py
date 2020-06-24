@@ -8,20 +8,24 @@ class Client(object):
     BinaryAI api client
 
     Attributes:
+        token(string): token used for query
         url(string): BinaryAI api endpoint url, default is https://api.binaryai.tencent.com/v1/endpoint
         timeout(int): seconds of timeout, default is 1000
     '''
 
     def __init__(
         self,
+        token,
         url="https://api.binaryai.tencent.com/v1/endpoint",
         timeout=1000,
     ):
         self.url = url
         self.headers = {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "token": token
         }
         self.session = None
+        self.token_verify()    # set session
         self.GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
         self.timeout = timeout
 
