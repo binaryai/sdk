@@ -28,20 +28,23 @@ class BinaryAIManager:
     @property
     def client(self):
         if self._client is None:
-            url = self.cfg['url']
-            token = self.cfg['token']
-            while self._client is None:
+            if not self.cfg['token']:
+                self.cfg['token'] = idaapi.ask_str("", 0, "{} Token:".format(self.name))
+
+            kwargs = {'url': self.cfg['url']} if self.cfg['url'] else {}
+
+            while not self._client:
                 try:
-                    self._client = bai.client.Client(token, url)
-                    self.cfg['token'] = token
+                    self._client = bai.client.Client(self.cfg['token'], **kwargs)
                 except BinaryAIException as e:
                     if e._msg == "UNAUTHENTICATED: Invalid token":
                         idaapi.warning("Wrong token! Please try again.")
                         token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
                         if not token:
                             assert False, "[BinaryAI] Token is not specified."
+                        self.cfg['token'] = token
                     else:
-                        assert False, "[BinaryAI] {}".format(e._msg)
+                        assert False, "[BinaryAI] Unknown error!"
         return self._client
 
     @property
@@ -172,8 +175,6 @@ class Config(dict):
         return self.cfg[key]
 
     def __setitem__(self, key, val):
-        if key in self.cfg and self.cfg[key] == val:
-            return
         self.cfg[key] = val
         json.dump(self.cfg, open(self.path, 'w'), indent=4)
 
