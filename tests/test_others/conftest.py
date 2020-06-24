@@ -21,4 +21,3 @@ def token(request):
 def testdata():
     import pandas
     return pandas.read_pickle("{}/../testdata/test.pkl".format(os.path.dirname(__file__)))
-    
