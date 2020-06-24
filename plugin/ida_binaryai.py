@@ -5,8 +5,8 @@ import idaapi
 import idautils
 import datetime
 import binaryai as bai
-from PyQt5.QtWidgets import QMessageBox
 from binaryai import BinaryAIException
+from PyQt5.QtWidgets import QMessageBox
 
 
 class BinaryAIManager:
@@ -108,10 +108,10 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
-        ver_html="<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
-        cpr_html="<p align=\"center\">@ Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(str(datetime.datetime.now().year))
-        url_html="<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
-        QMessageBox.about(None,"BinaryAI",ver_html+cpr_html+url_html)
+        ver_html = "<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
+        cpr_html = "<p align=\"center\">@ Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(str(datetime.datetime.now().year))
+        url_html = "<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
+        QMessageBox.about(None, "BinaryAI", ver_html+cpr_html+url_html)
 
     def retrieve_function_callback(self, __, ea=None):
         btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
