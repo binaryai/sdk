@@ -16,4 +16,3 @@ class BinaryAIException(Exception):
 
     def __str__(self):
         return "{}: {}".format(self._code, self._msg)
-        
