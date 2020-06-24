@@ -24,9 +24,26 @@ class Client(object):
             "Content-Type": "application/json",
             "token": token
         }
-        self.session = None
+        self.session = self._token_verify()
         self.GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
         self.timeout = timeout
+
+    def _token_verify(self):
+        session = requests.Session()
+        try:
+            response = session.get(self.url, headers=self.headers)
+        except Exception as e:
+            raise BinaryAIException("SDK_ERROR", "Request failed with exception: {}".format(e))
+        else:
+            if response.status_code == 401:
+                raise BinaryAIException("SDK_ERROR", "UNAUTHENTICATED: Invalid token")
+            elif response.status_code == 200:
+                return session
+            else:
+                raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
+                    response.status_code, response.content))
+        finally:
+            return
 
     def _gen_gql_data(self, query, var):
         data = {
@@ -55,18 +72,18 @@ class Client(object):
             response = self.session.post(self.url, data=json.dumps(
                 data), headers=self.headers, timeout=self.timeout)
         except Exception as e:
-            raise BinaryAIException("SDK_ERROR", "Request failed with exception: {}".format(e), None, None)
+            raise BinaryAIException("SDK_ERROR", "Request failed with exception: {}".format(e))
 
         try:
             jdata = json.loads(response.content)
         except Exception:
-            raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content), None, None)
+            raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content))
 
         if "errors" in jdata.keys():
             errors = jdata["errors"][0]
             raise BinaryAIException(errors['extensions']['code'], errors['message'], jdata['data'], jdata)
 
         if "data" not in jdata.keys():
-            raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content), None, None)
+            raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content))
 
         return jdata["data"]

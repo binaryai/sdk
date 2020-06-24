@@ -1,6 +1,8 @@
 q_create_function = '''
-mutation CreateFunction($name: String!, $sourceCode: String, $sourceFile: String, $sourceLine: Int, $language: String, $feature: String!, $functionSetId: ID){
-    createFunction(input: {name: $name, sourceCode: $sourceCode, sourceFile: $sourceFile, sourceLine: $sourceLine, language: $language, feature: $feature, functionSetId: $functionSetId}){
+mutation CreateFunction($name: String!, $sourceCode: String, $sourceFile: String, $sourceLine: Int,
+                        $language: String, $feature: String!, $functionSetId: ID){
+    createFunction(input: {name: $name, sourceCode: $sourceCode, sourceFile: $sourceFile, sourceLine: $sourceLine,
+                            language: $language, feature: $feature, functionSetId: $functionSetId}){
         function {
             id
         }

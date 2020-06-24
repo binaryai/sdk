@@ -1,4 +1,5 @@
-from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_query_function_set, q_search_func_similarity
+from .graphql.function import q_create_function, q_query_function, q_create_function_set
+from .graphql.function import q_query_function_set, q_search_func_similarity
 from .client import Client
 from .error import BinaryAIException
 
@@ -24,7 +25,8 @@ def upload_function(
         source_file(string): Source file of the function
         source_line(int): line number of the function
         language(string): Programming language of the function
-        funcset_id(string): If functionSetID specified, it would be added into that set when adding function; if not, it would not be added into any set
+        funcset_id(string): If functionSetID specified, it would be added into that set when adding function;
+                            if not, it would not be added into any set
 
     Returns:
         * **id** (string) -- id of this function
@@ -72,7 +74,8 @@ def create_function_set(client, function_ids=None):
 
     Args:
         client(binaryai.client.Client): Client instance
-        function_ids(list): Functions to be inserted into the new function set. Can be null so no functions will be added into the set.
+        function_ids(list): Functions to be inserted into the new function set.
+                            Can be null so no functions will be added into the set.
 
     Returns:
         * **id** (string) -- id of the function set
