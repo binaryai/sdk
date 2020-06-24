@@ -24,8 +24,7 @@ class Client(object):
             "Content-Type": "application/json",
             "token": token
         }
-        self.session = None
-        self.token_verify()    # set session
+        self.session = self._token_verify()
         self.GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
         self.timeout = timeout
 
@@ -37,9 +36,7 @@ class Client(object):
         }
         return data
 
-    def token_verify(self, token=None):
-        if token:
-            self.headers['token'] = token
+    def _token_verify(self):
         session = requests.Session()
         try:
             response = session.get(self.url, headers=self.headers)
@@ -49,12 +46,10 @@ class Client(object):
             if response.status_code == 401:
                 raise BinaryAIException("SDK_ERROR", "UNAUTHENTICATED: Invalid token")
             elif response.status_code == 200:
-                self.session = session
-                return True
+                return session
             else:
                 raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
                     response.status_code, response.content))
-        return False
 
     def execute(self, query, var):
         '''

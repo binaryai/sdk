@@ -31,17 +31,20 @@ class BinaryAIManager:
             if not self.cfg['token']:
                 self.cfg['token'] = idaapi.ask_str("", 0, "{} Token:".format(self.name))
 
-            if self.cfg['url']:
-                self._client = bai.client.Client(self.cfg['token'], self.cfg['url'])
-            else:
-                self._client = bai.client.Client(self.cfg['token'])
+            kwargs = {'url': self.cfg['url']} if self.cfg['url'] else {}
 
-        while not self._client.token_verify(self.cfg['token']):
-            idaapi.warning("Wrong token! Please try again.")
-            token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
-            if not token:
-                assert False, "[BinaryAI] Token is not specified."
-            self.cfg['token'] = token
+            while not self._client:
+                try:
+                    self._client = bai.client.Client(self.cfg['token'], **kwargs)
+                except BinaryAIException as e:
+                    if e._msg == "UNAUTHENTICATED: Invalid token":
+                        idaapi.warning("Wrong token! Please try again.")
+                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
+                        if not token:
+                            assert False, "[BinaryAI] Token is not specified."
+                        self.cfg['token'] = token
+                    else:
+                        assert False, "[BinaryAI] Unknown error!"
         return self._client
 
     @property
