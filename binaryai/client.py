@@ -16,15 +16,13 @@ class Client(object):
     def __init__(
         self,
         token,
-        url="https://api.binaryai.tencent.com/v1/endpoint",
+        url,
         timeout=1000,
     ):
+        self.token = token
         self.url = url
-        self.headers = {
-            "Content-Type": "application/json",
-            "token": token
-        }
-        self.session = self._token_verify()
+        self.session = None
+        self._verify(self.token, self.url)
         self.GMT_FORMAT = '%a, %d %b %Y %H:%M:%S GMT'
         self.timeout = timeout
 
@@ -36,17 +34,16 @@ class Client(object):
         }
         return data
 
-    def _token_verify(self):
-        session = requests.Session()
+    def _verify(self, token, url):
         try:
-            response = session.get(self.url, headers=self.headers)
+            response = requests.get(url, headers={"Token": token})
         except Exception as e:
             raise BinaryAIException("SDK_ERROR", "Request failed with exception: {}".format(e))
         else:
             if response.status_code == 401:
                 raise BinaryAIException("SDK_ERROR", "UNAUTHENTICATED: Invalid token")
             elif response.status_code == 200:
-                return session
+                return
             else:
                 raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
                     response.status_code, response.content))
@@ -65,10 +62,14 @@ class Client(object):
         if not self.session:
             self.session = requests.Session()
         data = self._gen_gql_data(query, var)
+        headers = {
+            "Content-Type": "application/json",
+            "Token": self.token
+        }
         response = None
         try:
             response = self.session.post(self.url, data=json.dumps(
-                data), headers=self.headers, timeout=self.timeout)
+                data), headers=headers, timeout=self.timeout)
         except Exception as e:
             raise BinaryAIException("SDK_ERROR", "Request failed with exception: {}".format(e))
 
