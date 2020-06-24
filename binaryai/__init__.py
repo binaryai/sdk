@@ -23,8 +23,8 @@ __all__ = [
 ]
 
 try:
-    import idaapi
-    from binaryai import ida
+    import idaapi   # noqa # pylint: disable=unused-import
+    from binaryai import ida    # noqa # pylint: disable=unused-import
 except ImportError:
     pass
 else:

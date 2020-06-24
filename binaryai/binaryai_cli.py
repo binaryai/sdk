@@ -5,7 +5,8 @@ import click
 
 
 @click.group(invoke_without_command=True)
-@click.option('--url', '-u', type=str, help='api url', default="https://api.binaryai.tencent.com/v1/endpoint", show_default=True)
+@click.option('--url', '-u', type=str, help='api url',
+              default="https://api.binaryai.tencent.com/v1/endpoint", show_default=True)
 @click.option('--token', '-t', type=str, help='user token')
 @click.option('--help', '-h', is_flag=True, help='Show this message and exit.')
 @click.option('--version', '-v', is_flag=True, help='Show version')
