@@ -9,7 +9,7 @@ class Client(object):
 
     Attributes:
         token(string): token used for query
-        url(string): BinaryAI api endpoint url, default is https://api.binaryai.tencent.com/v1/endpoint
+        url(string): BinaryAI api endpoint url
         timeout(int): seconds of timeout, default is 1000
     '''
 

@@ -10,7 +10,7 @@ from binaryai import BinaryAIException
 class BinaryAIManager:
     Default = {
         'token': '',
-        'url': '',
+        'url': 'https://api.binaryai.tencent.com/v1/endpoint',
         'funcset': '',
         'topk': 10,
         'minsize': 3,
