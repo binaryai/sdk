@@ -97,6 +97,10 @@ class BinaryAIManager:
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
 
+            # rename
+            target_name = targets[0]['function']['name']
+            idaapi.set_name(pfn.start_ea, target_name)
+
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
         for ea in funcs:
