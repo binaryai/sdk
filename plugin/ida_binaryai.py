@@ -16,7 +16,8 @@ class BinaryAIManager:
         'funcset': '',
         'topk': 10,
         'minsize': 3,
-        'threshold': 0.8
+        'threshold': 0.8,
+        'color': "0x817FFF"
     }
 
     def __init__(self):
@@ -92,7 +93,7 @@ class BinaryAIManager:
             func = targets[0]
             if func['score'] < self.cfg['threshold']:
                 continue
-            pfn.flags |= idaapi.FUNC_LUMINA
+            pfn.color = int(self.cfg['color'], 16)
             idaapi.update_func(pfn)
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
