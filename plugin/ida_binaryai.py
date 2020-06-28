@@ -190,15 +190,19 @@ class Config(dict):
 class SourceCodeViewer(idaapi.simplecustviewer_t):
     @staticmethod
     def source_code_comment(query, func, idx=0):
+        score = func["score"]
+        score = (score + 1) / 2.0
+        if score > 1:
+            score = 1
         return """/*
     query:  {}
     target[{}]: {}
     target[{}]: {}:{}
-    score:  {}
+    score:  {:6f}
 */\n""".format(query,
                idx, func['function']['name'],
                idx, func['function']['sourceFile'], func['function']['sourceLine'],
-               func['score'])
+               score)
 
     @staticmethod
     def source_code_body(func):
