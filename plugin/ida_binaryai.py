@@ -193,8 +193,12 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         return """/*
     query:  {}
     target[{}]: {}
+    target[{}]: {}:{}
     score:  {}
-*/\n""".format(query, idx, func['function']['name'], func['score'])
+*/\n""".format(query,
+               idx, func['function']['name'],
+               idx, func['function']['sourceFile'], func['function']['sourceLine'],
+               func['score'])
 
     @staticmethod
     def source_code_body(func):
