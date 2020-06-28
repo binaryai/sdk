@@ -92,7 +92,7 @@ class BinaryAIManager:
             func = targets[0]
             if func['score'] < self.cfg['threshold']:
                 continue
-            pfn.color = int(self.cfg['color'],16)
+            pfn.color = int(self.cfg['color'], 16)
             idaapi.update_func(pfn)
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
