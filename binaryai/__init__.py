@@ -22,7 +22,7 @@ def _get_latest_version():
         info = resp.content.decode()
         info = json.loads(info)
         return info["info"]["version"]
-    except Exception as e:
+    except:
         raise BinaryAIException("SDK_ERROR", "[BinaryAI] Check version fail.")
 
 
