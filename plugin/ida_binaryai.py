@@ -8,6 +8,7 @@ import binaryai as bai
 from PyQt5.QtWidgets import QMessageBox
 from binaryai import BinaryAIException
 
+
 class BinaryAIManager:
     Default = {
         'token': '',
