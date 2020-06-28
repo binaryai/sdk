@@ -116,7 +116,7 @@ class BinaryAIManager:
 
     def binaryai_callback(self, __):
         ver_html = "<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
-        cpr_html = "<p align=\"center\">@ Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
+        cpr_html = "<p align=\"center\">(c) Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
         url_html = "<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
         QMessageBox.about(None, "BinaryAI", ver_html+cpr_html+url_html)
 
