@@ -16,7 +16,8 @@ class BinaryAIManager:
         'funcset': '',
         'topk': 10,
         'minsize': 3,
-        'threshold': 0.8
+        'threshold': 0.8,
+        'color': "0x817FFF"
     }
 
     def __init__(self):
@@ -92,10 +93,14 @@ class BinaryAIManager:
             func = targets[0]
             if func['score'] < self.cfg['threshold']:
                 continue
-            pfn.flags |= idaapi.FUNC_LUMINA
+            pfn.color = int(self.cfg['color'], 16)
             idaapi.update_func(pfn)
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
+
+            # rename
+            target_name = targets[0]['function']['name']
+            idaapi.set_name(pfn.start_ea, target_name)
 
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
@@ -116,7 +121,7 @@ class BinaryAIManager:
 
     def binaryai_callback(self, __):
         ver_html = "<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
-        cpr_html = "<p align=\"center\">@ Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
+        cpr_html = "<p align=\"center\">(c) Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
         url_html = "<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
         QMessageBox.about(None, "BinaryAI", ver_html+cpr_html+url_html)
 
@@ -186,11 +191,19 @@ class Config(dict):
 class SourceCodeViewer(idaapi.simplecustviewer_t):
     @staticmethod
     def source_code_comment(query, func, idx=0):
+        score = func["score"]
+        score = (score + 1) / 2.0
+        if score > 1:
+            score = 1
         return """/*
     query:  {}
     target[{}]: {}
-    score:  {}
-*/\n""".format(query, idx, func['function']['name'], func['score'])
+    target[{}]: {}:{}
+    score:  {:6f}
+*/\n""".format(query,
+               idx, func['function']['name'],
+               idx, func['function']['sourceFile'], func['function']['sourceLine'],
+               score)
 
     @staticmethod
     def source_code_body(func):
