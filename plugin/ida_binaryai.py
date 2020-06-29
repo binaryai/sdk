@@ -95,7 +95,10 @@ class BinaryAIManager:
 
             # rename
             target_name = targets[0]['function']['name']
-            idaapi.set_name(pfn.start_ea, "bai_"+target_name)
+            prefix = "bai_"
+            if str(target_name).startswith("bai_"):
+                prefix = ""
+            idaapi.set_name(pfn.start_ea, prefix+target_name)
 
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
