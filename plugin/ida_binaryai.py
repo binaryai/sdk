@@ -419,7 +419,7 @@ class UIManager:
         action = UIManager.ActionHandler("BinaryAI:About", "About", "")
         action.register_action(self.mgr.binaryai_callback, menupath=menupath)
 
-        apply_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Apply")
+        # apply_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Apply")
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Match")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
