@@ -6,7 +6,7 @@ import idautils
 import datetime
 import binaryai as bai
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import  QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
+from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from binaryai import BinaryAIException
 
 
@@ -95,7 +95,7 @@ class BinaryAIManager:
 
             # rename
             target_name = targets[0]['function']['name']
-            idaapi.set_name(pfn.start_ea, target_name)
+            idaapi.set_name(pfn.start_ea, "bai_"+target_name)
 
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
@@ -364,7 +364,6 @@ class CopyrightWindow(QWidget):
         return
 
 
-
 class UIManager:
     class UIHooks(idaapi.UI_Hooks):
         def finish_populating_widget_popup(self, widget, popup):
@@ -407,7 +406,7 @@ class UIManager:
         UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_callback, toolbar_name)
         action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
         action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Retrieve all functions", "", icon=188)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Match", "", icon=188)
         action.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
         action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
@@ -416,7 +415,7 @@ class UIManager:
         action = UIManager.ActionHandler("BinaryAI:About", "About", "")
         action.register_action(self.mgr.binaryai_callback, menupath=menupath)
 
-        retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
+        retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Match")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
         if retrieve_action.register_action(self.selected_callback) and \
                 upload_action.register_action(self.selected_callback):
