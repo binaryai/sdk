@@ -95,10 +95,9 @@ class BinaryAIManager:
 
             # rename
             target_name = targets[0]['function']['name']
-            prefix = "bai_"
-            if str(target_name).startswith("bai_"):
-                prefix = ""
-            idaapi.set_name(pfn.start_ea, prefix+target_name)
+            if target_name.startswith("sub_"):
+                target_name = "bai_" + target_name
+            idaapi.set_name(pfn.start_ea, target_name)
 
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
@@ -373,6 +372,8 @@ class UIManager:
             if idaapi.get_widget_type(widget) == idaapi.BWN_FUNCS:
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:RetrieveSelected", "BinaryAI/")
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:UploadSelected", "BinaryAI/")
+            if idaapi.get_widget_type(widget) == idaapi.BWN_CUSTVIEW:
+                idaapi.attach_action_to_popup(widget, popup, "BinaryAI:Apply", "BinaryAI/")
 
     class ActionHandler(idaapi.action_handler_t):
         def __init__(self, name, label, shortcut=None, tooltip=None, icon=-1, flags=0):
@@ -417,6 +418,8 @@ class UIManager:
         action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:About", "About", "")
         action.register_action(self.mgr.binaryai_callback, menupath=menupath)
+
+        apply_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Apply")
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Match")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
