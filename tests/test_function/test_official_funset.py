@@ -31,4 +31,4 @@ def test_official_funset_2(client, data_2):
         client,
         func_id, topk=1
     )
-    assert sim[0]['score'] < 0.8
+    assert sim[0]['score'] < 0.9
