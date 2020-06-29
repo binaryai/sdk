@@ -53,6 +53,8 @@ query SearchFuncSimilarity($funcId: ID!, $setId: [ID!], $topk: Int!){
                 id
                 name
                 sourceCode
+                sourceFile
+                sourceLine
                 language
             }
         }
