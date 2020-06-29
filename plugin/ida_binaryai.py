@@ -5,7 +5,8 @@ import idaapi
 import idautils
 import datetime
 import binaryai as bai
-from PyQt5.QtWidgets import QMessageBox
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import  QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from binaryai import BinaryAIException
 
 
@@ -14,6 +15,7 @@ class BinaryAIManager:
         'token': '',
         'url': 'https://api.binaryai.tencent.com/v1/endpoint',
         'funcset': '',
+        'usepublic': True,
         'topk': 10,
         'minsize': 3,
         'threshold': 0.8,
@@ -26,6 +28,8 @@ class BinaryAIManager:
         os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         self._client = None
+        if not self.cfg['funcset']:
+            self.cfg['funcset'] = bai.function.create_function_set(self.client)
         self.cview = None
 
     @property
@@ -40,19 +44,13 @@ class BinaryAIManager:
                 except BinaryAIException as e:
                     if e._msg == "UNAUTHENTICATED: Invalid token":
                         idaapi.warning("Wrong token! Please try again.")
-                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
+                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name))
                         if not token:
                             assert False, "[BinaryAI] Token is not specified."
+                        token = token.strip()
                     else:
                         assert False, "[BinaryAI] {}".format(e._msg)
         return self._client
-
-    @property
-    def funcset_id(self):
-        if not self.cfg['funcset']:
-            self.cfg['funcset'] = bai.function.create_function_set(self.client)
-        assert self.cfg['funcset']
-        return self.cfg['funcset']
 
     def upload_function(self, ea, funcset_id):
         func_feat = bai.ida.get_func_feature(ea)
@@ -77,10 +75,7 @@ class BinaryAIManager:
                 return targets
 
     def retrieve_selected_functions(self, funcs):
-        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
-        if btn_type == idaapi.ASKBTN_CANCEL:
-            return
-        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
+        funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
         for ea in funcs:
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
@@ -109,7 +104,7 @@ class BinaryAIManager:
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
                 skip += 1
                 continue
-            func_id = self.upload_function(ea, self.funcset_id)
+            func_id = self.upload_function(ea, self.cfg['funcset'])
             func_name = idaapi.get_func_name(ea)
             if not func_id:
                 print("[{}] {} is skipped because upload error".format(self.name, func_name))
@@ -120,16 +115,11 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
-        ver_html = "<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
-        cpr_html = "<p align=\"center\">(c) Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
-        url_html = "<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
-        QMessageBox.about(None, "BinaryAI", ver_html+cpr_html+url_html)
+        self.widget = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
+        self.widget.show()
 
     def retrieve_function_callback(self, __, ea=None):
-        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
-        if btn_type == idaapi.ASKBTN_CANCEL:
-            return
-        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
+        funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
         targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
@@ -160,7 +150,7 @@ class BinaryAIManager:
 
     def upload_function_callback(self, __, ea=None):
         func_ea = idaapi.get_screen_ea() if ea is None else ea
-        func_id = self.upload_function(func_ea, self.funcset_id)
+        func_id = self.upload_function(func_ea, self.cfg['funcset'])
         func_name = idaapi.get_func_name(func_ea)
         if not func_id:
             print("[{}] {} is skipped because upload error".format(self.name, func_name))
@@ -177,6 +167,9 @@ class Config(dict):
         if not os.path.exists(path):
             json.dump(default, open(self.path, 'w'), indent=4)
         self.cfg = json.load(open(path))
+        for k, v in default.items():
+            if not (k in self.cfg and self.cfg[k]):
+                self.__setitem__(k, v)
 
     def __getitem__(self, key):
         return self.cfg[key]
@@ -191,10 +184,7 @@ class Config(dict):
 class SourceCodeViewer(idaapi.simplecustviewer_t):
     @staticmethod
     def source_code_comment(query, func, idx=0):
-        score = func["score"]
-        score = (score + 1) / 2.0
-        if score > 1:
-            score = 1
+        score = func["score"] if func["score"] < 1 else 1
         return """/*
     query:  {}
     target[{}]: {}
@@ -245,6 +235,136 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
             self._repaint()
 
 
+class BinaryAIOptionsForm(idaapi.Form):
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.retrieve_list_select = 0
+        self.retrieve_list = ["Public", "Private"]
+        super(BinaryAIOptionsForm, self).__init__(
+            r'''STARTITEM 0
+BUTTON YES* OK
+BinaryAI Options
+
+            {FormChangeCb}
+            <Retrieve List  :{iretrieve_list}>
+            <Topk           :{itopk}>
+            <Threshold      :{ithreshold}>
+            <Minsize        :{iminsize}>
+            BinaryAI Token  <CHANGE:{itoken}>
+            Functionset ID  <CHANGE:{ifuncset}>
+            ''', {
+                'iretrieve_list': self.DropdownListControl(
+                          items=self.retrieve_list,
+                          readonly=self.cfg['usepublic'],
+                          selval=0,
+                          width=32),
+                'itopk': self.StringInput(value=str(self.cfg["topk"])),
+                'ithreshold': self.StringInput(value=str(self.cfg["threshold"])),
+                'iminsize': self.StringInput(value=str(self.cfg["minsize"])),
+                'itoken': self.ButtonInput(self.on_change_token),
+                'ifuncset': self.ButtonInput(self.on_change_funcset),
+                'FormChangeCb': self.FormChangeCb(self.on_form_change)
+            }
+        )
+        self.Compile()
+
+    def _get_float(self, ctl):
+        try:
+            return float(self.GetControlValue(ctl))
+        except Exception:
+            return 0
+
+    def _limit_range(self, x, min, max):
+        x = max if x > max else x
+        x = min if x < min else x
+        return x
+
+    def on_form_change(self, fid):
+        if fid == self.iretrieve_list.id:
+            v = self.GetControlValue(self.iretrieve_list)
+            self.cfg['usepublic'] = False if v else True
+
+        if fid == self.itopk.id:
+            topk = int(self._get_float(self.itopk))
+            topk = self._limit_range(topk, 0, 10)
+            self.cfg['topk'] = topk
+
+        if fid == self.ithreshold.id:
+            threshold = self._get_float(self.ithreshold)
+            threshold = self._limit_range(threshold, 0, 1)
+            self.cfg['threshold'] = threshold
+
+        if fid == self.iminsize.id:
+            minsize = int(self._get_float(self.iminsize))
+            minsize = self._limit_range(minsize, 0, 100)
+            self.cfg['minsize'] = minsize
+
+        return 1
+
+    def on_change_token(self, code):
+        token = idaapi.ask_str(self.cfg['token'], 0, "BinaryAI Token:")
+        if token is not None:
+            self.cfg['token'] = token.strip()
+        return 1
+
+    def on_change_funcset(self, code):
+        funcset = idaapi.ask_str(self.cfg['funcset'], 0, "BinaryAI Function Set:")
+        if funcset is not None:
+            self.cfg['funcset'] = funcset.strip()
+        return 1
+
+
+class CopyrightWindow(QWidget):
+    def __init__(self, ver, year, cfg):
+        super(CopyrightWindow, self).__init__()
+        self.cfg = cfg
+        self.setWindowFlags(Qt.WindowMinimizeButtonHint)
+        self.setFixedSize(400, 200)
+        self.setWindowTitle("BinaryAI")
+        layoutCopyright = QVBoxLayout()
+        layoutCopyright.setSpacing(5)
+        layoutButtons = QHBoxLayout()
+        layoutButtons.setSpacing(10)
+        mainLayout = QVBoxLayout()
+
+        label1 = QLabel()
+        label2 = QLabel()
+        label3 = QLabel()
+
+        label1.setText("BinaryAI v{}".format(ver))
+        label2.setText("(c) Copyright {}, Tencent Sercurity KEEN Lab".format(year))
+        label3.setText("<a href='https://binaryai.readthedocs.io/'>https://binaryai.readthedocs.io/</a>")
+        label3.setOpenExternalLinks(True)
+        label1.setAlignment(Qt.AlignCenter)
+        label2.setAlignment(Qt.AlignCenter)
+        label3.setAlignment(Qt.AlignCenter)
+
+        btn1 = QPushButton()
+        btn2 = QPushButton()
+        btn1.setText("OK")
+        btn2.setText("Options")
+        btn1.setFixedSize(60, 20)
+        btn2.setFixedSize(60, 20)
+        btn1.clicked.connect(self.close)
+        btn2.clicked.connect(self.showOptions)
+
+        layoutCopyright.addWidget(label1)
+        layoutCopyright.addWidget(label2)
+        layoutCopyright.addWidget(label3)
+        layoutButtons.addWidget(btn1)
+        layoutButtons.addWidget(btn2)
+
+        mainLayout.addLayout(layoutCopyright)
+        mainLayout.addLayout(layoutButtons)
+
+        self.setLayout(mainLayout)
+
+    def showOptions(self):
+        BinaryAIOptionsForm(self.cfg).Execute()
+        return
+
+
+
 class UIManager:
     class UIHooks(idaapi.UI_Hooks):
         def finish_populating_widget_popup(self, widget, popup):
@@ -293,6 +413,8 @@ class UIManager:
         action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
         action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:About", "About", "")
+        action.register_action(self.mgr.binaryai_callback, menupath=menupath)
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")

@@ -23,7 +23,7 @@ def _get_latest_version():
 __version__ = _get_version()
 if "dev" not in __version__:
     _latest_version = _get_latest_version()
-    if __version__ != _latest_version:
+    if __version__.split('.')[:2] != _latest_version.split('.')[:2]:
         raise BinaryAIException("SDK_ERROR",
                                 "[BinaryAI] Current version is {}, but the latest version is {}.\n"
                                 "Try `pip install binaryai --upgrade` to solve this problem."
