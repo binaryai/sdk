@@ -9,7 +9,6 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from binaryai import BinaryAIException
 
-
 class BinaryAIManager:
     Default = {
         'token': '',
