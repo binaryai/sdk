@@ -8,12 +8,12 @@ import binaryai as bai
 from PyQt5.QtWidgets import QMessageBox
 from binaryai import BinaryAIException
 
-
 class BinaryAIManager:
     Default = {
         'token': '',
         'url': 'https://api.binaryai.tencent.com/v1/endpoint',
         'funcset': '',
+        'usepublic': True,
         'topk': 10,
         'minsize': 3,
         'threshold': 0.8
@@ -39,9 +39,10 @@ class BinaryAIManager:
                 except BinaryAIException as e:
                     if e._msg == "UNAUTHENTICATED: Invalid token":
                         idaapi.warning("Wrong token! Please try again.")
-                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
+                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name))
                         if not token:
                             assert False, "[BinaryAI] Token is not specified."
+                        token = token.strip()
                     else:
                         assert False, "[BinaryAI] {}".format(e._msg)
         return self._client
@@ -76,10 +77,7 @@ class BinaryAIManager:
                 return targets
 
     def retrieve_selected_functions(self, funcs):
-        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
-        if btn_type == idaapi.ASKBTN_CANCEL:
-            return
-        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
+        funcset_ids = [self.funcset_id] if not self.cfg['usepublic'] else None
         for ea in funcs:
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
@@ -119,16 +117,15 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
+        # TODO: new about with `options` button needed
         ver_html = "<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
         cpr_html = "<p align=\"center\">(c) Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
         url_html = "<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
         QMessageBox.about(None, "BinaryAI", ver_html+cpr_html+url_html)
+        # BinaryAIOptionsForm(self.cfg).Execute()
 
     def retrieve_function_callback(self, __, ea=None):
-        btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
-        if btn_type == idaapi.ASKBTN_CANCEL:
-            return
-        funcset_ids = [self.funcset_id] if btn_type == idaapi.ASKBTN_YES else None
+        funcset_ids = [self.funcset_id] if not self.cfg['usepublic'] else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
         targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
@@ -176,6 +173,9 @@ class Config(dict):
         if not os.path.exists(path):
             json.dump(default, open(self.path, 'w'), indent=4)
         self.cfg = json.load(open(path))
+        for k, v in default.items():
+            if not (k in self.cfg and self.cfg[k]):
+                self.__setitem__(k, v)
 
     def __getitem__(self, key):
         return self.cfg[key]
@@ -244,6 +244,91 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
             self._repaint()
 
 
+class BinaryAIOptionsForm(idaapi.Form):
+    def __init__(self, cfg):
+        self.cfg = cfg
+        self.retrieve_list_select = 0
+        self.retrieve_list = ["Public", "Private"]
+        super(BinaryAIOptionsForm, self).__init__(
+            r'''STARTITEM 0
+BUTTON YES* OK
+BinaryAI Options
+
+            {FormChangeCb}
+            <Retrieve List  :{iretrieve_list}>
+            <Topk           :{itopk}>
+            <Threshold      :{ithreshold}>
+            <Minsize        :{iminsize}>
+            BinaryAI Token  <CHANGE:{itoken}>
+            Functionset ID  <CHANGE:{ifuncset}>
+            ''', {
+                'iretrieve_list': self.DropdownListControl(
+                          items=self.retrieve_list,
+                          readonly=self.cfg['usepublic'],
+                          selval=0,
+                          width=32),
+                'itopk': self.StringInput(value=str(self.cfg["topk"])),
+                'ithreshold': self.StringInput(value=str(self.cfg["threshold"])),
+                'iminsize': self.StringInput(value=str(self.cfg["minsize"])),
+                'itoken': self.ButtonInput(self.on_change_token),
+                'ifuncset': self.ButtonInput(self.on_change_funcset),
+                'FormChangeCb': self.FormChangeCb(self.on_form_change)
+            }
+        )
+        self.Compile()
+
+    def _get_float(self, ctl):
+        try:
+            return float(self.GetControlValue(ctl))
+        except Exception:
+            return 0
+
+    def _limit_range(self, x, min, max):
+        x = max if x > max else x
+        x = min if x < min else x
+        return x
+
+    def on_form_change(self, fid):
+        if self.cfg['funcset']:
+            self.EnableField(self.iretrieve_list, True)
+        else:
+            self.SetControlValue(self.iretrieve_list, 0)
+            self.EnableField(self.iretrieve_list, False)
+
+        if fid == self.iretrieve_list.id:
+            v = self.GetControlValue(self.iretrieve_list)
+            self.cfg['usepublic'] = False if v else True
+
+        if fid == self.itopk.id:
+            topk = int(self._get_float(self.itopk))
+            topk = self._limit_range(topk, 0, 10)
+            self.cfg['topk'] = topk
+
+        if fid == self.ithreshold.id:
+            threshold = self._get_float(self.ithreshold)
+            threshold = self._limit_range(threshold, 0, 1)
+            self.cfg['threshold'] = threshold
+
+        if fid == self.iminsize.id:
+            minsize = int(self._get_float(self.iminsize))
+            minsize = self._limit_range(minsize, 0, 100)
+            self.cfg['minsize'] = minsize
+
+        return 1
+
+    def on_change_token(self, code):
+        token = idaapi.ask_str(self.cfg['token'], 0, "BinaryAI Token:")
+        if token is not None:
+            self.cfg['token'] = token.strip()
+        return 1
+
+    def on_change_funcset(self, code):
+        funcset = idaapi.ask_str(self.cfg['funcset'], 0, "BinaryAI Function Set:")
+        if funcset is not None:
+            self.cfg['funcset'] = funcset.strip()
+        return 1
+
+
 class UIManager:
     class UIHooks(idaapi.UI_Hooks):
         def finish_populating_widget_popup(self, widget, popup):
@@ -292,6 +377,8 @@ class UIManager:
         action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
         action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:About", "About", "")
+        action.register_action(self.mgr.binaryai_callback, menupath=menupath)
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Retrieve")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
