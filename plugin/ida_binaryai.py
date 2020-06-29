@@ -98,6 +98,10 @@ class BinaryAIManager:
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
 
+            # rename
+            target_name = targets[0]['function']['name']
+            idaapi.set_name(pfn.start_ea, target_name)
+
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
         for ea in funcs:
@@ -187,11 +191,19 @@ class Config(dict):
 class SourceCodeViewer(idaapi.simplecustviewer_t):
     @staticmethod
     def source_code_comment(query, func, idx=0):
+        score = func["score"]
+        score = (score + 1) / 2.0
+        if score > 1:
+            score = 1
         return """/*
     query:  {}
     target[{}]: {}
-    score:  {}
-*/\n""".format(query, idx, func['function']['name'], func['score'])
+    target[{}]: {}:{}
+    score:  {:6f}
+*/\n""".format(query,
+               idx, func['function']['name'],
+               idx, func['function']['sourceFile'], func['function']['sourceLine'],
+               score)
 
     @staticmethod
     def source_code_body(func):
