@@ -3,14 +3,16 @@ import os
 import json
 import idaapi
 import idautils
+import datetime
 import binaryai as bai
+from PyQt5.QtWidgets import QMessageBox
 from binaryai import BinaryAIException
 
 
 class BinaryAIManager:
     Default = {
         'token': '',
-        'url': '',
+        'url': 'https://api.binaryai.tencent.com/v1/endpoint',
         'funcset': '',
         'topk': 10,
         'minsize': 3,
@@ -28,13 +30,20 @@ class BinaryAIManager:
     @property
     def client(self):
         if self._client is None:
-            if not self.cfg['token']:
-                self.cfg['token'] = idaapi.ask_str("", 0, "{} Token:".format(self.name))
-            assert self.cfg['token']
-            if self.cfg['url']:
-                self._client = bai.client.Client(self.cfg['token'], self.cfg['url'])
-            else:
-                self._client = bai.client.Client(self.cfg['token'])
+            url = self.cfg['url']
+            token = self.cfg['token']
+            while self._client is None:
+                try:
+                    self._client = bai.client.Client(token, url)
+                    self.cfg['token'] = token
+                except BinaryAIException as e:
+                    if e._msg == "UNAUTHENTICATED: Invalid token":
+                        idaapi.warning("Wrong token! Please try again.")
+                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name)).strip()
+                        if not token:
+                            assert False, "[BinaryAI] Token is not specified."
+                    else:
+                        assert False, "[BinaryAI] {}".format(e._msg)
         return self._client
 
     @property
@@ -106,7 +115,10 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
-        print("[{}] v{}".format(self.name, bai.__version__))
+        ver_html = "<p align=\"center\">BinaryAI v{}\n<p>".format(bai.__version__)
+        cpr_html = "<p align=\"center\">@ Copyright {}, Tencent Sercurity KEEN Lab\n<p>".format(datetime.datetime.now().year)
+        url_html = "<p align=\"center\"><a  href=\"https://binaryai.readthedocs.io/\">https://binaryai.readthedocs.io/<a><p>"
+        QMessageBox.about(None, "BinaryAI", ver_html+cpr_html+url_html)
 
     def retrieve_function_callback(self, __, ea=None):
         btn_type = idaapi.ask_yn(idaapi.ASKBTN_NO, "AUTOHIDE REGISTRY\nSearch in private functionset?")
@@ -165,6 +177,8 @@ class Config(dict):
         return self.cfg[key]
 
     def __setitem__(self, key, val):
+        if key in self.cfg and self.cfg[key] == val:
+            return
         self.cfg[key] = val
         json.dump(self.cfg, open(self.path, 'w'), indent=4)
 
