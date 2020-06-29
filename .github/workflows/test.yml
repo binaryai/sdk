@@ -1,30 +1,22 @@
-# This workflow will install Python dependencies, run tests and lint with a single version of Python
-# For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
-
 name: TEST
 
 on:
-  pull_request:
-    branches: [ test ]
+  pull_request_review:
+    branches: [ master ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  test:
+    if: ${{ contains(github.event.review.state, 'approved') }}
+    runs-on: self-hosted
     steps:
     - uses: actions/checkout@v2
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v2
-      with:
-        python-version: 3.8
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install -r tests/requirements.txt
-        python setup.py install
+        python -m pip install --user --upgrade pip
+        python -m pip install --user -r tests/requirements.txt
+        python setup.py install --force --user
     - name: Test with pytest
-      env:
-        URL: ${{ secrets.TEST_URL }}
-        TOKEN: ${{ secrets.TEST_TOKEN }}
       run: |
-        pytest -v -n auto tests/test_cli --url $URL --token $TOKEN
-        pytest -v -n auto tests/test_function --url $URL --token $TOKEN
+        export PATH=/home/docker/.local/bin:$PATH
+        pytest -v -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
+        pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
