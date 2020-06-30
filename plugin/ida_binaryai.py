@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import json
+import idc
 import idaapi
 import idautils
 import datetime
@@ -8,6 +9,15 @@ import binaryai as bai
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from binaryai import BinaryAIException
+
+
+class Utils(object):
+    @staticmethod
+    def apply_bai_func(ea, name, color):
+        if name.startswith("sub_"):
+            name = "bai_" + name
+        idaapi.set_name(ea, name)
+        idc.set_color(ea, idc.CIC_FUNC, color)
 
 
 class BinaryAIManager:
@@ -76,32 +86,48 @@ class BinaryAIManager:
 
     def retrieve_selected_functions(self, funcs):
         funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
-        for ea in funcs:
+        i, succ, skip, fail = 0, 0, 0, 0
+        _funcs = [ea for ea in funcs]
+        self.widget_wait_match = WaitWindow("Matching")
+        funcs_len = len(_funcs)
+        for ea in _funcs:
+            i += 1
+
+            # update widget
+            self.widget_wait_match.draw(i, funcs_len)
+
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+                skip += 1
                 continue
             targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
             if targets is None:
                 print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
+                fail += 1
                 continue
             func = targets[0]
+            succ += 1
             if func['score'] < self.cfg['threshold']:
                 continue
-            pfn.color = int(self.cfg['color'], 16)
-            idaapi.update_func(pfn)
-            comment = SourceCodeViewer.source_code_comment(func_name, func)
-            idaapi.set_func_cmt(pfn, comment, 0)
-
-            # rename
-            target_name = targets[0]['function']['name']
-            if target_name.startswith("sub_"):
-                target_name = "bai_" + target_name
-            idaapi.set_name(pfn.start_ea, target_name)
+            Utils.apply_bai_func(pfn.start_ea,
+                                 targets[0]['function']['name'],
+                                 int(self.cfg['color'], 16))
+        self.widget_wait_match.close()
+        print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
+            self.name, succ, fail, skip))
 
     def upload_selected_functions(self, funcs):
-        succ, skip, fail = 0, 0, 0
-        for ea in funcs:
+        i, succ, skip, fail = 0, 0, 0, 0
+        _funcs = [ea for ea in funcs]
+        self.widget_wait_upload = WaitWindow("Uploading")
+        funcs_len = len(_funcs)
+        for ea in _funcs:
+            i += 1
+
+            # update widget
+            self.widget_wait_upload.draw(i, funcs_len)
+
             pfn = idaapi.get_func(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
                 skip += 1
@@ -113,42 +139,48 @@ class BinaryAIManager:
                 fail += 1
                 continue
             succ += 1
+        self.widget_wait_upload.close()
         print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
-        self.widget = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
-        self.widget.show()
+        self.widget_copyright = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
+        self.widget_copyright.show()
 
     def retrieve_function_callback(self, __, ea=None):
         funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
         targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
+        succ, skip, fail = 0, 0, 0
         if targets is None:
             print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
-            return
+            fail += 1
+        else:
+            if not (self.cview and self.cview.is_alive()):
+                self.cview = SourceCodeViewer(self.name)
+                # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
+                idaapi.set_code_viewer_is_source(idaapi.create_code_viewer(self.cview.GetWidget(), 0x4))
+            self.cview.set_user_data(func_name, targets)
 
-        if not (self.cview and self.cview.is_alive()):
-            self.cview = SourceCodeViewer(self.name)
-            # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
-            idaapi.set_code_viewer_is_source(idaapi.create_code_viewer(self.cview.GetWidget(), 0x4))
-        self.cview.set_user_data(func_name, targets)
+            widget = idaapi.get_current_widget()
+            if idaapi.get_widget_title(widget) == self.name:
+                skip += 1
+            else:
+                if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
+                    widget = idaapi.open_pseudocode(func_ea, 1).toplevel
+                pseudo_title = idaapi.get_widget_title(widget)
 
-        widget = idaapi.get_current_widget()
-        if idaapi.get_widget_title(widget) == self.name:
-            return
-
-        if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
-            widget = idaapi.open_pseudocode(func_ea, 1).toplevel
-        pseudo_title = idaapi.get_widget_title(widget)
-
-        idaapi.display_widget(self.cview.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
-        idaapi.set_dock_pos(self.name, pseudo_title, idaapi.DP_RIGHT)
-        return
+                idaapi.display_widget(self.cview.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                idaapi.set_dock_pos(self.name, pseudo_title, idaapi.DP_RIGHT)
+                succ += 1
+        print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
+            self.name, succ, fail, skip))
 
     def retrieve_all_callback(self, __):
-        self.retrieve_selected_functions(idautils.Functions())
+        do_that = idaapi.ask_yn(0, "Are you sure to match all functions?")
+        if do_that == 1:
+            self.retrieve_selected_functions(idautils.Functions())
 
     def upload_function_callback(self, __, ea=None):
         func_ea = idaapi.get_screen_ea() if ea is None else ea
@@ -160,7 +192,9 @@ class BinaryAIManager:
             print("[{}] {} successfully uploaded".format(self.name, func_name))
 
     def upload_all_callback(self, __):
-        self.upload_selected_functions(idautils.Functions())
+        do_that = idaapi.ask_yn(0, "Are you sure to upload all functions?")
+        if do_that == 1:
+            self.upload_selected_functions(idautils.Functions())
 
 
 class Config(dict):
@@ -206,6 +240,7 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         idaapi.simplecustviewer_t.__init__(self)
         self.alive = True
         self.Create(title)
+        self.ea = None
 
     def is_alive(self):
         return self.alive
@@ -214,6 +249,7 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         self.idx = 0
         self.query = query
         self.targets = targets
+        self.ea = idaapi.get_name_ea(0, query)
         self._repaint()
 
     def _repaint(self):
@@ -246,7 +282,6 @@ class BinaryAIOptionsForm(idaapi.Form):
             r'''STARTITEM 0
 BUTTON YES* OK
 BinaryAI Options
-
             {FormChangeCb}
             <Retrieve List  :{iretrieve_list}>
             <Topk           :{itopk}>
@@ -366,6 +401,35 @@ class CopyrightWindow(QWidget):
         return
 
 
+class WaitWindow(QWidget):
+    def __init__(self, operation):
+        super(WaitWindow, self).__init__()
+        self.operation = operation
+        self.initUI()
+
+    def initUI(self):
+        self.setFixedSize(300, 100)
+        self.setWindowTitle("Please wait...")
+
+        self.layoutRetriving = QHBoxLayout()
+        self.label = QLabel()
+        self.label.setAlignment(Qt.AlignCenter)
+
+        self.layoutRetriving.addWidget(self.label)
+        self.setLayout(self.layoutRetriving)
+
+        self.draw()
+        self.show()
+
+    def draw(self, cur=None, tot=None):
+        if cur is None or tot is None:
+            text = "{}... ".format(self.operation)
+        else:
+            text = "{}... ({}/{})".format(self.operation, cur, tot)
+        self.label.resize(200, 50)
+        self.label.setText(text)
+
+
 class UIManager:
     class UIHooks(idaapi.UI_Hooks):
         def finish_populating_widget_popup(self, widget, popup):
@@ -408,18 +472,19 @@ class UIManager:
         idaapi.create_menu(menupath, self.name, "Help")
 
         UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_callback, toolbar_name)
-        action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
-        action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Match", "", icon=188)
-        action.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
-        action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
-        action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:About", "About", "")
         action.register_action(self.mgr.binaryai_callback, menupath=menupath)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
+        action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
+        action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:MatchAll", "Match all functions", "", icon=188)
+        action.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath)
+        action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
+        action.register_action(self.mgr.upload_all_callback, toolbar_name, menupath)
 
-        # apply_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Apply")
+        apply_action = UIManager.ActionHandler("BinaryAI:Apply", "Apply")
+        apply_action.register_action(self.apply_callback)
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Match")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
@@ -436,6 +501,12 @@ class UIManager:
             self.mgr.retrieve_selected_functions(funcs)
         if ctx.action == "BinaryAI:UploadSelected":
             self.mgr.upload_selected_functions(funcs)
+
+    def apply_callback(self, ctx):
+        cv = self.mgr.cview     # type: SourceCodeViewer
+        Utils.apply_bai_func(cv.ea,
+                             cv.targets[cv.idx]['function']['name'],
+                             int(self.mgr.cfg['color'], 16))
 
 
 class Plugin(idaapi.plugin_t):
