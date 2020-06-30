@@ -152,7 +152,9 @@ class BinaryAIManager:
         return
 
     def retrieve_all_callback(self, __):
-        self.retrieve_selected_functions(idautils.Functions())
+        do_that = idaapi.ask_yn(0, "Are you sure to match all functions?")
+        if do_that == 1:
+            self.retrieve_selected_functions(idautils.Functions())
 
     def upload_function_callback(self, __, ea=None):
         func_ea = idaapi.get_screen_ea() if ea is None else ea
@@ -164,7 +166,9 @@ class BinaryAIManager:
             print("[{}] {} successfully uploaded".format(self.name, func_name))
 
     def upload_all_callback(self, __):
-        self.upload_selected_functions(idautils.Functions())
+        do_that = idaapi.ask_yn(0, "Are you sure to upload all functions?")
+        if do_that == 1:
+            self.upload_selected_functions(idautils.Functions())
 
 
 class Config(dict):
