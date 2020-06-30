@@ -6,14 +6,9 @@
 
 ## Installation
 
-`$ pip install --upgrade binaryai`
+`$ pip install binaryai`
 
 For IDA Pro, please download [ida_binaryai.py](https://github.com/binaryai/sdk/releases/latest/download/ida_binaryai.py) and put it to IDA plugins directory.
-
-
-## Token Registration
-
-A token is all you need to join BinaryAI Community, please [apply it here](https://binaryai.tencent.com/apply-token).
 
 
 ## IDA Pro
@@ -42,11 +37,11 @@ the supported options are listed below.
 ```json
 {
     "token": "",
-    "url": "https://api.binaryai.tencent.com/v1/endpoint",
+    "url": "",
     "funcset": "",
     "topk": 10,
     "minsize": 3,
-    "threshold": 0.9
+    "threshold": 0.8
 }
 ```
 
