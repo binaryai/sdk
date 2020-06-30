@@ -26,8 +26,8 @@ the supported options are listed below.
 
 ```json
 {
-    "token": "https://api.binaryai.tencent.com/v1/endpoint",
-    "url": "",
+    "token": "",
+    "url": "https://api.binaryai.tencent.com/v1/endpoint",
     "funcset": "",
     "topk": 10,
     "minsize": 3,
