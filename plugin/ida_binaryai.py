@@ -38,12 +38,9 @@ class BinaryAIMark(object):
 
     @staticmethod
     def revert_bai_func(ea):
-        ea = idaapi.get_func(ea).start_ea
         if BinaryAIMark.is_bai_func(ea):
-            BinaryAIMark.apply_bai_func(
-                ea,
-                BinaryAIMark.record[ea]['name'],
-                BinaryAIMark.record[ea]['color'])
+            idaapi.set_name(ea, "", idaapi.SN_AUTO)
+            idc.set_color(ea, idc.CIC_FUNC, BinaryAIMark.record[ea]['color'])
             BinaryAIMark.record.pop(ea)
             return True
         else:
@@ -304,8 +301,8 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
 
     def set_user_data(self, ea, targets):
         self.idx = 0
-        self.ea = idaapi.get_func(ea).start_ea
-        self.query = idaapi.get_ea_name(ea)
+        self.ea = ea
+        self.query = idaapi.get_func_name(ea)
         self.targets = targets
         self._repaint()
 
