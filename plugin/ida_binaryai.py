@@ -110,7 +110,7 @@ class BinaryAIManager:
             succ += 1
             if func['score'] < self.cfg['threshold']:
                 continue
-            Utils.apply_bai_func(pfn,
+            Utils.apply_bai_func(pfn.start_ea,
                                  targets[0]['function']['name'],
                                  int(self.cfg['color'], 16))
         self.widget_wait.close()
