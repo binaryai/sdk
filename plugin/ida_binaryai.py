@@ -1,6 +1,7 @@
 # coding: utf-8
 import os
 import json
+import idc
 import idaapi
 import idautils
 import datetime
@@ -12,10 +13,11 @@ from binaryai import BinaryAIException
 
 class Utils(object):
     @staticmethod
-    def apply_bai_name(ea, name):
+    def apply_bai_func(ea, name, color):
         if name.startswith("sub_"):
             name = "bai_" + name
         idaapi.set_name(ea, name)
+        idc.set_color(ea, idc.CIC_FUNC, color)
 
 
 class BinaryAIManager:
@@ -84,24 +86,36 @@ class BinaryAIManager:
 
     def retrieve_selected_functions(self, funcs):
         funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
-        for ea in funcs:
+        i, succ, skip, fail = 0, 0, 0, 0
+        _funcs = [ea for ea in funcs]
+        self.widget_wait = WaitWindow()
+        funcs_len = len(_funcs)
+        for ea in _funcs:
+            i += 1
+
+            # update widget
+            self.widget_wait.draw(i, funcs_len)
+
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+                skip += 1
                 continue
             targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
             if targets is None:
                 print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
+                fail += 1
                 continue
             func = targets[0]
+            succ += 1
             if func['score'] < self.cfg['threshold']:
                 continue
-            pfn.color = int(self.cfg['color'], 16)
-            idaapi.update_func(pfn)
-            comment = SourceCodeViewer.source_code_comment(func_name, func)
-            idaapi.set_func_cmt(pfn, comment, 0)
-
-            Utils.apply_bai_name(pfn.start_ea, targets[0]['function']['name'])
+            Utils.apply_bai_func(pfn,
+                                 targets[0]['function']['name'],
+                                 int(self.cfg['color'], 16))
+        self.widget_wait.close()
+        print("[{}] {} functions successfully retrieved, {} functions failed, {} functions skipped".format(
+            self.name, succ, fail, skip))
 
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
@@ -121,8 +135,8 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
-        self.widget = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
-        self.widget.show()
+        self.widget_copyright = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
+        self.widget_copyright.show()
 
     def retrieve_function_callback(self, __, ea=None):
         funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
@@ -375,6 +389,34 @@ class CopyrightWindow(QWidget):
         return
 
 
+class WaitWindow(QWidget):
+    def __init__(self):
+        super(WaitWindow, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setFixedSize(300, 100)
+        self.setWindowTitle("Please wait...")
+
+        self.layoutRetriving = QHBoxLayout()
+        self.label = QLabel()
+        self.label.setAlignment(Qt.AlignCenter)
+
+        self.layoutRetriving.addWidget(self.label)
+        self.setLayout(self.layoutRetriving)
+
+        self.draw()
+        self.show()
+
+    def draw(self, cur=None, tot=None):
+        if cur is None or tot is None:
+            text = "Retrieving... "
+        else:
+            text = "Retrieving... "+"({}/{})".format(cur, tot)
+        self.label.resize(200, 50)
+        self.label.setText(text)
+
+
 class UIManager:
     class UIHooks(idaapi.UI_Hooks):
         def finish_populating_widget_popup(self, widget, popup):
@@ -449,7 +491,9 @@ class UIManager:
 
     def apply_callback(self, ctx):
         cv = self.mgr.cview     # type: SourceCodeViewer
-        Utils.apply_bai_name(cv.ea, cv.targets[cv.idx]['function']['name'])
+        Utils.apply_bai_func(cv.ea,
+                             cv.targets[cv.idx]['function']['name'],
+                             int(self.mgr.cfg['color'], 16))
 
 
 class Plugin(idaapi.plugin_t):
