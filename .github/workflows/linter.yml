@@ -21,4 +21,4 @@ jobs:
         pip install flake8
     - name: Lint with flake8
       run: |
-        flake8 . --count --max-complexity=10 --max-line-length=127 --show-source --max-line-length=127 --statistics
+        flake8 . --count --max-complexity=10 --max-line-length=127 --show-source --statistics
