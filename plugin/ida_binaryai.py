@@ -11,13 +11,43 @@ from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidg
 from binaryai import BinaryAIException
 
 
-class Utils(object):
+class BinaryAIMark(object):
+    # record bai apply
+    # {ea: {'name': name, 'color': color}}
+    record = {}
+
+    @staticmethod
+    def add_record(ea):
+        pfn = idaapi.get_func(ea)
+        BinaryAIMark.record[pfn.start_ea] = {
+            'name': idaapi.get_ea_name(pfn.start_ea),
+            'color': pfn.color
+        }
+
     @staticmethod
     def apply_bai_func(ea, name, color):
+        BinaryAIMark.add_record(ea)
         if name.startswith("sub_"):
             name = "bai_" + name
         idaapi.set_name(ea, name)
         idc.set_color(ea, idc.CIC_FUNC, color)
+
+    @staticmethod
+    def is_bai_func(ea):
+        return idaapi.get_func(ea).start_ea in BinaryAIMark.record
+
+    @staticmethod
+    def revert_bai_func(ea):
+        ea = idaapi.get_func(ea).start_ea
+        if BinaryAIMark.is_bai_func(ea):
+            BinaryAIMark.apply_bai_func(
+                ea,
+                BinaryAIMark.record[ea]['name'],
+                BinaryAIMark.record[ea]['color'])
+            BinaryAIMark.record.pop(ea)
+            return True
+        else:
+            return False
 
 
 class BinaryAIManager:
@@ -110,9 +140,10 @@ class BinaryAIManager:
             succ += 1
             if func['score'] < self.cfg['threshold']:
                 continue
-            Utils.apply_bai_func(pfn.start_ea,
-                                 targets[0]['function']['name'],
-                                 int(self.cfg['color'], 16))
+            BinaryAIMark.apply_bai_func(
+                pfn.start_ea,
+                targets[0]['function']['name'],
+                int(self.cfg['color'], 16))
         self.widget_wait_match.close()
         print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
@@ -143,6 +174,29 @@ class BinaryAIManager:
         print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
 
+    def revert_selected_callback(self, funcs):
+        i, succ, skip, fail = 0, 0, 0, 0
+        _funcs = [ea for ea in funcs]
+        self.widget_wait_revert = WaitWindow("Reverting")
+        funcs_len = len(_funcs)
+        for ea in _funcs:
+            i += 1
+
+            # update widget
+            self.widget_wait_revert.draw(i, funcs_len)
+
+            pfn = idaapi.get_func(ea)
+            func_name = idaapi.get_func_name(ea)
+            res = BinaryAIMark.revert_bai_func(pfn.start_ea)
+            if res:
+                succ += 1
+            else:
+                skip += 1
+                print("[{}] {} is skipped because revert error".format(self.name, func_name))
+        self.widget_wait_revert.close()
+        print("[{}] {} functions successfully reverted, {} functions failed, {} functions skipped".format(
+            self.name, succ, fail, skip))
+
     def binaryai_callback(self, __):
         self.widget_copyright = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
         self.widget_copyright.show()
@@ -156,12 +210,12 @@ class BinaryAIManager:
         if targets is None:
             print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
             fail += 1
-        else :
+        else:
             if not (self.cview and self.cview.is_alive()):
                 self.cview = SourceCodeViewer(self.name)
                 # CDVF_STATUSBAR 0x04, keep the status bar in the custom viewer
                 idaapi.set_code_viewer_is_source(idaapi.create_code_viewer(self.cview.GetWidget(), 0x4))
-            self.cview.set_user_data(func_name, targets)
+            self.cview.set_user_data(func_ea, targets)
 
             widget = idaapi.get_current_widget()
             if idaapi.get_widget_title(widget) == self.name:
@@ -240,16 +294,19 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         idaapi.simplecustviewer_t.__init__(self)
         self.alive = True
         self.Create(title)
+        self.idx = None
         self.ea = None
+        self.query = None
+        self.targets = None
 
     def is_alive(self):
         return self.alive
 
-    def set_user_data(self, query, targets):
+    def set_user_data(self, ea, targets):
         self.idx = 0
-        self.query = query
+        self.ea = idaapi.get_func(ea).start_ea
+        self.query = idaapi.get_ea_name(ea)
         self.targets = targets
-        self.ea = idaapi.get_name_ea(0, query)
         self._repaint()
 
     def _repaint(self):
@@ -292,8 +349,8 @@ BinaryAI Options
             ''', {
                 'iretrieve_list': self.DropdownListControl(
                           items=self.retrieve_list,
-                          readonly=self.cfg['usepublic'],
-                          selval=0,
+                          readonly=True,
+                          selval=int(not self.cfg['usepublic']),
                           width=32),
                 'itopk': self.StringInput(value=str(self.cfg["topk"])),
                 'ithreshold': self.StringInput(value=str(self.cfg["threshold"])),
@@ -421,7 +478,7 @@ class WaitWindow(QWidget):
         self.draw()
         self.show()
 
-    def draw(self, cur = None, tot = None):
+    def draw(self, cur=None, tot=None):
         if cur is None or tot is None:
             text = "{}... ".format(self.operation)
         else:
@@ -432,10 +489,18 @@ class WaitWindow(QWidget):
 
 class UIManager:
     class UIHooks(idaapi.UI_Hooks):
-        def finish_populating_widget_popup(self, widget, popup):
+        def finish_populating_widget_popup(self, widget, popup, ctx=None):
             if idaapi.get_widget_type(widget) == idaapi.BWN_FUNCS:
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:RetrieveSelected", "BinaryAI/")
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:UploadSelected", "BinaryAI/")
+
+                funcs = map(idaapi.getn_func, ctx.chooser_selection)
+                funcs = map(lambda func: func.start_ea, funcs)
+                for ea in funcs:
+                    if BinaryAIMark.is_bai_func(ea):
+                        idaapi.attach_action_to_popup(widget, popup, "BinaryAI:RevertSelected", "BinaryAI/")
+                        break
+
             if idaapi.get_widget_type(widget) == idaapi.BWN_CUSTVIEW:
                 idaapi.attach_action_to_popup(widget, popup, "BinaryAI:Apply", "BinaryAI/")
 
@@ -488,8 +553,10 @@ class UIManager:
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Match")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
+        revert_action = UIManager.ActionHandler("BinaryAI:RevertSelected", "Revert")
         if retrieve_action.register_action(self.selected_callback) and \
-                upload_action.register_action(self.selected_callback):
+                upload_action.register_action(self.selected_callback) and \
+                revert_action.register_action(self.selected_callback):
             self.hooks.hook()
             return True
         return False
@@ -501,12 +568,15 @@ class UIManager:
             self.mgr.retrieve_selected_functions(funcs)
         if ctx.action == "BinaryAI:UploadSelected":
             self.mgr.upload_selected_functions(funcs)
+        if ctx.action == "BinaryAI:RevertSelected":
+            self.mgr.revert_selected_callback(funcs)
 
     def apply_callback(self, ctx):
         cv = self.mgr.cview     # type: SourceCodeViewer
-        Utils.apply_bai_func(cv.ea,
-                             cv.targets[cv.idx]['function']['name'],
-                             int(self.mgr.cfg['color'], 16))
+        BinaryAIMark.apply_bai_func(
+            cv.ea,
+            cv.targets[cv.idx]['function']['name'],
+            int(self.mgr.cfg['color'], 16))
 
 
 class Plugin(idaapi.plugin_t):
