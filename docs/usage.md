@@ -26,12 +26,12 @@ the supported options are listed below.
 
 ```json
 {
-    "token": "https://api.binaryai.tencent.com/v1/endpoint",
+    "token": "",
     "url": "",
     "funcset": "",
     "topk": 10,
     "minsize": 3,
-    "threshold": 0.9
+    "threshold": 0.8
 }
 ```
 
