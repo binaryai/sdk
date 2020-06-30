@@ -20,6 +20,12 @@ Quick start video
 
 .. mdinclude:: ./installation.md
 
+.. toctree::
+   :hidden:
+
+   registration.md
+
+.. mdinclude:: ./registration.md
 
 .. toctree::
    :hidden:
