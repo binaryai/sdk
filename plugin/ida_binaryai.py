@@ -10,6 +10,14 @@ from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidg
 from binaryai import BinaryAIException
 
 
+class Utils(object):
+    @staticmethod
+    def apply_bai_name(ea, name):
+        if name.startswith("sub_"):
+            name = "bai_" + name
+        idaapi.set_name(ea, name)
+
+
 class BinaryAIManager:
     Default = {
         'token': '',
@@ -93,11 +101,7 @@ class BinaryAIManager:
             comment = SourceCodeViewer.source_code_comment(func_name, func)
             idaapi.set_func_cmt(pfn, comment, 0)
 
-            # rename
-            target_name = targets[0]['function']['name']
-            if target_name.startswith("sub_"):
-                target_name = "bai_" + target_name
-            idaapi.set_name(pfn.start_ea, target_name)
+            Utils.apply_bai_name(pfn.start_ea, targets[0]['function']['name'])
 
     def upload_selected_functions(self, funcs):
         succ, skip, fail = 0, 0, 0
@@ -206,6 +210,7 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         idaapi.simplecustviewer_t.__init__(self)
         self.alive = True
         self.Create(title)
+        self.ea = None
 
     def is_alive(self):
         return self.alive
@@ -214,6 +219,7 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
         self.idx = 0
         self.query = query
         self.targets = targets
+        self.ea = idaapi.get_name_ea(0, query)
         self._repaint()
 
     def _repaint(self):
@@ -246,7 +252,6 @@ class BinaryAIOptionsForm(idaapi.Form):
             r'''STARTITEM 0
 BUTTON YES* OK
 BinaryAI Options
-
             {FormChangeCb}
             <Retrieve List  :{iretrieve_list}>
             <Topk           :{itopk}>
@@ -408,9 +413,9 @@ class UIManager:
         idaapi.create_menu(menupath, self.name, "Help")
 
         UIManager.ActionHandler(self.name, self.name).register_action(self.mgr.binaryai_callback, toolbar_name)
-        action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Match", "Ctrl+Shift+d", icon=99)
         action.register_action(self.mgr.retrieve_function_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Match", "", icon=188)
+        action = UIManager.ActionHandler("BinaryAI:RetrieveAll", "Match All", "", icon=188)
         action.register_action(self.mgr.retrieve_all_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
         action.register_action(self.mgr.upload_function_callback, toolbar_name, menupath)
@@ -419,7 +424,8 @@ class UIManager:
         action = UIManager.ActionHandler("BinaryAI:About", "About", "")
         action.register_action(self.mgr.binaryai_callback, menupath=menupath)
 
-        # apply_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Apply")
+        apply_action = UIManager.ActionHandler("BinaryAI:Apply", "Apply")
+        apply_action.register_action(self.apply_callback)
 
         retrieve_action = UIManager.ActionHandler("BinaryAI:RetrieveSelected", "Match")
         upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
@@ -436,6 +442,10 @@ class UIManager:
             self.mgr.retrieve_selected_functions(funcs)
         if ctx.action == "BinaryAI:UploadSelected":
             self.mgr.upload_selected_functions(funcs)
+
+    def apply_callback(self, ctx):
+        cv = self.mgr.cview     # type: SourceCodeViewer
+        Utils.apply_bai_name(cv.ea, cv.targets[cv.idx]['function']['name'])
 
 
 class Plugin(idaapi.plugin_t):
