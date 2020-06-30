@@ -1,6 +1,6 @@
 class BinaryAIException(Exception):
     def __init__(self, code, msg, data=None, raw=None):
-        super().__init__()
+        super(BinaryAIException, self).__init__(code, msg, data, raw)
         self._code = code
         self._msg = msg
         self._data = data
