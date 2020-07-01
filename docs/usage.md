@@ -27,11 +27,11 @@ the supported options are listed below.
 ```json
 {
     "token": "",
-    "url": "",
+    "url": "https://api.binaryai.tencent.com/v1/endpoint",
     "funcset": "",
     "topk": 10,
     "minsize": 3,
-    "threshold": 0.8
+    "threshold": 0.9
 }
 ```
 
