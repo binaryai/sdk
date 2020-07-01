@@ -38,9 +38,12 @@ class BinaryAIMark(object):
 
     @staticmethod
     def revert_bai_func(ea):
+        ea = idaapi.get_func(ea).start_ea
         if BinaryAIMark.is_bai_func(ea):
-            idaapi.set_name(ea, "", idaapi.SN_AUTO)
-            idc.set_color(ea, idc.CIC_FUNC, BinaryAIMark.record[ea]['color'])
+            BinaryAIMark.apply_bai_func(
+                ea,
+                BinaryAIMark.record[ea]['name'],
+                BinaryAIMark.record[ea]['color'])
             BinaryAIMark.record.pop(ea)
             return True
         else:
@@ -64,30 +67,29 @@ class BinaryAIManager:
         cfg_dir = os.path.join(idaapi.get_user_idadir(), idaapi.CFG_SUBDIR)
         os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
-        self._client = None
+        self.client = None
         if not self.cfg['funcset']:
             self.cfg['funcset'] = bai.function.create_function_set(self.client)
         self.cview = None
 
-    @property
-    def client(self):
-        if self._client is None:
-            url = self.cfg['url']
-            token = self.cfg['token']
-            while self._client is None:
-                try:
-                    self._client = bai.client.Client(token, url)
-                    self.cfg['token'] = token
-                except BinaryAIException as e:
-                    if e._msg == "UNAUTHENTICATED: Invalid token":
-                        idaapi.warning("Wrong token! Please try again.")
-                        token = idaapi.ask_str("", 0, "{} Token:".format(self.name))
-                        if not token:
-                            assert False, "[BinaryAI] Token is not specified."
-                        token = token.strip()
-                    else:
-                        assert False, "[BinaryAI] {}".format(e._msg)
-        return self._client
+        self.set_client(self.cfg['token'])
+
+    def set_client(self, token):
+        url = self.cfg['url']
+        while True:
+            try:
+                self.client = bai.client.Client(token, url)
+                self.cfg['token'] = token
+                break
+            except BinaryAIException as e:
+                if e._msg == "UNAUTHENTICATED: Invalid token":
+                    idaapi.warning("Wrong token! Please try again.")
+                    token = idaapi.ask_str("", 0, "[BinaryAI] Token:")
+                    if not token:
+                        assert False, "[BinaryAI] Token is not specified."
+                    token = token.strip()
+                else:
+                    assert False, "[BinaryAI] {}".format(e._msg)
 
     def upload_function(self, ea, funcset_id):
         func_feat = bai.ida.get_func_feature(ea)
@@ -95,9 +97,17 @@ class BinaryAIManager:
         hf = idaapi.hexrays_failure_t()
         cfunc = idaapi.decompile(ea, hf)
         if func_feat and func_name:
-            func_id = bai.function.upload_function(
-                self.client, func_name, func_feat, source_code=str(cfunc), funcset_id=funcset_id)
-            return func_id
+            try:
+                func_id = bai.function.upload_function(
+                    self.client, func_name, func_feat, source_code=str(cfunc), funcset_id=funcset_id)
+                return func_id
+            except BinaryAIException as e:
+                if e._msg.startswith("Argument functionSetId"):
+                    self.cfg['funcset'] = bai.function.create_function_set(self.client)
+                    idaapi.warning("Invalid function set id, set to '{}'. Please try again."
+                                   .format(self.cfg['funcset']))
+                    assert False, "[BinaryAI] function set error, set to '{}'"\
+                        .format(self.cfg['funcset'])
 
     def retrieve_function(self, ea, topk, funcset_ids):
         func_id = self.upload_function(ea, None)
@@ -105,9 +115,14 @@ class BinaryAIManager:
             try:
                 targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
             except BinaryAIException as e:
-                print(e)
-                if e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY":
-                    return e.data['function']['similarity']
+                if e._msg.startswith("Argument functionSetId"):
+                    self.cfg['funcset'] = bai.function.create_function_set(self.client)
+                    idaapi.warning("Invalid function set id, set to '{}'. Please try again."
+                                   .format(self.cfg['funcset']))
+                    assert False, "[BinaryAI] function set error, set to '{}'" \
+                        .format(self.cfg['funcset'])
+                else:
+                    assert False, "[BinaryAI] {}".format(e._msg)
             else:
                 return targets
 
@@ -195,7 +210,7 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def binaryai_callback(self, __):
-        self.widget_copyright = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self.cfg)
+        self.widget_copyright = CopyrightWindow(bai.__version__, datetime.datetime.now().year, self)
         self.widget_copyright.show()
 
     def retrieve_function_callback(self, __, ea=None):
@@ -255,7 +270,7 @@ class Config(dict):
             json.dump(default, open(self.path, 'w'), indent=4)
         self.cfg = json.load(open(path))
         for k, v in default.items():
-            if not (k in self.cfg and self.cfg[k]):
+            if not (k in self.cfg and self.cfg[k] is not None):
                 self.__setitem__(k, v)
 
     def __getitem__(self, key):
@@ -328,8 +343,8 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
 
 
 class BinaryAIOptionsForm(idaapi.Form):
-    def __init__(self, cfg):
-        self.cfg = cfg
+    def __init__(self, mgr):
+        self.mgr = mgr
         self.retrieve_list_select = 0
         self.retrieve_list = ["Public", "Private"]
         super(BinaryAIOptionsForm, self).__init__(
@@ -347,11 +362,11 @@ BinaryAI Options
                 'iretrieve_list': self.DropdownListControl(
                           items=self.retrieve_list,
                           readonly=True,
-                          selval=int(not self.cfg['usepublic']),
+                          selval=int(not self.mgr.cfg['usepublic']),
                           width=32),
-                'itopk': self.StringInput(value=str(self.cfg["topk"])),
-                'ithreshold': self.StringInput(value=str(self.cfg["threshold"])),
-                'iminsize': self.StringInput(value=str(self.cfg["minsize"])),
+                'itopk': self.StringInput(value=str(self.mgr.cfg["topk"])),
+                'ithreshold': self.StringInput(value=str(self.mgr.cfg["threshold"])),
+                'iminsize': self.StringInput(value=str(self.mgr.cfg["minsize"])),
                 'itoken': self.ButtonInput(self.on_change_token),
                 'ifuncset': self.ButtonInput(self.on_change_funcset),
                 'FormChangeCb': self.FormChangeCb(self.on_form_change)
@@ -373,42 +388,42 @@ BinaryAI Options
     def on_form_change(self, fid):
         if fid == self.iretrieve_list.id:
             v = self.GetControlValue(self.iretrieve_list)
-            self.cfg['usepublic'] = False if v else True
+            self.mgr.cfg['usepublic'] = False if v else True
 
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
             topk = self._limit_range(topk, 0, 10)
-            self.cfg['topk'] = topk
+            self.mgr.cfg['topk'] = topk
 
         if fid == self.ithreshold.id:
             threshold = self._get_float(self.ithreshold)
             threshold = self._limit_range(threshold, 0, 1)
-            self.cfg['threshold'] = threshold
+            self.mgr.cfg['threshold'] = threshold
 
         if fid == self.iminsize.id:
             minsize = int(self._get_float(self.iminsize))
             minsize = self._limit_range(minsize, 0, 100)
-            self.cfg['minsize'] = minsize
+            self.mgr.cfg['minsize'] = minsize
 
         return 1
 
     def on_change_token(self, code):
-        token = idaapi.ask_str(self.cfg['token'], 0, "BinaryAI Token:")
+        token = idaapi.ask_str(self.mgr.cfg['token'], 0, "BinaryAI Token:")
         if token is not None:
-            self.cfg['token'] = token.strip()
+            self.mgr.set_client(token)
         return 1
 
     def on_change_funcset(self, code):
-        funcset = idaapi.ask_str(self.cfg['funcset'], 0, "BinaryAI Function Set:")
+        funcset = idaapi.ask_str(self.mgr.cfg['funcset'], 0, "BinaryAI Function Set:")
         if funcset is not None:
-            self.cfg['funcset'] = funcset.strip()
+            self.mgr.cfg['funcset'] = funcset.strip()
         return 1
 
 
 class CopyrightWindow(QWidget):
-    def __init__(self, ver, year, cfg):
+    def __init__(self, ver, year, mgr):
         super(CopyrightWindow, self).__init__()
-        self.cfg = cfg
+        self.mgr = mgr
         self.setWindowFlags(Qt.WindowMinimizeButtonHint)
         self.setFixedSize(400, 200)
         self.setWindowTitle("BinaryAI")
@@ -451,7 +466,7 @@ class CopyrightWindow(QWidget):
         self.setLayout(mainLayout)
 
     def showOptions(self):
-        BinaryAIOptionsForm(self.cfg).Execute()
+        BinaryAIOptionsForm(self.mgr).Execute()
         return
 
 
