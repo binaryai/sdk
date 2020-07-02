@@ -130,7 +130,7 @@ class BinaryAIManager:
     def update_token(self, token):
         self._client = None
         self.cfg['token'] = token
-        self.client()   # refer client to check token
+        self.client   # refer client to check token
 
     def upload_function(self, ea, funcset_id):
         func_feat = bai.ida.get_func_feature(ea)
@@ -463,7 +463,7 @@ BinaryAI Options
 
     def on_change_token(self, code):
         token = idaapi.ask_str(self.mgr.cfg['token'], 0, "BinaryAI Token:")
-        if token is not None:
+        if token is not None and token != self.mgr.cfg['token']:
             self.mgr.update_token(token)
         return 1
 
