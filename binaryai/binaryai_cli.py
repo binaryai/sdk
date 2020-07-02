@@ -1,17 +1,50 @@
 #!/usr/bin/env python
 from binaryai.client import Client
-from binaryai.function import query_function, create_function_set, query_function_set, search_sim_funcs
+from binaryai.function import query_function, create_function_set, query_function_set
+import platform
 import click
+import json
+import os
+import shutil
+
+
+def get_default_ida_path():
+    current_platform = platform.system()
+    if current_platform == 'Windows':
+        hexrays_path = os.path.join(os.getenv('APPDATA'), "Hex-Rays")
+        return os.path.join(hexrays_path, "IDA Pro")
+    elif current_platform == 'Linux' or current_platform == 'Darwin':
+        return os.path.join(os.path.expanduser('~'), ".idapro")
+    else:
+        return ""
 
 
 @click.group(invoke_without_command=True)
-@click.option('--url', '-u', type=str, help='api url',
-              default="https://api.binaryai.tencent.com/v1/endpoint", show_default=True)
-@click.option('--token', '-t', type=str, help='user token')
+@click.option('--cfg', '-c', default=None, help='Load BinaryAI configure file')
 @click.option('--help', '-h', is_flag=True, help='Show this message and exit.')
 @click.option('--version', '-v', is_flag=True, help='Show version')
+@click.option('--install', '-i', type=str, help='Install IDA plugin')
+@click.option('--ida_plugins', '-d', help='IDA plugins path (default is "$IDAUSR/plugins/", "~/.idapro/plugins/")')
 @click.pass_context
-def cli(ctx, url, token, help, version):
+def cli(ctx, cfg, help, version, install, ida_plugins):
+    # get IDA path, and check IDA Pro installed
+    ida_path = get_default_ida_path()
+    if not os.path.exists(ida_path):
+        print("IDA Path not found, or binaryAI is not supported on {}. ".format(platform.system()))
+        ctx.exit()
+
+    if install:
+        if ida_plugins:
+            if not os.path.exists(ida_plugins):
+                os.mkdir(ida_plugins)
+        else:
+            ida_plugins = os.path.join(ida_path, "plugins")
+            if not os.path.exists(ida_plugins):
+                os.mkdir(ida_plugins)
+        shutil.copy(install, ida_plugins)
+        print('Install "{}" to "{}"'.format(install, ida_plugins))
+        ctx.exit()
+
     if ctx.invoked_subcommand is None or help:
         if version:
             import binaryai
@@ -29,7 +62,14 @@ def cli(ctx, url, token, help, version):
             click.echo(banner)
             click.echo(ctx.get_help())
             ctx.exit()
-    client = Client(token, url)
+
+    if not cfg:
+        cfg_dir = os.path.join(ida_path, "cfg")
+        cfg = os.path.join(cfg_dir, "binaryai.cfg")
+
+    with open(cfg, "r") as f:
+        cfg_dic = json.load(f)
+    client = Client(cfg_dic['token'], cfg_dic['url'])
     ctx.obj = client
 
 
@@ -38,7 +78,7 @@ def cli(ctx, url, token, help, version):
 @click.pass_context
 def QueryFunction(ctx, funcid):
     client = ctx.obj
-    result = query_function(client, funcid)
+    result = json.dumps(query_function(client, funcid), sort_keys=True, indent=4, separators=(',', ';'))
     click.echo(result)
 
 
@@ -56,18 +96,7 @@ def CreateFuncSet(ctx, funcid):
 @click.pass_context
 def QueryFuncSet(ctx, funcset):
     client = ctx.obj
-    result = query_function_set(client, funcset)
-    click.echo(result)
-
-
-@cli.command('search_funcs', short_help='search top similar functions of the query')
-@click.option('--funcid', '-f', help='function id', type=str, required=True)
-@click.option('--funcset', '-s', multiple=True, type=str, help='funcset ids, set multi ids with -s id1 -s id2')
-@click.option('--topk', '-k', type=int, default=10, show_default=True, help='return first topk results')
-@click.pass_context
-def SearchFuncs(ctx, funcid, funcset, topk):
-    client = ctx.obj
-    result = search_sim_funcs(client, funcid, list(funcset), topk)
+    result = json.dumps(query_function_set(client, funcset), sort_keys=True, indent=4, separators=(',', ':'))
     click.echo(result)
 
 
