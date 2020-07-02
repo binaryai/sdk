@@ -116,7 +116,7 @@ def parse_minsn(minsn, micro_int, ins=None):
 def parse_func(pfn):
     try:
         hf = idaapi.hexrays_failure_t()
-        cfunc = idaapi.decompile(pfn.start_ea, hf)
+        cfunc = idaapi.decompile(pfn.start_ea, hf, idaapi.DECOMP_NO_WAIT)
         mbr = idaapi.mba_ranges_t(pfn)
         mba = idaapi.gen_microcode(
             mbr,
