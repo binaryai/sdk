@@ -1,7 +1,6 @@
 # coding: utf-8
 import os
 import json
-import idc
 import idaapi
 import idautils
 import datetime
@@ -62,8 +61,9 @@ class BinaryAIMark(object):
     def apply_bai_high_score(self, ea, name, score):
         if self.is_bai_func(ea) \
                 and score <= self.record[ea]['score']:
-            return
+            return False
         self.apply_bai_func(ea, name, score)
+        return True
 
     def is_bai_func(self, ea):
         v = self.record[ea]
@@ -136,7 +136,7 @@ class BinaryAIManager:
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
         hf = idaapi.hexrays_failure_t()
-        cfunc = idaapi.decompile(ea, hf)
+        cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
         if func_feat and func_name:
             try:
                 func_id = bai.function.upload_function(
@@ -174,7 +174,9 @@ class BinaryAIManager:
             idaapi.replace_wait_box("Matching... ({}/{})".format(i, funcs_len))
             if idaapi.user_cancelled():
                 idaapi.hide_wait_box()
-                raise Exception("Cancelled")
+                print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
+                    self.name, succ, fail, skip))
+                return
             pfn = idaapi.get_func(ea)
             func_name = idaapi.get_func_name(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
@@ -183,7 +185,7 @@ class BinaryAIManager:
             targets = None
             try:
                 targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
-            except DecompilationFailure as e:
+            except DecompilationFailure:
                 pass
             except BinaryAIException as e:
                 idaapi.hide_wait_box()
@@ -193,14 +195,13 @@ class BinaryAIManager:
                 fail += 1
                 continue
             func = targets[0]
-            succ += 1
             if func['score'] < self.cfg['threshold']:
                 continue
-            bai_mark.apply_bai_high_score(
-                pfn.start_ea,
-                targets[0]['function']['name'],
-                func['score']
-            )
+            if bai_mark.apply_bai_high_score(pfn.start_ea, targets[0]['function']['name'], func['score']):
+                succ += 1
+            else:
+                skip += 1
+
         idaapi.hide_wait_box()
         print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
@@ -215,7 +216,9 @@ class BinaryAIManager:
             idaapi.replace_wait_box("Uploading... ({}/{})".format(i, funcs_len))
             if idaapi.user_cancelled():
                 idaapi.hide_wait_box()
-                raise Exception("Cancelled")
+                print("[{}] {} functions successfully uploaded, {} functions failed, {} functions skipped".format(
+                    self.name, succ, fail, skip))
+                return
             pfn = idaapi.get_func(ea)
             if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
                 skip += 1
@@ -223,7 +226,7 @@ class BinaryAIManager:
             func_id = None
             try:
                 func_id = self.upload_function(ea, self.cfg['funcset'])
-            except DecompilationFailure as e:
+            except DecompilationFailure:
                 pass
             except BinaryAIException as e:
                 idaapi.hide_wait_box()
@@ -247,13 +250,11 @@ class BinaryAIManager:
             i += 1
             idaapi.replace_wait_box("reverting... ({}/{})".format(i, funcs_len))
             pfn = idaapi.get_func(ea)
-            func_name = idaapi.get_func_name(ea)
             res = bai_mark.revert_bai_func(pfn.start_ea)
             if res:
                 succ += 1
             else:
                 skip += 1
-                print("[{}] {} is skipped because revert error".format(self.name, func_name))
         idaapi.hide_wait_box()
         print("[{}] {} functions successfully reverted, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
@@ -283,7 +284,9 @@ class BinaryAIManager:
                 skip += 1
             else:
                 if idaapi.get_widget_type(widget) != idaapi.BWN_PSEUDOCODE:
-                    widget = idaapi.open_pseudocode(func_ea, 1).toplevel
+                    pseudo_view = idaapi.open_pseudocode(func_ea, 1)
+                    pseudo_view.refresh_view(1)
+                    widget = pseudo_view.toplevel
                 pseudo_title = idaapi.get_widget_title(widget)
 
                 idaapi.display_widget(self.cview.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
