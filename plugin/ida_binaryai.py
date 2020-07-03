@@ -241,13 +241,13 @@ class BinaryAIManager:
         self.cfg['funcset'] = funcset
         self.funcset        # refer funcset to check
 
-    def check_before_use(self, check_funcset=True):
+    def check_before_use(self, check_funcset=False):
         if not self.client:
             idaapi.warning("Wrong token!")
             BinaryAIOptionsForm.change_options(self, check_token=True)
             return False
-        if check_funcset \
-                or (not self.cfg['usepublic'] and not self.funcset):
+        if (not self.funcset) and \
+                (check_funcset or not self.cfg['usepublic']):
             idaapi.warning("Wrong function set!")
             BinaryAIOptionsForm.change_options(self, check_funcset=True)
             return False
