@@ -275,6 +275,7 @@ class BinaryAIManager:
 
     def retrieve_function_with_check(self, ea, topk, funcset_ids):
         succ, skip, fail = 0, 1, 2
+        targets = None
         pfn = idaapi.get_func(ea)
         if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
             return skip
