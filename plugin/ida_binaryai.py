@@ -172,8 +172,7 @@ BinaryAI Options
                 if not mgr.client:
                     idaapi.warning("Wrong token!")
                     BinaryAIOptionsForm.change_options(mgr, check_token=True)
-            if (not mgr.cfg['usepublic'] and check_funcset) \
-                    or bai_options.funcset != mgr.cfg['funcset']:
+            if check_funcset or bai_options.funcset != mgr.cfg['funcset']:
                 mgr.update_funcset(bai_options.funcset)
                 if not mgr.funcset:
                     idaapi.warning("Wrong function set!")
@@ -242,20 +241,19 @@ class BinaryAIManager:
         self.cfg['funcset'] = funcset
         self.funcset        # refer funcset to check
 
-    def check_before_use(self):
+    def check_before_use(self, check_funcset=True):
         if not self.client:
             idaapi.warning("Wrong token!")
             BinaryAIOptionsForm.change_options(self, check_token=True)
             return False
-        if not self.cfg['usepublic'] and not self.funcset:
+        if check_funcset \
+                or (not self.cfg['usepublic'] and not self.funcset):
             idaapi.warning("Wrong function set!")
             BinaryAIOptionsForm.change_options(self, check_funcset=True)
             return False
         return True
 
     def upload_function(self, ea, funcset_id):
-        if not self.check_before_use():
-            return
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
         hf = idaapi.hexrays_failure_t()
@@ -266,8 +264,6 @@ class BinaryAIManager:
             return func_id
 
     def retrieve_function(self, ea, topk, funcset_ids):
-        if not self.check_before_use():
-            return
         func_id = self.upload_function(ea, None)
         if func_id:
             targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
@@ -327,7 +323,7 @@ class BinaryAIManager:
             self.name, succ, fail, skip))
 
     def upload_selected_functions(self, funcs):
-        if not self.check_before_use():
+        if not self.check_before_use(check_funcset=True):
             return
         i, succ, skip, fail = 0, 0, 0, 0
         _funcs = [ea for ea in funcs]
@@ -425,6 +421,8 @@ class BinaryAIManager:
             self.retrieve_selected_functions(idautils.Functions())
 
     def upload_function_callback(self, __, ea=None):
+        if not self.check_before_use(check_funcset=True):
+            return
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_id = self.upload_function(func_ea, self.funcset)
         func_name = idaapi.get_func_name(func_ea)
