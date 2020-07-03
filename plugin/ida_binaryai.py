@@ -124,10 +124,7 @@ BinaryAI Options
         try:
             return float(self.GetControlValue(ctl))
         except Exception:
-            return 0
-
-    def _is_in_limit(self, x, min, max):
-        return max >= x >= min
+            return -1
 
     def on_form_change(self, fid):
         if fid == self.iretrieve_list.id:
@@ -136,19 +133,19 @@ BinaryAI Options
 
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
-            if not self._is_in_limit(topk, 0, 15):
+            if not (0 < topk <= 15):
                 topk = BinaryAIManager.Default['topk']
             self.form_record['topk'] = topk
 
         if fid == self.ithreshold.id:
             threshold = self._get_float(self.ithreshold)
-            if not self._is_in_limit(threshold, 0, 1):
+            if not (0 < threshold <= 1):
                 threshold = BinaryAIManager.Default['threshold']
             self.form_record['threshold'] = threshold
 
         if fid == self.iminsize.id:
             minsize = int(self._get_float(self.iminsize))
-            if not self._is_in_limit(minsize, 1, 5):
+            if not (1 <= minsize <= 5):
                 minsize = BinaryAIManager.Default['minsize']
             self.form_record['minsize'] = minsize
 
