@@ -196,11 +196,8 @@ class BinaryAIManager:
 
     def __init__(self):
         self.name = "BinaryAI"
-        self.is_first_use = False
         cfg_dir = os.path.join(idaapi.get_user_idadir(), idaapi.CFG_SUBDIR)
-        if not os.path.exists(cfg_dir):
-            self.is_first_use = True
-            os.makedirs(cfg_dir)
+        os.makedirs(cfg_dir) if not os.path.exists(cfg_dir) else None
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         bai_mark.color = int(self.cfg['color'], 16)
         self._client = None
