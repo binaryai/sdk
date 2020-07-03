@@ -273,9 +273,33 @@ class BinaryAIManager:
             targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
             return targets
 
+    def retrieve_function_with_check(self, ea, topk, funcset_ids):
+        succ, skip, fail = 0, 1, 2
+        pfn = idaapi.get_func(ea)
+        if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+            return skip
+        try:
+            targets = self.retrieve_function(ea, topk=topk, funcset_ids=funcset_ids)
+        except DecompilationFailure:
+            pass
+        except BinaryAIException as e:
+            idaapi.hide_wait_box()
+            assert False, "[BinaryAI] {}".format(e._msg)
+        if targets is None:
+            print("[{}] {} failed because get function feature error"
+                  .format(self.name, idaapi.get_func_name(ea)))
+            return fail
+        func = targets[0]
+        if func['score'] < self.cfg['threshold']:
+            return skip
+        if not bai_mark.apply_bai_high_score(pfn.start_ea, targets[0]['function']['name'], func['score']):
+            return skip
+        return succ
+
     def retrieve_selected_functions(self, funcs):
         if not self.check_before_use():
             return
+
         funcset_ids = [self.funcset] if not self.cfg['usepublic'] else None
         i, succ, skip, fail = 0, 0, 0, 0
         _funcs = [ea for ea in funcs]
@@ -289,31 +313,13 @@ class BinaryAIManager:
                 print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
                     self.name, succ, fail, skip))
                 return
-            pfn = idaapi.get_func(ea)
-            func_name = idaapi.get_func_name(ea)
-            if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
-                skip += 1
-                continue
-            targets = None
-            try:
-                targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
-            except DecompilationFailure:
-                pass
-            except BinaryAIException as e:
-                idaapi.hide_wait_box()
-                assert False, "[BinaryAI] {}".format(e._msg)
-            if targets is None:
-                print("[{}] {} failed because get function feature error".format(self.name, func_name))
-                fail += 1
-                continue
-            func = targets[0]
-            if func['score'] < self.cfg['threshold']:
-                skip += 1
-                continue
-            if bai_mark.apply_bai_high_score(pfn.start_ea, targets[0]['function']['name'], func['score']):
+            code = self.retrieve_function_with_check(ea, 1, funcset_ids)
+            if code == 0:
                 succ += 1
-            else:
+            elif code == 1:
                 skip += 1
+            else:
+                fail += 1
 
         idaapi.hide_wait_box()
         print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
