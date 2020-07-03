@@ -106,6 +106,8 @@ def query_function_set(client, funcset_id):
         'funcSetId': funcset_id
     }
     r = client.execute(q_query_function_set, var)
+    if 'functionSet' not in r or r['functionSet'] is None:
+        raise BinaryAIException("SDK_ERROR", "Invalid function set id")
     if funcset_id != r['functionSet']['id']:
         raise BinaryAIException("SDK_ERROR", "Response function set id not equal to the funcset_id", r, None)
     return r['functionSet']

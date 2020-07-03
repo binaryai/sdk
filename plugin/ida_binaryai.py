@@ -5,8 +5,8 @@ import idaapi
 import idautils
 import datetime
 import binaryai as bai
-from PyQt5 import QtCore
 from ida_hexrays import DecompilationFailure
+from PyQt5 import QtCore
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from binaryai import BinaryAIException
 
@@ -85,16 +85,109 @@ class BinaryAIMark(object):
 bai_mark = BinaryAIMark()
 
 
+class BinaryAIOptionsForm(idaapi.Form):
+    def __init__(self, mgr):
+        self.mgr = mgr
+        self.token = mgr.cfg['token']
+        self.funcset = mgr.cfg['funcset']
+        self.form_record = {}
+        self.retrieve_list_select = 0
+        self.retrieve_list = ["Public", "Private"]
+        super(BinaryAIOptionsForm, self).__init__(
+            r'''STARTITEM 0
+BUTTON YES* OK
+BinaryAI Options
+            {FormChangeCb}
+            <Retrieve List  :{iretrieve_list}>
+            <Topk           :{itopk}>
+            <Threshold      :{ithreshold}>
+            <Minsize        :{iminsize}>
+            <Token          :{itoken}>
+            <Function Set   :{ifuncset}>
+            ''', {
+                'iretrieve_list': self.DropdownListControl(
+                          items=self.retrieve_list,
+                          readonly=True,
+                          selval=int(not self.mgr.cfg['usepublic']),
+                          width=32),
+                'itopk': self.StringInput(value=str(self.mgr.cfg["topk"])),
+                'ithreshold': self.StringInput(value=str(self.mgr.cfg["threshold"])),
+                'iminsize': self.StringInput(value=str(self.mgr.cfg["minsize"])),
+                'itoken': self.StringInput(value=self.mgr.cfg["token"]),
+                'ifuncset': self.StringInput(value=self.mgr.cfg["funcset"]),
+                'FormChangeCb': self.FormChangeCb(self.on_form_change)
+            }
+        )
+        self.Compile()
+
+    def _get_float(self, ctl):
+        try:
+            return float(self.GetControlValue(ctl))
+        except Exception:
+            return -1
+
+    def on_form_change(self, fid):
+        if fid == self.iretrieve_list.id:
+            v = self.GetControlValue(self.iretrieve_list)
+            self.form_record['usepublic'] = False if v else True
+
+        if fid == self.itopk.id:
+            topk = int(self._get_float(self.itopk))
+            if not (0 < topk <= 15):
+                topk = BinaryAIManager.Default['topk']
+            self.form_record['topk'] = topk
+
+        if fid == self.ithreshold.id:
+            threshold = self._get_float(self.ithreshold)
+            if not (0 < threshold <= 1):
+                threshold = BinaryAIManager.Default['threshold']
+            self.form_record['threshold'] = threshold
+
+        if fid == self.iminsize.id:
+            minsize = int(self._get_float(self.iminsize))
+            if not (1 <= minsize <= 5):
+                minsize = BinaryAIManager.Default['minsize']
+            self.form_record['minsize'] = minsize
+
+        if fid == self.itoken.id:
+            self.token = self.GetControlValue(self.itoken).strip()
+
+        if fid == self.ifuncset.id:
+            self.funcset = self.GetControlValue(self.ifuncset).strip()
+
+        return 1
+
+    @staticmethod
+    def change_options(mgr, check_token=False, check_funcset=False):
+        bai_options = BinaryAIOptionsForm(mgr)
+        if bai_options.Execute():
+            for k, v in bai_options.form_record.items():
+                mgr.cfg[k] = v
+
+            if check_token or bai_options.token != mgr.cfg['token']:
+                mgr.update_token(bai_options.token)
+                if not mgr.client:
+                    idaapi.warning("Wrong token!")
+                    BinaryAIOptionsForm.change_options(mgr, check_token=True)
+            if check_funcset or bai_options.funcset != mgr.cfg['funcset']:
+                mgr.update_funcset(bai_options.funcset)
+                if not mgr.funcset:
+                    idaapi.warning("Wrong function set!")
+                    BinaryAIOptionsForm.change_options(mgr, check_funcset=True)
+
+
 class BinaryAIManager:
     Default = {
+        'version': bai.__version__,
         'token': '',
         'url': 'https://api.binaryai.tencent.com/v1/endpoint',
         'funcset': '',
         'usepublic': True,
         'topk': 10,
         'minsize': 3,
-        'threshold': 0.8,
-        'color': "0x817FFF"
+        'threshold': 0.9,
+        'color': "0x817FFF",
+        'first_use': True
     }
 
     def __init__(self):
@@ -104,33 +197,58 @@ class BinaryAIManager:
         self.cfg = Config(os.path.join(cfg_dir, "{}.cfg".format(bai.__name__)), BinaryAIManager.Default)
         bai_mark.color = int(self.cfg['color'], 16)
         self._client = None
-        if not self.cfg['funcset']:
-            self.cfg['funcset'] = bai.function.create_function_set(self.client)
+        self._funcset = None
         self.cview = None
+
+    def first_use(self):
+        self.cfg['funcset'] = bai.function.create_function_set(self.client)
+        self._funcset = self.cfg['funcset']
+        self.cfg['first_use'] = False
 
     @property
     def client(self):
-        url = self.cfg['url']
-        token = self.cfg['token']
-        while not self._client:
+        if self._client is None:
             try:
-                self._client = bai.client.Client(token, url)
-                self.cfg['token'] = token
-            except BinaryAIException as e:
-                if e._msg == "UNAUTHENTICATED: Invalid token":
-                    idaapi.warning("Wrong token! Please try again.")
-                    token = idaapi.ask_str("", 0, "[BinaryAI] Token:")
-                    if not token:
-                        assert False, "[BinaryAI] Token is not specified."
-                    token = token.strip()
-                else:
-                    assert False, "[BinaryAI] {}".format(e._msg)
+                self._client = bai.client.Client(self.cfg['token'], self.cfg['url'])
+            except Exception:
+                pass
         return self._client
 
     def update_token(self, token):
         self._client = None
         self.cfg['token'] = token
-        self.client()   # refer client to check token
+        self.client   # refer client to check token
+
+    @property
+    def funcset(self):
+        if self.cfg['first_use']:
+            self.first_use()
+
+        if self._funcset is None:
+            try:
+                v = bai.function.query_function_set(self.client, self.cfg['funcset'])
+                if v:
+                    self._funcset = self.cfg['funcset']
+            except BinaryAIException:
+                pass
+        return self._funcset
+
+    def update_funcset(self, funcset):
+        self._funcset = None
+        self.cfg['funcset'] = funcset
+        self.funcset        # refer funcset to check
+
+    def check_before_use(self, check_funcset=False):
+        if not self.client:
+            idaapi.warning("Wrong token!")
+            BinaryAIOptionsForm.change_options(self, check_token=True)
+            return False
+        if (not self.funcset) and \
+                (check_funcset or not self.cfg['usepublic']):
+            idaapi.warning("Wrong function set!")
+            BinaryAIOptionsForm.change_options(self, check_funcset=True)
+            return False
+        return True
 
     def upload_function(self, ea, funcset_id):
         func_feat = bai.ida.get_func_feature(ea)
@@ -138,33 +256,45 @@ class BinaryAIManager:
         hf = idaapi.hexrays_failure_t()
         cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
         if func_feat and func_name:
-            try:
-                func_id = bai.function.upload_function(
-                    self.client, func_name, func_feat, source_code=str(cfunc), funcset_id=funcset_id)
-                return func_id
-            except BinaryAIException as e:
-                if e._msg.startswith("Argument functionSetId"):
-                    self.cfg['funcset'] = bai.function.create_function_set(self.client)
-                    idaapi.warning("Invalid function set id, set to '{}'. Please try again."
-                                   .format(self.cfg['funcset']))
-                raise e
+            func_id = bai.function.upload_function(
+                self.client, func_name, func_feat, source_code=str(cfunc), funcset_id=funcset_id)
+            return func_id
 
     def retrieve_function(self, ea, topk, funcset_ids):
         func_id = self.upload_function(ea, None)
         if func_id:
-            try:
-                targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
-            except BinaryAIException as e:
-                if e._msg.startswith("Argument functionSetId"):
-                    self.cfg['funcset'] = bai.function.create_function_set(self.client)
-                    idaapi.warning("Invalid function set id, set to '{}'. Please try again."
-                                   .format(self.cfg['funcset']))
-                raise e
-            else:
-                return targets
+            targets = bai.function.search_sim_funcs(self.client, func_id, funcset_ids=funcset_ids, topk=topk)
+            return targets
+
+    def retrieve_function_with_check(self, ea, topk, funcset_ids):
+        succ, skip, fail = 0, 1, 2
+        targets = None
+        pfn = idaapi.get_func(ea)
+        if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
+            return skip
+        try:
+            targets = self.retrieve_function(ea, topk=topk, funcset_ids=funcset_ids)
+        except DecompilationFailure:
+            pass
+        except BinaryAIException as e:
+            idaapi.hide_wait_box()
+            assert False, "[BinaryAI] {}".format(e._msg)
+        if targets is None:
+            print("[{}] {} failed because get function feature error"
+                  .format(self.name, idaapi.get_func_name(ea)))
+            return fail
+        func = targets[0]
+        if func['score'] < self.cfg['threshold']:
+            return skip
+        if not bai_mark.apply_bai_high_score(pfn.start_ea, targets[0]['function']['name'], func['score']):
+            return skip
+        return succ
 
     def retrieve_selected_functions(self, funcs):
-        funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
+        if not self.check_before_use():
+            return
+
+        funcset_ids = [self.funcset] if not self.cfg['usepublic'] else None
         i, succ, skip, fail = 0, 0, 0, 0
         _funcs = [ea for ea in funcs]
         funcs_len = len(_funcs)
@@ -177,36 +307,21 @@ class BinaryAIManager:
                 print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
                     self.name, succ, fail, skip))
                 return
-            pfn = idaapi.get_func(ea)
-            func_name = idaapi.get_func_name(ea)
-            if idaapi.FlowChart(pfn).size < self.cfg['minsize']:
-                skip += 1
-                continue
-            targets = None
-            try:
-                targets = self.retrieve_function(ea, topk=1, funcset_ids=funcset_ids)
-            except DecompilationFailure:
-                pass
-            except BinaryAIException as e:
-                idaapi.hide_wait_box()
-                assert False, "[BinaryAI] {}".format(e._msg)
-            if targets is None:
-                print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
-                fail += 1
-                continue
-            func = targets[0]
-            if func['score'] < self.cfg['threshold']:
-                continue
-            if bai_mark.apply_bai_high_score(pfn.start_ea, targets[0]['function']['name'], func['score']):
+            code = self.retrieve_function_with_check(ea, 1, funcset_ids)
+            if code == 0:
                 succ += 1
-            else:
+            elif code == 1:
                 skip += 1
+            else:
+                fail += 1
 
         idaapi.hide_wait_box()
         print("[{}] {} functions successfully matched, {} functions failed, {} functions skipped".format(
             self.name, succ, fail, skip))
 
     def upload_selected_functions(self, funcs):
+        if not self.check_before_use(check_funcset=True):
+            return
         i, succ, skip, fail = 0, 0, 0, 0
         _funcs = [ea for ea in funcs]
         funcs_len = len(_funcs)
@@ -225,7 +340,7 @@ class BinaryAIManager:
                 continue
             func_id = None
             try:
-                func_id = self.upload_function(ea, self.cfg['funcset'])
+                func_id = self.upload_function(ea, self.funcset)
             except DecompilationFailure:
                 pass
             except BinaryAIException as e:
@@ -233,7 +348,7 @@ class BinaryAIManager:
                 assert False, "[BinaryAI] {}".format(e._msg)
             func_name = idaapi.get_func_name(ea)
             if not func_id:
-                print("[{}] {} is skipped because upload error".format(self.name, func_name))
+                print("[{}] {} failed because upload error".format(self.name, func_name))
                 fail += 1
                 continue
             succ += 1
@@ -264,13 +379,15 @@ class BinaryAIManager:
         self.widget_copyright.show()
 
     def retrieve_function_callback(self, __, ea=None):
-        funcset_ids = [self.cfg['funcset']] if not self.cfg['usepublic'] else None
+        if not self.check_before_use():
+            return
+        funcset_ids = [self.funcset] if not self.cfg['usepublic'] else None
         func_ea = idaapi.get_screen_ea() if ea is None else ea
         func_name = idaapi.get_func_name(func_ea)
         targets = self.retrieve_function(func_ea, self.cfg['topk'], funcset_ids)
         succ, skip, fail = 0, 0, 0
         if targets is None:
-            print("[{}] {} is skipped because get function feature error".format(self.name, func_name))
+            print("[{}] {} failed because get function feature error".format(self.name, func_name))
             fail += 1
         else:
             if not (self.cview and self.cview.is_alive()):
@@ -301,8 +418,10 @@ class BinaryAIManager:
             self.retrieve_selected_functions(idautils.Functions())
 
     def upload_function_callback(self, __, ea=None):
+        if not self.check_before_use(check_funcset=True):
+            return
         func_ea = idaapi.get_screen_ea() if ea is None else ea
-        func_id = self.upload_function(func_ea, self.cfg['funcset'])
+        func_id = self.upload_function(func_ea, self.funcset)
         func_name = idaapi.get_func_name(func_ea)
         if not func_id:
             print("[{}] {} is skipped because upload error".format(self.name, func_name))
@@ -394,86 +513,6 @@ class SourceCodeViewer(idaapi.simplecustviewer_t):
             self._repaint()
 
 
-class BinaryAIOptionsForm(idaapi.Form):
-    def __init__(self, mgr):
-        self.mgr = mgr
-        self.form_record = {}
-        self.retrieve_list_select = 0
-        self.retrieve_list = ["Public", "Private"]
-        super(BinaryAIOptionsForm, self).__init__(
-            r'''STARTITEM 0
-BUTTON YES* OK
-BinaryAI Options
-            {FormChangeCb}
-            <Retrieve List  :{iretrieve_list}>
-            <Topk           :{itopk}>
-            <Threshold      :{ithreshold}>
-            <Minsize        :{iminsize}>
-            BinaryAI Token  <CHANGE:{itoken}>
-            Functionset ID  <CHANGE:{ifuncset}>
-            ''', {
-                'iretrieve_list': self.DropdownListControl(
-                          items=self.retrieve_list,
-                          readonly=True,
-                          selval=int(not self.mgr.cfg['usepublic']),
-                          width=32),
-                'itopk': self.StringInput(value=str(self.mgr.cfg["topk"])),
-                'ithreshold': self.StringInput(value=str(self.mgr.cfg["threshold"])),
-                'iminsize': self.StringInput(value=str(self.mgr.cfg["minsize"])),
-                'itoken': self.ButtonInput(self.on_change_token),
-                'ifuncset': self.ButtonInput(self.on_change_funcset),
-                'FormChangeCb': self.FormChangeCb(self.on_form_change)
-            }
-        )
-        self.Compile()
-
-    def _get_float(self, ctl):
-        try:
-            return float(self.GetControlValue(ctl))
-        except Exception:
-            return 0
-
-    def _is_in_limit(self, x, min, max):
-        return max >= x >= min
-
-    def on_form_change(self, fid):
-        if fid == self.iretrieve_list.id:
-            v = self.GetControlValue(self.iretrieve_list)
-            self.form_record['usepublic'] = False if v else True
-
-        if fid == self.itopk.id:
-            topk = int(self._get_float(self.itopk))
-            if not self._is_in_limit(topk, 0, 15):
-                topk = BinaryAIManager.Default['topk']
-            self.form_record['topk'] = topk
-
-        if fid == self.ithreshold.id:
-            threshold = self._get_float(self.ithreshold)
-            if not self._is_in_limit(threshold, 0, 1):
-                threshold = BinaryAIManager.Default['threshold']
-            self.form_record['threshold'] = threshold
-
-        if fid == self.iminsize.id:
-            minsize = int(self._get_float(self.iminsize))
-            if not self._is_in_limit(minsize, 1, 5):
-                minsize = BinaryAIManager.Default['minsize']
-            self.form_record['minsize'] = minsize
-
-        return 1
-
-    def on_change_token(self, code):
-        token = idaapi.ask_str(self.mgr.cfg['token'], 0, "BinaryAI Token:")
-        if token is not None:
-            self.mgr.update_token(token)
-        return 1
-
-    def on_change_funcset(self, code):
-        funcset = idaapi.ask_str(self.mgr.cfg['funcset'], 0, "BinaryAI Function Set:")
-        if funcset is not None:
-            self.mgr.cfg['funcset'] = funcset.strip()
-        return 1
-
-
 class CopyrightWindow(QWidget):
     def __init__(self, ver, year, mgr):
         super(CopyrightWindow, self).__init__()
@@ -521,11 +560,7 @@ class CopyrightWindow(QWidget):
         self.setLayout(mainLayout)
 
     def showOptions(self):
-        bai_options = BinaryAIOptionsForm(self.mgr)
-        if bai_options.Execute():
-            for k, v in bai_options.form_record.items():
-                self.mgr.cfg[k] = v
-        return
+        BinaryAIOptionsForm.change_options(self.mgr)
 
 
 class UIManager:
