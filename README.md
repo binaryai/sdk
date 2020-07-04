@@ -6,9 +6,11 @@
 
 ## Installation
 
-`$ pip install --upgrade binaryai`
-
-For IDA Pro, please download [ida_binaryai.py](https://github.com/binaryai/sdk/releases/latest/download/ida_binaryai.py) and put it to IDA plugins directory.
+```bash
+pip install --upgrade binaryai
+# then you can add the binaryai plugin into $IDAUSR
+binaryai install_ida_plugin
+```
 
 
 ## Token Registration
@@ -35,7 +37,7 @@ To modify the default options, please edit  `binaryai.cfg`, the default path is 
 |     OS      |                 Config File                 |
 | :---------: | :-----------------------------------------: |
 |   Windows   | %APPDATA%/Hex-Rays/IDA Pro/cfg/binaryai.cfg |
-| Linux/macOS |     $HOME/.idapro/plugins/binaryai.cfg      |
+| Linux/macOS |     $HOME/.idapro/cfg/binaryai.cfg      |
 
 the supported options are listed below.
 
@@ -70,14 +72,12 @@ $ binaryai --help
 Usage: binaryai [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  -u, --url TEXT    api url  [default: https://api.binaryai.tencent.com/v1/endpoint]
-  -t, --token TEXT  user token
-  -h, --help        Show this message and exit.
-  -v, --version     Show version
+  -h, --help     show this message and exit.
+  -v, --version  show version
 
 Commands:
-  create_funcset  create a new function set and add functions if needed
-  query_funcset   get function set info by id
-  query_function  get function info by given id
-  search_funcs    search top similar functions of the query
+  create_funcset      create a new function set
+  install_ida_plugin  install IDA plugin
+  query_funcset       get function set info by id
+  query_function      get function info by given id
 ```

@@ -81,7 +81,7 @@ def QueryFunction(ctx, funcid, cfg):
     click.echo(result)
 
 
-@cli.command('create_funcset', short_help='create a new function set and add functions if needed')
+@cli.command('create_funcset', short_help='create a new function set')
 @click.option('--cfg', '-c', help='binaryai configuration file',  type=click.File(), show_default=True,
               default=os.path.join(get_user_idadir(), "cfg", "{}.cfg".format(binaryai.__name__)))
 @click.pass_context
