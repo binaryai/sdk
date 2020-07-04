@@ -56,7 +56,7 @@ def test_query_funcset(cfg, testdata):
     result = json.loads(format_response(response.output))
     funcset_id = result['funcsetid']
     upload_function(client, func_feat, funcset_id)
-    response = runner.invoke(cli, args=["query_funcset", "-s", funcset_id])
+    response = runner.invoke(cli, args=["query_funcset", "-s", funcset_id, "-c", cfg])
     assert response.exit_code == 0
     result = json.loads(format_response(response.output))
     assert len(result['functions']) == 1
