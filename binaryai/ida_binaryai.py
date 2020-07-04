@@ -668,24 +668,13 @@ class UIManager:
         )
 
 
-class Plugin(idaapi.plugin_t):
-    wanted_name = "BinaryAI"
-    comment, help, wanted_hotkey = "", "", ""
-    flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
-
-    def init(self):
-        if idaapi.init_hexrays_plugin():
-            mgr = UIManager(Plugin.wanted_name)
-            if mgr.register_actions():
-                return idaapi.PLUGIN_OK
-        return idaapi.PLUGIN_SKIP
-
-    def run(self, ctx):
-        return
-
-    def term(self):
-        return
-
-
-def PLUGIN_ENTRY():
-    return Plugin()
+def load_ida_plugin():
+    if idaapi.IDA_SDK_VERSION < 730:
+        return False
+    if not idaapi.init_hexrays_plugin():
+        return False
+    if not idaapi.is_idaq():
+        return False
+    if not UIManager("BinaryAI").register_actions():
+        return False
+    return True
