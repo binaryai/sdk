@@ -40,7 +40,6 @@ jobs:
         URL: ${{ secrets.TEST_URL }}
         TOKEN: ${{ secrets.TEST_TOKEN }}
       run: |
-        pytest -v -n auto tests/test_cli --cfg $BAI_CFG
         pytest -v -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
         pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
 
