@@ -40,8 +40,9 @@ jobs:
         URL: ${{ secrets.TEST_URL }}
         TOKEN: ${{ secrets.TEST_TOKEN }}
       run: |
-        pytest -v -n auto tests/test_cli --url $URL --token $TOKEN
-        pytest -v -n auto tests/test_function --url $URL --token $TOKEN
+        pytest -n auto tests/test_cli --cfg $BAI_CFG
+        pytest -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
+        pytest -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
 
   deploy:
     needs: [ lint, test ]
