@@ -89,7 +89,7 @@ def CreateFuncSet(ctx, cfg):
     cfg_dict = json.loads(cfg.read())
     client = Client(cfg_dict['token'], cfg_dict['url'])
     result = create_function_set(client)
-    click.echo({'funcsetid': result})
+    click.echo({"funcsetid": result})
 
 
 @cli.command('query_funcset', short_help='get function set info by id')

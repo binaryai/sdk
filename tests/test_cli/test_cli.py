@@ -26,7 +26,7 @@ def test_version():
 
 
 def test_query_function(cfg, testdata):
-    cfg_dict = json.loads(open(cfg))
+    cfg_dict = json.load(open(cfg))
     client = bai.client.Client(url=cfg_dict['url'], token=cfg_dict['token'])
     func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
     func = json.loads(func_feat)
@@ -47,7 +47,7 @@ def test_create_funcset(cfg):
 
 
 def test_query_funcset(cfg, testdata):
-    cfg_dict = json.loads(open(cfg))
+    cfg_dict = json.load(open(cfg))
     client = bai.client.Client(url=cfg_dict['url'], token=cfg_dict['token'])
     func_feat = testdata.sample(1).iloc[0].sample(1).iloc[0]
     response = runner.invoke(
