@@ -678,3 +678,24 @@ def load_ida_plugin():
     if not UIManager("BinaryAI").register_actions():
         return False
     return True
+
+
+class Plugin(idaapi.plugin_t):
+    wanted_name = "BinaryAI"
+    comment, help, wanted_hotkey = "", "", ""
+    flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
+
+    def init(self):
+        if load_ida_plugin():
+            return idaapi.PLUGIN_OK
+        return idaapi.PLUGIN_SKIP
+
+    def run(self, ctx):
+        return
+
+    def term(self):
+        return
+
+
+def PLUGIN_ENTRY():
+    return Plugin()

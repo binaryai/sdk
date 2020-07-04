@@ -3,18 +3,12 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption("--url", action="store", default="https://api.binaryai.tencent.com/v1/endpoint")
-    parser.addoption("--token", action="store")
+    parser.addoption("--cfg", action="store")
 
 
 @pytest.fixture(scope="module")
-def url(request):
-    return request.config.getoption("--url")
-
-
-@pytest.fixture(scope="module")
-def token(request):
-    return request.config.getoption("--token")
+def cfg(request):
+    return request.config.getoption("--cfg")
 
 
 @pytest.fixture(scope="module")
