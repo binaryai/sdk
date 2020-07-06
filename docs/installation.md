@@ -1,7 +1,8 @@
 # INSTALLATION
 
 ```shell
-$ pip install --upgrade binaryai
+pip install --upgrade binaryai
+# then you can add the binaryai plugin into $IDAUSR
+binaryai install_ida_plugin
 ```
 
-For IDA Pro, please download [ida_binaryai.py](https://github.com/binaryai/sdk/releases/latest/download/ida_binaryai.py) and put it to IDA plugins directory.

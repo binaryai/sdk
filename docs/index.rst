@@ -2,7 +2,7 @@ BinaryAI: The Neural Search Engine for Binaries
 ===============================================
 
 .. warning::
-   The BinaryAI backend is still in active development, there will be breaking changes in the future, and the user data is at risk of loss.
+   The BinaryAI backend is still under active development. User data is not protected from breaking changes in the future.
 
 Quick start video
 -----------------
