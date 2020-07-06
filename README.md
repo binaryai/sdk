@@ -6,7 +6,7 @@
 
 ## Introduction
 
-BinaryAI is a Neural Search Engine for binaries developed by Tencent Security KEEN Lab, aiming to help security researchers identify similar functions without having access to the source code.
+BinaryAI is a Neural Search Engine for binaries developed by Tencent Security KEEN Lab, aiming to help security researchers match the binary functions with the most possible source codes.
 
 BinaryAI provides three ways to access core APIs of BinaryAI Search Engine framework.
 
@@ -16,7 +16,7 @@ BinaryAI provides three ways to access core APIs of BinaryAI Search Engine frame
 
 2. IDA plugin
 
-   BinaryAI provides an IDA plugin to assist reverse engineering analysis with the IDA Pro user interface. The IDA Pro plugin enables users to apply BinaryAI retrieval results from millions of functions in the cloud to the file loaded in IDA Pro with a few clicks.
+   BinaryAI provides an IDA plugin to assist reverse engineering analysis with the IDA Pro user interface. The IDA Pro plugin enables users to apply BinaryAI retrieval results from source codes of millions of functions in the cloud to the file loaded in IDA Pro with a few clicks.
 
 3. Command line tool
 
