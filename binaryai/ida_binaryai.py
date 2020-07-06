@@ -48,7 +48,8 @@ class BinaryAIMark(object):
         if name.startswith("sub_"):
             idaapi.set_name(ea, "", idaapi.SN_AUTO)
         else:
-            idaapi.set_name(ea, name, idaapi.SN_FORCE)
+            # "type(name) == unicode" in python2
+            idaapi.set_name(ea, str(name), idaapi.SN_FORCE)
 
     def apply_bai_func(self, ea, name, score):
         if not self.is_bai_func(ea):
