@@ -25,9 +25,9 @@ BinaryAI plugin can be configured in two ways: the "Options" dialog box or the`b
 
 Please modify the default options by the "BinaryAI" button or "BinaryAI" menu (BinaryAI > About) and then clicking the "Options" button.
 
-<img src="image\about.png" alt="about" style="zoom:75%;" />
+![about](image/about.png)
 
-<img src="image\options.png" alt="options" style="zoom:75%;" />
+![options](image/options.png)
 
 Or, you can manually edit  `binaryai.cfg`. The default path is as follows. IDA Pro must restart for these changes to take effect.
 
@@ -67,11 +67,11 @@ The supported options are listed below.
 
 This command tries to retrieve the selected function(s). 
 
-![match](image\match.png)
+![match](image/match.png)
 
 If successful (score higher than "threshold" and basic block size larger than "minsize"), the function name(s) will be automatically replaced by the name(s) of the result(s) and the function(s) will be marked.
 
-![match_result](image\match_result.png)
+![match_result](image/match_result.png)
 
 If the result(s) are not satisfactory, it is possible to revert the change(s).
 
@@ -79,9 +79,9 @@ If the result(s) are not satisfactory, it is possible to revert the change(s).
 
 This command tries to retrieve all functions. 
 
-<img src="image\match_all_menu.png" alt="match_all_menu" style="zoom:75%;" />
+![match_all_menu](image/match_all_menu.png)
 
-<img src="image\match_all_button.png" alt="match_all_button" style="zoom:75%;" />
+![match_all_button](image/match_all_button.png)
 
 If successful (score higher than "threshold" and basic block size larger than "minsize"), the function names will be automatically replaced by the names of the results and the functions will be marked.
 
@@ -91,31 +91,31 @@ If the results are not satisfactory, it is possible to revert the changes.
 
 This command retrieves Top K results of the current function. The user can then select the desired target function and apply it to the current function. If the user applies the wrong function, it is possible to revert the change.
 
-<img src="image\retrieve_menu.png" alt="retrieve_menu" style="zoom:75%;" />
+![retrieve_menu](image/retrieve_menu.png)
 
-<img src="image\retrieve_button.png" alt="retrieve_button" style="zoom:75%;" />
+![retrieve_button](image/retrieve_button.png)
 
 ### Upload
 
 This command uploads the selected function(s) to the function set as configured in "Options". The function set can be used as the user's own scope of retrieval. When the user uploads for the first time, it will automatically create a function set.
 
-<img src="image\upload_menu.png" alt="upload_menu" style="zoom:75%;" />
+![upload_menu](image/upload_menu.png)
 
-<img src="image\upload_button.png" alt="upload_button" style="zoom:75%;" />
+![upload_button](image/upload_button.png)
 
 ### Upload all functions
 
 This command uploads all functions to the function set as configured in "Options".  The function set can be used as the user's scope of retrieval. When the user uploads for the first time, it will automatically create a function set.
 
-<img src="image\upload_all_menu.png" alt="upload_all_menu" style="zoom:75%;" />
+![upload_all_menu](image/upload_all_menu.png)
 
-<img src="image\upload_all_button.png" alt="upload_all_button" style="zoom:75%;" />
+![upload_all_button](image/upload_all_button.png)
 
 ### Revert
 
 This command reverts the change of the selected functions (name and color) .
 
-<img src="image\revert.png" alt="revert" style="zoom:75%;" />
+![revert](image/revert.png)
 
 ## Command Line
 
