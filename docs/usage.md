@@ -65,31 +65,31 @@ The supported options are listed below.
 
 ### Match
 
-This command tries to retrieve the selected function(s). 
+This command tries to retrieve the top-1 similar source codes of the selected function(s) and directly change the name(s) of the function(s) according to the result(s). 
 
 ![match](image/match.png)
 
-If successful (score higher than "threshold" and basic block size larger than "minsize"), the function name(s) will be automatically replaced by the name(s) of the result(s) and the function(s) will be marked.
+Automatic name replacement and color annotation take place if the score(s) are higher than "threshold" and basic block size(s) are larger than "minsize". Otherwise, the function(s) will be skipped.
 
 ![match_result](image/match_result.png)
 
-If the result(s) are not satisfactory, it is possible to revert the change(s).
+If the result(s) are not satisfactory, it is possible for the user to manually revert the change(s).
 
 ### Match all functions
 
-This command tries to retrieve all functions. 
+This command tries to retrieve the top-1 similar source codes of all functions and directly change the names of the functions according to the results. 
 
 ![match_all_menu](image/match_all_menu.png)
 
 ![match_all_button](image/match_all_button.png)
 
-If successful (score higher than "threshold" and basic block size larger than "minsize"), the function names will be automatically replaced by the names of the results and the functions will be marked.
+Automatic name replacement and color annotation take place when the score(s) are higher than "threshold" and basic block size(s) are larger than "minsize". Otherwise, the functions will be skipped.
 
-If the results are not satisfactory, it is possible to revert the changes.
+If the results are not satisfactory, it is possible for the user to manually revert the changes.
 
 ### Retrieve
 
-This command retrieves Top K results of the current function. The user can then select the desired target function and apply it to the current function. If the user applies the wrong function, it is possible to revert the change.
+This command retrieves top-k results of the current function. The user can then select the desired target function and apply it to the current function. If the user applies the wrong function, it is possible to revert the change.
 
 ![retrieve_menu](image/retrieve_menu.png)
 
