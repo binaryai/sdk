@@ -41,7 +41,7 @@ The supported options are listed below.
 ```json
 {
     "token": "",
-    "url": "http://api.binaryai.tencent.com/v1/endpoint",
+    "url": "https://api.binaryai.tencent.com/v1/endpoint",
     "funcset": "",
     "topk": 10,
     "minsize": 3,
