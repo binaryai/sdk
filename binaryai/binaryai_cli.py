@@ -117,7 +117,7 @@ def QueryFuncSet(ctx, funcset, cfg):
 def UploadFunctions(ctx, file, funcset, idat):
     plugin_path = get_plugin_path()
     log_path = os.path.join(get_user_idadir(), "log.txt")
-    cmd_str = "\"{}\" -L\"{}\" -A -S\"{} {} 1\" {}".format(idat.name, log_path, plugin_path, funcset, file.name)
+    cmd_str = '"{}" -L"{}" -A -S"{} {} 1" {}'.format(idat.name, log_path, plugin_path, funcset, file.name)
     try:
         p = subprocess.Popen(cmd_str)
         p.wait()
