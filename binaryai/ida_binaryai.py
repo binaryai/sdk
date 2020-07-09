@@ -744,14 +744,13 @@ class UIManager:
         self.operations.retrieve(func_ea, self.cview)
 
     def match_all_callback(self, ctx):
-        self.operations.match_funcs(idautils.Functions())
+        self.operations.match_funcs(list(idautils.Functions()))
 
     def upload_callback(self, ctx):
         self.operations.upload(idaapi.get_screen_ea())
 
     def upload_all_callback(self, ctx):
-        funcs = [ea for ea in idautils.Functions()]
-        self.operations.upload_funcs(funcs)
+        self.operations.upload_funcs(list(idautils.Functions()))
 
     def selected_callback(self, ctx):
         funcs = map(idaapi.getn_func, ctx.chooser_selection)
