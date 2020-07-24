@@ -365,6 +365,12 @@ class BinaryAIManager:
         for ea in _funcs:
             i += 1
             idaapi.replace_wait_box("reverting... ({}/{})".format(i, funcs_len))
+            if idaapi.user_cancelled():
+                idaapi.hide_wait_box()
+                print("[{}] {} functions successfully reverted, {} functions failed, {} functions skipped".format(
+                    self.name, succ, fail, skip))
+                return
+
             pfn = idaapi.get_func(ea)
             res = bai_mark.revert_bai_func(pfn.start_ea)
             if res:
