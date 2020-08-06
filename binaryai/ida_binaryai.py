@@ -630,10 +630,10 @@ class BinaryAIOperations(object):
             BinaryAILog.summary(succ, skip, 0, "reverted")
 
         funcs_len = len(funcs)
-        idaapi.show_wait_box("Uploading... (0/{})".format(funcs_len))
+        idaapi.show_wait_box("Reverting... (0/{})".format(funcs_len))
         for ea in funcs:
             i += 1
-            idaapi.replace_wait_box("Uploading... ({}/{})".format(i, funcs_len))
+            idaapi.replace_wait_box("Reverting... ({}/{})".format(i, funcs_len))
 
             if idaapi.user_cancelled():
                 stop()
