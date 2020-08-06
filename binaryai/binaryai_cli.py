@@ -141,7 +141,6 @@ def MatchFunctions(ctx, file, idat):
     except FileNotFoundError as e:
         print(e)
         ctx.exit()
-    json_path = os.path.join(get_user_idadir(), "output.json")
     click.echo("Done")
 
 
