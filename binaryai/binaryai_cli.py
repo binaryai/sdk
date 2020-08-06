@@ -129,13 +129,12 @@ def UploadFunctions(ctx, file, funcset, idat):
 
 @cli.command('match_functions', short_help='match the functions of the chosen file')
 @click.option('--file', '-f', help='file to be matched', type=str, required=True)
-@click.option('--funcset', '-s', help='funcset id', type=str, required=True)
 @click.option('--idat', '-i', help='path of idat/idat64', type=str, required=True)
 @click.pass_context
-def MatchFunctions(ctx, file, funcset, idat):
+def MatchFunctions(ctx, file, idat):
     plugin_path = get_plugin_path()
     log_path = os.path.join(get_user_idadir(), "log.txt")
-    cmd_str = '"{}" -L"{}" -A -S"{} {} 2" {}'.format(idat, log_path, plugin_path, funcset, file)
+    cmd_str = '"{}" -L"{}" -A -S"{} 2" {}'.format(idat, log_path, plugin_path, file)
     try:
         p = subprocess.Popen(cmd_str, shell=True)
         p.wait()
@@ -143,7 +142,7 @@ def MatchFunctions(ctx, file, funcset, idat):
         print(e)
         ctx.exit()
     json_path = os.path.join(get_user_idadir(), "output.json")
-    click.echo("Done. Matched functions are stored in {}".format(json_path))
+    click.echo("Done")
 
 
 def main():

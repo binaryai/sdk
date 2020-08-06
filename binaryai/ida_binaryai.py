@@ -839,8 +839,8 @@ def cmd_match(funcset_ids=None):
 
 if __name__ == "__main__":
     ida_auto.auto_wait()
-    if idc.ARGV[2] == '1':
+    if idc.ARGV[-1] == '1':
         cmd_upload(idc.ARGV[1])
-    if idc.ARGV[2] == '2':
-        cmd_match([idc.ARGV[1]])
+    if idc.ARGV[-1] == '2':
+        cmd_match()
     idaapi.qexit(0)
