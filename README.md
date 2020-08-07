@@ -2,7 +2,7 @@
 
 ![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg)
 ![PUBLISH](https://github.com/binaryai/sdk/workflows/PUBLISH/badge.svg)
-![Download](https://img.shields.io/pypi/dm/binaryai)
+[![Downloads](https://pepy.tech/badge/binaryai/month)](https://pepy.tech/project/binaryai/month)
 [![Gitter](https://badges.gitter.im/binaryai/community.svg)](https://gitter.im/binaryai/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
 ## Introduction
