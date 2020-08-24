@@ -528,10 +528,11 @@ class BinaryAIOperations(object):
             BinaryAILog.fatal(e)
         if targets is None:
             return fail
-        if not bai_mark.apply_bai_high_score(
-                ea,
-                targets[0]['function']['name'],
-                targets[0]['score']):
+        if targets[0]['score'] < bai_config['threshold'] and \
+                not bai_mark.apply_bai_high_score(
+                    ea,
+                    targets[0]['function']['name'],
+                    targets[0]['score']):
             return skip
         return succ
 
