@@ -776,7 +776,7 @@ class Plugin(idaapi.plugin_t):
             bai_mgr = BinaryAIManager()
             ui_mgr = UIManager(Plugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
-                return idaapi.PLUGIN_OK
+                return idaapi.PLUGIN_KEEP
         return idaapi.PLUGIN_SKIP
 
     def run(self, ctx):
