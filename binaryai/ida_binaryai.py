@@ -767,7 +767,7 @@ class UIManager:
         self.operations.apply(self.cview)
 
 
-class Plugin(idaapi.plugin_t):
+class BinaryAIIDAPlugin(idaapi.plugin_t):
     wanted_name = "BinaryAI"
     comment, help, wanted_hotkey = "", "", ""
     flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
@@ -775,7 +775,7 @@ class Plugin(idaapi.plugin_t):
     def init(self):
         if idaapi.init_hexrays_plugin():
             bai_mgr = BinaryAIManager()
-            ui_mgr = UIManager(Plugin.wanted_name, bai_mgr)
+            ui_mgr = UIManager(BinaryAIIDAPlugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
                 return idaapi.PLUGIN_KEEP
         return idaapi.PLUGIN_SKIP
@@ -789,7 +789,7 @@ class Plugin(idaapi.plugin_t):
 
 def PLUGIN_ENTRY():
     BinaryAILog.level = BinaryAILog.DEBUG
-    return Plugin()
+    return BinaryAIIDAPlugin()
 
 
 def get_user_idadir():
