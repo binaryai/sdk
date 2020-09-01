@@ -15,10 +15,15 @@ query QueryFunction($funcId: ID!){
     function(id: $funcId){
         id
         name
-        sourceCode
-        sourceFile
-        sourceLine
-        language
+        sourceCodeInfo {
+            pseudocode
+            filename
+            linenumber
+        }
+        binaryInfo {
+            filename
+            platform
+        }
     }
 }
 '''
