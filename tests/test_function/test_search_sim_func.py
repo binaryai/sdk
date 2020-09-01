@@ -14,13 +14,16 @@ def test_search_sim_func_1(client, data_1):
     func_id = bai.function.upload_function(
         client, func_name, func_feat)
     bai.function.insert_function_set_member(client, funcset_id, [func_id])
-    sim = bai.function.search_sim_funcs(client, func_id, [funcset_id], topk=1)
+    bai.function.clear_index_list(client)
+    bai.function.insert_index_list(client, functionset_ids=[funcset_id])
+    sim = bai.function.search_sim_funcs(client, func_id, topk=1)
     assert len(sim) == 1
     assert sim[0]['function']['id'] == func_id
     assert sim[0]['score'] >= 0.9999
 
 
 def test_search_sim_func_2(client, data_1):
+    bai.function.clear_index_list(client)
     df1 = data_1.sample(1, axis=1)
     df2 = df1
     while df2.columns[0] == df1.columns[0]:
@@ -41,7 +44,8 @@ def test_search_sim_func_2(client, data_1):
         name = func['graph']['name']
         func_id = bai.function.upload_function(
             client, func['graph']['name'], func_feat)
+        bai.function.insert_index_list(client, functionset_ids=[corpus_set])
         sim = bai.function.search_sim_funcs(
-            client, func_id, [corpus_set], topk=3)
+            client, func_id, topk=3)
         top3_names = [s['function']['name'] for s in sim]
         assert name in top3_names

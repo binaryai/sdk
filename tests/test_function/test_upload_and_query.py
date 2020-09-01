@@ -30,9 +30,10 @@ def test_remove_duplicate_funcid(client, data_1):
 def test_query_with_topk(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     func_id = bai.function.upload_function(client, "foo", func_feat)
+    bai.function.clear_index_list(client)
 
     sim = bai.function.search_sim_funcs(client, func_id, topk=0)
-    assert sim is None
+    assert (sim is None) or (len(sim) == 0)
 
     try:
         sim = bai.function.search_sim_funcs(client, func_id, topk=-1)
@@ -44,7 +45,8 @@ def test_query_with_topk(client, data_1):
     try:
         name = random_name(32)
         funcset_id = bai.function.create_function_set(client, name)
-        sim = bai.function.search_sim_funcs(client, func_id, topk=1, funcset_ids=[funcset_id])
+        bai.function.insert_index_list(client, functionset_ids=[funcset_id])
+        sim = bai.function.search_sim_funcs(client, func_id, topk=1)
     except BinaryAIException as e:
         assert e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"
     else:

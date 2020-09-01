@@ -1,5 +1,5 @@
 from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
-from .graphql.function import q_query_function_set, q_search_func_similarity
+from .graphql.function import q_query_function_set, q_search_func_similarity, q_clear_index_list, q_insert_index_list
 from .client import Client
 from .error import BinaryAIException
 
@@ -160,14 +160,13 @@ def query_function_set(client, funcset_id):
     return r['functionSet']
 
 
-def search_sim_funcs(client, function_id, funcset_ids=None, topk=1):
+def search_sim_funcs(client, function_id, *, topk=1):
     '''
-    search top similar functions of the function
+    search top similar functions of the function in your retrieve list
 
     Args:
         client(binaryai.client.Client): Client instance
         function_id(string): id of the function
-        funcset_ids(list): ids of the function set to be compared, None means BinaryAI official sets.
         topk(int): return first topk results, default value is 1.
 
     Returns:
@@ -177,8 +176,43 @@ def search_sim_funcs(client, function_id, funcset_ids=None, topk=1):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
         'funcId': function_id,
-        'setId': funcset_ids,
         'topk': topk
     }
     r = client.execute(q_search_func_similarity, var)
-    return r['function']['similarity']
+    return r['indexList']['searchByID']
+
+def clear_index_list(client):
+    '''
+    Clear all things in your index list
+
+    Returns:
+        None
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    var = {}
+    client.execute(q_clear_index_list, var)
+    return None
+
+def insert_index_list(client, *, function_ids: list = None, functionset_ids: list = None):
+    '''
+    Insert functions into your retrive list
+
+    Args:
+        client(binaryai.client.Client): Client instance
+        function_ids(list): Functions to be inserted into the index list.
+                            Can be null so no functions will be added into the list.
+        functionset_ids(list): Functionsets to be inserted into the index list.
+                            Can be null so no sets will be added into the list.
+
+    Returns:
+        None
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    var = {
+        "functionid": function_ids,
+        "functionsetid": functionset_ids
+    }
+    client.execute(q_insert_index_list, var)
+    return None

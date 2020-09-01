@@ -68,19 +68,40 @@ query QueryFuncitonSet($funcSetId: ID!){
 '''
 
 q_search_func_similarity = r'''
-query SearchFuncSimilarity($funcId: ID!, $setId: [ID!], $topk: Int!){
-    function(id: $funcId){
-        similarity(functionSetIds: $setId, topK: $topk){
+query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
+    indexList {
+        searchByID(id: $funcId, topK: $topk) {
             score
-            function{
+            function {
                 id
                 name
-                sourceCode
-                sourceFile
-                sourceLine
-                language
+                sourceCodeInfo {
+                    pseudocode
+                    filename
+                    linenumber
+                }
+                binaryInfo {
+                    filename
+                    platform
+                }
             }
         }
     }
+}
+'''
+
+q_clear_index_list = r'''
+mutation ClearIndexList {
+  clearIndexList {
+    clientMutationId
+  }
+}
+'''
+
+q_insert_index_list = r'''
+mutation ClearIndexList($functionid: [ID!], $functionsetid: [ID!]) {
+  insertIndexList(input: {functionId: $functionid, functionSetId: $functionsetid}) {
+    clientMutationId
+  }
 }
 '''
