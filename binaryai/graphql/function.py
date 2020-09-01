@@ -79,6 +79,7 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
                     pseudocode
                     filename
                     linenumber
+                    packagename
                 }
                 binaryInfo {
                     filename

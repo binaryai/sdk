@@ -280,19 +280,23 @@ class SourceCodeViewer(object):
     @staticmethod
     def source_code_comment(query, func, idx=0):
         score = func["score"] if func["score"] < 1 else 1
-        return """/*
-    query:  {}
-    target[{}]: {}
-    target[{}] info: {}:{}
-    score:  {:6f}
-*/\n""".format(query,
-               idx, func['function']['name'],
-               idx, func['function']['sourceFile'], func['function']['sourceLine'],
-               score)
+        comment = '/*\n'
+        comment += f"query:  {query}\n"
+        comment += "target[{}]: {}\n".format(idx, func['function']['name'])
+        comment += "score:  {:6f}\n".format(score)
+        filename = func['function']['sourceCodeInfo']['filename']
+        linenumber = func['function']['sourceCodeInfo']['linenumber']
+        if filename is not None and linenumber is not None:
+            comment += "target[{}] info: {}:{}\n".format(idx, filename, linenumber)
+        packagename = func['function']['sourceCodeInfo']['packagename']
+        if packagename is not None:
+            comment += "package name: {}\n".format(packagename) 
+        comment += "*/\n"
+        return comment
 
     @staticmethod
     def source_code_body(func):
-        body = func['function']['sourceCode'].split("\n")
+        body = func['function']['sourceCodeInfo']['pseudocode'].split("\n")
         return filter(lambda l: not l.lstrip().startswith('#'), body)
 
     def __init__(self, title):
@@ -466,7 +470,10 @@ class BinaryAIOperations(object):
         if targets is None:
             BinaryAILog.skip(func_name, "get function feature error")
             return
-        print(targets)
+        
+        if len(targets) == 0:
+            idaapi.warning("No similar function found!")
+            return
 
         cview.set_user_data(ea, targets)
 
