@@ -11,8 +11,8 @@ def upload_function(
         source_code=None,
         source_file=None,
         source_line=None,
-        language=None,
-        funcset_id=None
+        binary_file=None,
+        platform=None
 ):
     '''
     upload function to BinaryAI server
@@ -24,9 +24,8 @@ def upload_function(
         source_code(string): Source code of the function
         source_file(string): Source file of the function
         source_line(int): line number of the function
-        language(string): Programming language of the function
-        funcset_id(string): If functionSetID specified, it would be added into that set when adding function;
-                            if not, it would not be added into any set
+        binary_file(string): Name of the binary file which contains this function
+        platform(string): Platform of the binary file, for example, metapc64, or x86_64, or mipsel
 
     Returns:
         * **id** (string) -- id of this function
@@ -39,8 +38,8 @@ def upload_function(
         'sourceCode': source_code,
         'sourceFile': source_file,
         'sourceLine': source_line,
-        'language': language,
-        'functionSetId': funcset_id
+        'binaryFileName': binary_file,
+        'platform': platform
     }
     r = client.execute(q_create_function, var)
     return r['createFunction']['function']['id']
