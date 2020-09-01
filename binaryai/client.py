@@ -48,7 +48,7 @@ class Client(object):
                 raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
                     response.status_code, response.content))
 
-    def execute(self, query, var):
+    def execute(self, query, var, *, throw_duplicate_error=False):
         '''
         Send request to API server and get response
 
@@ -80,7 +80,11 @@ class Client(object):
 
         if "errors" in jdata.keys():
             errors = jdata["errors"][0]
-            raise BinaryAIException(errors['extensions']['code'], errors['message'], jdata['data'], jdata)
+            code = errors['extensions']['code']
+            if not throw_duplicate_error and code == "INVALID_ARGUMENT_DUPLICATE_ARGUMENT":
+                pass
+            else:
+                raise BinaryAIException(code, errors['message'], jdata['data'], jdata)
 
         if "data" not in jdata.keys():
             raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content))
