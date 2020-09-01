@@ -67,6 +67,18 @@ query QueryFuncitonSet($funcSetId: ID!){
 }
 '''
 
+q_query_created_function_set = r'''
+query QueryCreatedFuncitonSet {
+  viewer {
+    createdFunctionSets {
+      nodes {
+        id
+      }
+    }
+  }
+}
+'''
+
 q_search_func_similarity = r'''
 query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
     indexList {

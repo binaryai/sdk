@@ -1,5 +1,5 @@
 from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
-from .graphql.function import q_query_function_set, q_search_func_similarity, q_clear_index_list, q_insert_index_list
+from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity, q_clear_index_list, q_insert_index_list
 from .client import Client
 from .error import BinaryAIException
 
@@ -159,6 +159,18 @@ def query_function_set(client, funcset_id):
         raise BinaryAIException("SDK_ERROR", "Response function set id not equal to the funcset_id", r, None)
     return r['functionSet']
 
+def query_created_function_set(client) -> list:
+    '''
+    Get all function sets created by current user
+
+    Returns:
+        * **functionSetIDs** (list) -- functionSet's id
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    var = {}
+    l = client.execute(q_clear_index_list, var)
+    return [node["id"] for node in l["viewer"]["createdFunctionSets"]["nodes"]]
 
 def search_sim_funcs(client, function_id, *, topk=1):
     '''
