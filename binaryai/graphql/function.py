@@ -59,7 +59,9 @@ query QueryFuncitonSet($funcSetId: ID!){
     functionSet(id: $funcSetId){
         id
         functions {
-            id
+            nodes {
+                id
+            }
         }
     }
 }

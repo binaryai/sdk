@@ -15,7 +15,7 @@ def test_create_funcset_1(client, data_1):
     funcset_id = bai.function.create_function_set(client, name, function_ids=[func_id])
     assert funcset_id is not None
     fset = bai.function.query_function_set(client, funcset_id)
-    fset_id, funcs = fset['id'], fset['functions']
+    fset_id, funcs = fset['id'], fset['functions']['nodes']
     assert fset_id == funcset_id
     assert len(funcs) == 1
     assert func_id == funcs[0]['id']
@@ -33,7 +33,7 @@ def test_create_funcset_2(client, data_1):
     bai.function.insert_function_set_member(client, funcset_id, [func_id])
     assert func_id is not None
     fset = bai.function.query_function_set(client, funcset_id)
-    fset_id, funcs = fset['id'], fset['functions']
+    fset_id, funcs = fset['id'], fset['functions']['nodes']
     assert fset_id == funcset_id
     assert len(funcs) == 1
     assert func_id == funcs[0]['id']
@@ -50,7 +50,7 @@ def test_create_funcset_3(client, data_1):
     name = random_name(32)
     funcset_id = bai.function.create_function_set(client, name, function_ids=func_ids)
     fset = bai.function.query_function_set(client, funcset_id)
-    funcs = fset['functions']
+    funcs = fset['functions']['nodes']
     assert len(funcs) == len(func_ids)
     assert set([func['id'] for func in funcs]) == set(func_ids)
 
@@ -59,5 +59,5 @@ def test_query_empty_funcset(client):
     name = random_name(32)
     funcset_id = bai.function.create_function_set(client, name)
     fset = bai.function.query_function_set(client, funcset_id)
-    funcs = fset['functions']
+    funcs = fset['functions']['nodes']
     assert funcs is None
