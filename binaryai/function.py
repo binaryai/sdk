@@ -1,4 +1,4 @@
-from .graphql.function import q_create_function, q_query_function, q_create_function_set
+from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
 from .graphql.function import q_query_function_set, q_search_func_similarity
 from .client import Client
 from .error import BinaryAIException
@@ -8,12 +8,13 @@ def upload_function(
         client,
         name,
         feature,
+        *,
         source_code=None,
         source_file=None,
         source_line=None,
         binary_file=None,
         platform=None
-):
+) -> str:
     '''
     upload function to BinaryAI server
 
@@ -67,12 +68,15 @@ def query_function(client, function_id):
     return r['function']
 
 
-def create_function_set(client, function_ids=None):
+def create_function_set(client, name: str, description: str="", *, function_ids: list=None) -> str:
     '''
     Create a new function set and add functions if needed
 
     Args:
         client(binaryai.client.Client): Client instance
+        name(string): Name of the new functionset
+        description(string): Description of the new functionset.
+                             Can be empty string
         function_ids(list): Functions to be inserted into the new function set.
                             Can be null so no functions will be added into the set.
 
@@ -82,11 +86,53 @@ def create_function_set(client, function_ids=None):
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
-        'functionIds': function_ids
+        'name': name,
+        "description": description,
     }
     r = client.execute(q_create_function_set, var)
-    return r['createFunctionSet']['functionSet']['id']
+    set_id = r['createFunctionSet']['functionSet']['id']
+    if not len(set_id) > 0:
+        raise BinaryAIException("SDK_ERROR", "create functionset failed")
+    if function_ids is not None:
+        var = {
+            'setID': set_id,
+            "functionIds": function_ids,
+        }
+        r = client.execute(q_insert_function_set_members, var)
+        new_set_id = r['insertFunctionSetMembers']['functionSet']['id']
+        if not len(set_id) == len(new_set_id):
+            raise BinaryAIException("SDK_ERROR", "insert functionset failed")
+    return set_id
 
+
+def insert_function_set_member(client, setid: str, function_ids: list) -> str:
+    '''
+    Insert functions into certain functionset
+
+    Args:
+        client(binaryai.client.Client): Client instance
+        setid(string): ID of the target
+        function_ids(list): Functions to be inserted into the new function set.
+                            Can be null so no functions will be added into the set.
+
+    Returns:
+        * **id** (string) -- id of the function set
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    assert(isinstance(function_ids, list))
+    assert(len(setid) > 0)
+    if len(function_ids) == 0:
+        return setid
+    var = {
+        'setID': setid,
+        "functionIds": function_ids,
+    }
+    r = client.execute(q_insert_function_set_members, var)
+    new_set_id = r['insertFunctionSetMembers']['functionSet']['id']
+    if not setid == new_set_id:
+        raise BinaryAIException("SDK_ERROR", "insert functionset failed")
+    return new_set_id
 
 def query_function_set(client, funcset_id):
     '''

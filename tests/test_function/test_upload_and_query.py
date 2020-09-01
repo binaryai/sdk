@@ -1,6 +1,10 @@
 import json
 import binaryai as bai
 from binaryai import BinaryAIException
+import random
+import string
+
+random_name = lambda N: ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
 
 
 def test_upload_and_query(client, data_1):
@@ -38,7 +42,8 @@ def test_query_with_topk(client, data_1):
         assert False, "Backend didn't throw Exception: INVALID_ARGUMENT"
 
     try:
-        funcset_id = bai.function.create_function_set(client)
+        name = random_name(32)
+        funcset_id = bai.function.create_function_set(client, name)
         sim = bai.function.search_sim_funcs(client, func_id, topk=1, funcset_ids=[funcset_id])
     except BinaryAIException as e:
         assert e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"

@@ -33,8 +33,20 @@ query QueryFunction($funcId: ID!){
 '''
 
 q_create_function_set = r'''
-mutation CreateFunctionSet($functionIds: [ID!]){
-    createFunctionSet(input: {functionIds: $functionIds}){
+mutation CreateFunctionSet($name: String!, $description: String){
+    createFunctionSet(input: {name: $name, description: $description}){
+        functionSet{
+            id
+            name
+            description
+        }
+    }
+}
+'''
+
+q_insert_function_set_members = r'''
+mutation InsertFunctionSetMembers($setID: ID!, $functionIds: [ID!]!){
+    insertFunctionSetMembers(input: {functionSetID: $setID, functionIDs: $functionIds}){
         functionSet{
             id
         }
