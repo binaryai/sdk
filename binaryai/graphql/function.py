@@ -1,4 +1,4 @@
-q_create_function = '''
+q_create_function = r'''
 mutation CreateFunction($name: String!, $sourceCode: String, $sourceFile: String, $sourceLine: Int,
                         $language: String, $feature: String!, $functionSetId: ID){
     createFunction(input: {name: $name, sourceCode: $sourceCode, sourceFile: $sourceFile, sourceLine: $sourceLine,
@@ -10,7 +10,7 @@ mutation CreateFunction($name: String!, $sourceCode: String, $sourceFile: String
 }
 '''
 
-q_query_function = '''
+q_query_function = r'''
 query QueryFunction($funcId: ID!){
     function(id: $funcId){
         id
@@ -23,7 +23,7 @@ query QueryFunction($funcId: ID!){
 }
 '''
 
-q_create_function_set = '''
+q_create_function_set = r'''
 mutation CreateFunctionSet($functionIds: [ID!]){
     createFunctionSet(input: {functionIds: $functionIds}){
         functionSet{
@@ -33,7 +33,7 @@ mutation CreateFunctionSet($functionIds: [ID!]){
 }
 '''
 
-q_query_function_set = '''
+q_query_function_set = r'''
 query QueryFuncitonSet($funcSetId: ID!){
     functionSet(id: $funcSetId){
         id
@@ -44,7 +44,7 @@ query QueryFuncitonSet($funcSetId: ID!){
 }
 '''
 
-q_search_func_similarity = '''
+q_search_func_similarity = r'''
 query SearchFuncSimilarity($funcId: ID!, $setId: [ID!], $topk: Int!){
     function(id: $funcId){
         similarity(functionSetIds: $setId, topK: $topk){
