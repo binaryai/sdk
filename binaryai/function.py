@@ -169,7 +169,7 @@ def query_created_function_set(client) -> list:
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {}
-    l = client.execute(q_clear_index_list, var)
+    l = client.execute(q_query_created_function_set, var)
     return [node["id"] for node in l["viewer"]["createdFunctionSets"]["nodes"]]
 
 def search_sim_funcs(client, function_id=None, *, feature=None, topk=1):
