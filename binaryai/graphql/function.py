@@ -103,6 +103,30 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
 }
 '''
 
+q_search_func_similarity_by_feature = r'''
+query SearchFuncSimilarity($feature: String!, $topk: Int!) {
+  indexList {
+    searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 1, graph: $feature}) {
+      score
+      function {
+        id
+        name
+        sourceCodeInfo {
+          pseudocode
+          filename
+          linenumber
+          packagename
+        }
+        binaryInfo {
+          filename
+          platform
+        }
+      }
+    }
+  }
+}
+'''
+
 q_clear_index_list = r'''
 mutation ClearIndexList {
   clearIndexList {

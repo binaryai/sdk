@@ -216,6 +216,13 @@ class BinaryAIManager(object):
             return targets
         return None
 
+    def retrieve_by_feature(self, ea, topk):
+        feat = bai.ida.get_func_feature(ea)
+        if feat:
+            targets = bai.function.search_sim_funcs(self.client, feature=feat, topk=topk)
+            return targets
+        return None
+
     def upload(self, ea):
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
@@ -465,7 +472,7 @@ class BinaryAIOperations(object):
         func_name = idaapi.get_func_name(ea)
 
         try:
-            targets = self.mgr.retrieve(ea, bai_config['topk'])
+            targets = self.mgr.retrieve_by_feature(ea, bai_config['topk'])
         except DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
         except BinaryAIException as e:
@@ -489,7 +496,7 @@ class BinaryAIOperations(object):
             return skip
         # do match
         try:
-            targets = self.mgr.retrieve(ea, topk=bai_config['topk'])
+            targets = self.mgr.retrieve_by_feature(ea, topk=bai_config['topk'])
         except DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
             return fail
@@ -526,13 +533,16 @@ class BinaryAIOperations(object):
             if idaapi.user_cancelled():
                 stop()
                 return
-            status = self._match_with_check(ea, bai_config['topk'])
-            if status == 1:
-                succ += 1
-            elif status == 0:
-                skip += 1
-            else:
-                fail += 1
+            status = None
+            try:
+                status = self._match_with_check(ea, bai_config['topk'])
+            finally:
+                if status == 1:
+                    succ += 1
+                elif status == 0:
+                    skip += 1
+                else:
+                    fail += 1
         stop()
 
     def upload(self, ea):

@@ -1,5 +1,5 @@
 from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
-from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity, q_clear_index_list, q_insert_index_list
+from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity, q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list
 from .client import Client
 from .error import BinaryAIException
 
@@ -172,7 +172,7 @@ def query_created_function_set(client) -> list:
     l = client.execute(q_clear_index_list, var)
     return [node["id"] for node in l["viewer"]["createdFunctionSets"]["nodes"]]
 
-def search_sim_funcs(client, function_id, *, topk=1):
+def search_sim_funcs(client, function_id=None, *, feature=None, topk=1):
     '''
     search top similar functions of the function in your retrieve list
 
@@ -186,12 +186,21 @@ def search_sim_funcs(client, function_id, *, topk=1):
     '''
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
-    var = {
-        'funcId': function_id,
-        'topk': topk
-    }
-    r = client.execute(q_search_func_similarity, var)
-    return r['indexList']['searchByID']
+    if function_id is not None:
+        var = {
+            'funcId': function_id,
+            'topk': topk
+        }
+        r = client.execute(q_search_func_similarity, var)
+        return r['indexList']['searchByID']
+    elif feature is not None:
+        var = {
+            'feature': feature,
+            'topk': topk
+        }
+        r = client.execute(q_search_func_similarity_by_feature, var)
+        return r['indexList']['searchByRepresentation']
+    raise BinaryAIException("SDK_ERROR", "all arguments are None")
 
 def clear_index_list(client):
     '''
