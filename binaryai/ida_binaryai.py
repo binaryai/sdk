@@ -297,7 +297,7 @@ class SourceCodeViewer(object):
             comment += "target[{}] info: {}:{}\n".format(idx, filename, linenumber)
         packagename = func['function']['sourceCodeInfo']['packagename']
         if packagename is not None:
-            comment += "package name: {}\n".format(packagename) 
+            comment += "package name: {}\n".format(packagename)
         comment += "*/\n"
         return comment
 
@@ -334,6 +334,7 @@ class BinaryAIOptionsForm(idaapi.Form):
         self.mgr = mgr
         self.token = bai_config['token']
         self.form_record = {}
+        retrieveListLabel = "<a href='https://binaryai.tencent.com'>View in browser</a>"
         super(BinaryAIOptionsForm, self).__init__(
             r'''STARTITEM 0
 BUTTON YES* OK
@@ -345,7 +346,7 @@ BinaryAI Options
             <Minsize        :{iminsize}>
             <Token          :{itoken}>
             ''', {
-                'iretrieve_list': self.StringLabel("<a href='https://binaryai.tencent.com'>View in browser</a>", tp=self.FT_HTML_LABEL),
+                'iretrieve_list': self.StringLabel(retrieveListLabel, tp=self.FT_HTML_LABEL),
                 'itopk': self.StringInput(value=str(bai_config["topk"])),
                 'ithreshold': self.StringInput(value=str(bai_config["threshold"])),
                 'iminsize': self.StringInput(value=str(bai_config["minsize"])),
@@ -455,6 +456,7 @@ class CopyrightWindow(QWidget):
 
 class BinaryAIOperations(object):
     mgr: BinaryAIManager
+
     def __init__(self, mgr: BinaryAIManager):
         assert(isinstance(mgr, BinaryAIManager))
         self.mgr = mgr
@@ -481,7 +483,7 @@ class BinaryAIOperations(object):
         if targets is None:
             BinaryAILog.skip(func_name, "get function feature error")
             return
-        
+
         if len(targets) == 0:
             idaapi.warning("No similar function found!")
             return
@@ -796,7 +798,7 @@ def cmd_match():
     output_json = {}
     for ea in idautils.Functions():
         try:
-            targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], flag = 2)
+            targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], flag=2)
         except Exception as e:
             print(str(e))
             continue

@@ -4,7 +4,9 @@ from binaryai import BinaryAIException
 import random
 import string
 
-random_name = lambda N: ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+
+def random_name(N):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
 
 
 def test_upload_and_query(client, data_1):

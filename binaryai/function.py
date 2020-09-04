@@ -1,5 +1,6 @@
 from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
-from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity, q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list
+from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity
+from .graphql.function import q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list
 from .client import Client
 from .error import BinaryAIException
 import time
@@ -71,7 +72,7 @@ def query_function(client, function_id):
     return r['function']
 
 
-def create_function_set(client, name: str, description: str="", *, function_ids: list=None) -> str:
+def create_function_set(client, name: str, description: str = "", *, function_ids: list = None) -> str:
     '''
     Create a new function set and add functions if needed
 
@@ -137,6 +138,7 @@ def insert_function_set_member(client, setid: str, function_ids: list) -> str:
         raise BinaryAIException("SDK_ERROR", "insert functionset failed")
     return new_set_id
 
+
 def query_function_set(client, funcset_id):
     '''
     get function set information by id
@@ -160,6 +162,7 @@ def query_function_set(client, funcset_id):
         raise BinaryAIException("SDK_ERROR", "Response function set id not equal to the funcset_id", r, None)
     return r['functionSet']
 
+
 def query_created_function_set(client) -> list:
     '''
     Get all function sets created by current user
@@ -170,8 +173,9 @@ def query_created_function_set(client) -> list:
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {}
-    l = client.execute(q_query_created_function_set, var)
-    return [node["id"] for node in l["viewer"]["createdFunctionSets"]["nodes"]]
+    result = client.execute(q_query_created_function_set, var)
+    return [node["id"] for node in result["viewer"]["createdFunctionSets"]["nodes"]]
+
 
 def search_sim_funcs(client, function_id=None, *, feature=None, topk=1):
     '''
@@ -203,6 +207,7 @@ def search_sim_funcs(client, function_id=None, *, feature=None, topk=1):
         return r['indexList']['searchByRepresentation']
     raise BinaryAIException("SDK_ERROR", "all arguments are None")
 
+
 def clear_index_list(client):
     '''
     Clear all things in your index list
@@ -215,6 +220,7 @@ def clear_index_list(client):
     var = {}
     client.execute(q_clear_index_list, var)
     return None
+
 
 def insert_index_list(client, *, function_ids: list = None, functionset_ids: list = None):
     '''
@@ -237,7 +243,7 @@ def insert_index_list(client, *, function_ids: list = None, functionset_ids: lis
         "functionsetid": functionset_ids
     }
     # do a back-off based retry
-    # maybe we not synced 
+    # maybe we not synced
     backoff_time = [0, 0.05, 0.1, 0.1, 0.25, 0.5]
     exc = None
     for i in backoff_time:

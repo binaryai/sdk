@@ -3,7 +3,10 @@ import binaryai as bai
 import random
 import string
 
-random_name = lambda N: ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+
+def random_name(N):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+
 
 def test_create_funcset_1(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]

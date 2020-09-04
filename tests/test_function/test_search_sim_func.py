@@ -4,7 +4,10 @@ import random
 import string
 import time
 
-random_name = lambda N: ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+
+def random_name(N):
+    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+
 
 def test_search_sim_func_1(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
@@ -15,11 +18,11 @@ def test_search_sim_func_1(client, data_1):
     func_id = bai.function.upload_function(
         client, func_name, func_feat)
     bai.function.insert_function_set_member(client, funcset_id, [func_id])
-   # Sleep 1 sec to ensure all embeddings have been transfered
+    # Sleep 1 sec to ensure all embeddings have been transfered
     time.sleep(1)
     bai.function.clear_index_list(client)
     bai.function.insert_index_list(client, functionset_ids=[funcset_id])
-   # Sleep 1 sec to ensure index list flushed
+    # Sleep 1 sec to ensure index list flushed
     time.sleep(1)
     sim = bai.function.search_sim_funcs(client, func_id, topk=1)
     assert len(sim) == 1
@@ -43,7 +46,7 @@ def test_search_sim_func_2(client, data_1):
         func_id = bai.function.upload_function(
             client, func['graph']['name'], func_feat)
         bai.function.insert_function_set_member(client, corpus_set, [func_id])
-    
+
     # Sleep 1 sec to ensure all embeddings have been transfered
     time.sleep(1)
 
