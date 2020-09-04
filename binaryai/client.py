@@ -2,7 +2,6 @@ import requests
 import json
 from .error import BinaryAIException
 
-
 class Client(object):
     '''
     BinaryAI api client

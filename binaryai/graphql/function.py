@@ -136,7 +136,7 @@ mutation ClearIndexList {
 '''
 
 q_insert_index_list = r'''
-mutation ClearIndexList($functionid: [ID!], $functionsetid: [ID!]) {
+mutation InsertIndexList($functionid: [ID!], $functionsetid: [ID!]) {
   insertIndexList(input: {functionId: $functionid, functionSetId: $functionsetid}) {
     clientMutationId
   }

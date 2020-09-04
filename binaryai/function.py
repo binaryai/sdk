@@ -2,6 +2,7 @@ from .graphql.function import q_create_function, q_query_function, q_create_func
 from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity, q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list
 from .client import Client
 from .error import BinaryAIException
+import time
 
 
 def upload_function(
@@ -235,5 +236,18 @@ def insert_index_list(client, *, function_ids: list = None, functionset_ids: lis
         "functionid": function_ids,
         "functionsetid": functionset_ids
     }
-    client.execute(q_insert_index_list, var)
+    # do a back-off based retry
+    # maybe we not synced 
+    backoff_time = [0, 0.05, 0.1, 0.1, 0.25, 0.5]
+    exc = None
+    for i in backoff_time:
+        time.sleep(i)
+        try:
+            client.execute(q_insert_index_list, var)
+        except Exception as e:
+            exc = e
+        else:
+            return None
+    if exc is not None:
+        raise exc
     return None

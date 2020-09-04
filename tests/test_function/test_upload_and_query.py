@@ -32,9 +32,6 @@ def test_query_with_topk(client, data_1):
     func_id = bai.function.upload_function(client, "foo", func_feat)
     bai.function.clear_index_list(client)
 
-    sim = bai.function.search_sim_funcs(client, func_id, topk=0)
-    assert (sim is None) or (len(sim) == 0)
-
     try:
         sim = bai.function.search_sim_funcs(client, func_id, topk=-1)
     except BinaryAIException as e:
@@ -53,9 +50,9 @@ def test_query_with_topk(client, data_1):
         assert False, "Backend didn't throw Exception: INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"
 
     try:
-        sim = bai.function.search_sim_funcs(client, func_id, topk=1234567890)
+        sim = bai.function.search_sim_funcs(client, func_id, topk=2049)
     except BinaryAIException as e:
-        assert e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"
+        assert e.code == "INVALID_ARGUMENT"
         sim = e.data
         assert sim is not None
     else:
