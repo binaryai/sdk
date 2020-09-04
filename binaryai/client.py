@@ -80,7 +80,7 @@ class Client(object):
         if "errors" in jdata.keys():
             errors = jdata["errors"][0]
             code = errors['extensions']['code']
-            if not throw_duplicate_error and code == "INVALID_ARGUMENT_DUPLICATE_ARGUMENT":
+            if code == "INVALID_ARGUMENT_DUPLICATE_ARGUMENT" and not throw_duplicate_error:
                 pass
             else:
                 raise BinaryAIException(code, errors['message'], jdata['data'], jdata)
