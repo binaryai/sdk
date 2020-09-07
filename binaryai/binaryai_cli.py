@@ -139,6 +139,11 @@ def MatchFunctions(ctx, file, idat):
     try:
         p = subprocess.Popen(cmd_str, shell=True)
         p.wait()
+
+        # print idb store path
+        idat_base = os.path.splitext(idat)[0]
+        idb_or_i64 = "idb" if idat_base.endswith("idat") else "i64"
+        print("idb file is stored in {}.{}".format(os.path.abspath(file), idb_or_i64))
     except FileNotFoundError as e:
         print(e)
         ctx.exit()
