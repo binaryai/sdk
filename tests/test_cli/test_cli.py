@@ -42,7 +42,7 @@ def test_create_funcset(cfg):
     response = runner.invoke(
         cli, args=["create_funcset", '-c', cfg])
     assert response.exit_code == 0
-    result = json.loads(response.output.replace("'", '"'))
+    result = json.loads(format_response(response.output))
     assert "funcsetid" in result
 
 
