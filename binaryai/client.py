@@ -48,7 +48,7 @@ class Client(object):
                 raise BinaryAIException("SDK_ERROR", "Invalid response: [{}] {}".format(
                     response.status_code, response.content))
 
-    def execute(self, query, var, *, throw_duplicate_error=False):
+    def execute(self, query, var, throw_duplicate_error=False):
         '''
         Send request to API server and get response
 

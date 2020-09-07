@@ -207,7 +207,7 @@ class BinaryAIManager(object):
         bai_config['token'] = token
         return self.client is not None
 
-    def retrieve(self, ea, topk, *, flag=1):
+    def retrieve(self, ea, topk, flag=1):
         func_id = self.upload(ea)
         if func_id:
             targets = bai.function.search_sim_funcs(self.client, func_id, topk=topk)
@@ -288,7 +288,7 @@ class SourceCodeViewer(object):
     def source_code_comment(query, func, idx=0):
         score = func["score"] if func["score"] < 1 else 1
         comment = '/*\n'
-        comment += f"query:  {query}\n"
+        comment += "query:  {}\n".format(query)
         comment += "target[{}]: {}\n".format(idx, func['function']['name'])
         comment += "score:  {:6f}\n".format(score)
         filename = func['function']['sourceCodeInfo']['filename']
@@ -455,9 +455,9 @@ class CopyrightWindow(QWidget):
 
 
 class BinaryAIOperations(object):
-    mgr: BinaryAIManager
+    mgr = None
 
-    def __init__(self, mgr: BinaryAIManager):
+    def __init__(self, mgr):
         assert(isinstance(mgr, BinaryAIManager))
         self.mgr = mgr
 

@@ -10,14 +10,13 @@ def upload_function(
         client,
         name,
         feature,
-        *,
         source_code=None,
         source_file=None,
         source_line=None,
         binary_file=None,
         platform=None,
         throw_duplicate_error=False,
-) -> str:
+):
     '''
     upload function to BinaryAI server
 
@@ -72,7 +71,7 @@ def query_function(client, function_id):
     return r['function']
 
 
-def create_function_set(client, name: str, description: str = "", *, function_ids: list = None) -> str:
+def create_function_set(client, name, description="", function_ids=None):
     '''
     Create a new function set and add functions if needed
 
@@ -109,7 +108,7 @@ def create_function_set(client, name: str, description: str = "", *, function_id
     return set_id
 
 
-def insert_function_set_member(client, setid: str, function_ids: list) -> str:
+def insert_function_set_member(client, setid, function_ids):
     '''
     Insert functions into certain functionset
 
@@ -163,7 +162,7 @@ def query_function_set(client, funcset_id):
     return r['functionSet']
 
 
-def query_created_function_set(client) -> list:
+def query_created_function_set(client):
     '''
     Get all function sets created by current user
 
@@ -177,7 +176,7 @@ def query_created_function_set(client) -> list:
     return [node["id"] for node in result["viewer"]["createdFunctionSets"]["nodes"]]
 
 
-def search_sim_funcs(client, function_id=None, *, feature=None, topk=1):
+def search_sim_funcs(client, function_id=None, feature=None, topk=1):
     '''
     search top similar functions of the function in your retrieve list
 
@@ -222,7 +221,7 @@ def clear_index_list(client):
     return None
 
 
-def insert_index_list(client, *, function_ids: list = None, functionset_ids: list = None):
+def insert_index_list(client, function_ids=None, functionset_ids=None):
     '''
     Insert functions into your retrive list
 
