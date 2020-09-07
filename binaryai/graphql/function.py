@@ -1,8 +1,12 @@
-q_create_function = '''
+q_create_function = r'''
 mutation CreateFunction($name: String!, $sourceCode: String, $sourceFile: String, $sourceLine: Int,
-                        $language: String, $feature: String!, $functionSetId: ID){
-    createFunction(input: {name: $name, sourceCode: $sourceCode, sourceFile: $sourceFile, sourceLine: $sourceLine,
-                            language: $language, feature: $feature, functionSetId: $functionSetId}){
+                        $binaryFileName: String, $platform: String, $feature: String!) {
+    createFunction(input: {
+        name: $name,
+        representationInfo: {type: IR_IDA, version: 1, graph: $feature},
+        binaryInfo: {filename: $binaryFileName, platform: $platform},
+        sourceCodeInfo: {pseudocode: $sourceCode, filename: $sourceFile, linenumber: $sourceLine}
+    }) {
         function {
             id
         }
@@ -10,22 +14,39 @@ mutation CreateFunction($name: String!, $sourceCode: String, $sourceFile: String
 }
 '''
 
-q_query_function = '''
+q_query_function = r'''
 query QueryFunction($funcId: ID!){
     function(id: $funcId){
         id
         name
-        sourceCode
-        sourceFile
-        sourceLine
-        language
+        sourceCodeInfo {
+            pseudocode
+            filename
+            linenumber
+        }
+        binaryInfo {
+            filename
+            platform
+        }
     }
 }
 '''
 
-q_create_function_set = '''
-mutation CreateFunctionSet($functionIds: [ID!]){
-    createFunctionSet(input: {functionIds: $functionIds}){
+q_create_function_set = r'''
+mutation CreateFunctionSet($name: String!, $description: String){
+    createFunctionSet(input: {name: $name, description: $description}){
+        functionSet{
+            id
+            name
+            description
+        }
+    }
+}
+'''
+
+q_insert_function_set_members = r'''
+mutation InsertFunctionSetMembers($setID: ID!, $functionIds: [ID!]!){
+    insertFunctionSetMembers(input: {functionSetID: $setID, functionIDs: $functionIds}){
         functionSet{
             id
         }
@@ -33,31 +54,91 @@ mutation CreateFunctionSet($functionIds: [ID!]){
 }
 '''
 
-q_query_function_set = '''
+q_query_function_set = r'''
 query QueryFuncitonSet($funcSetId: ID!){
     functionSet(id: $funcSetId){
         id
         functions {
-            id
+            nodes {
+                id
+            }
         }
     }
 }
 '''
 
-q_search_func_similarity = '''
-query SearchFuncSimilarity($funcId: ID!, $setId: [ID!], $topk: Int!){
-    function(id: $funcId){
-        similarity(functionSetIds: $setId, topK: $topk){
+q_query_created_function_set = r'''
+query QueryCreatedFuncitonSet {
+  viewer {
+    createdFunctionSets {
+      nodes {
+        id
+      }
+    }
+  }
+}
+'''
+
+q_search_func_similarity = r'''
+query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
+    indexList {
+        searchByID(id: $funcId, topK: $topk) {
             score
-            function{
+            function {
                 id
                 name
-                sourceCode
-                sourceFile
-                sourceLine
-                language
+                sourceCodeInfo {
+                    pseudocode
+                    filename
+                    linenumber
+                    packagename
+                }
+                binaryInfo {
+                    filename
+                    platform
+                }
             }
         }
     }
+}
+'''
+
+q_search_func_similarity_by_feature = r'''
+query SearchFuncSimilarity($feature: String!, $topk: Int!) {
+  indexList {
+    searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 1, graph: $feature}) {
+      score
+      function {
+        id
+        name
+        sourceCodeInfo {
+          pseudocode
+          filename
+          linenumber
+          packagename
+        }
+        binaryInfo {
+          filename
+          platform
+        }
+      }
+    }
+  }
+}
+'''
+
+q_clear_index_list = r'''
+mutation ClearIndexList {
+  clearIndexList {
+    clientMutationId
+  }
+}
+'''
+
+q_insert_index_list = r'''
+mutation InsertIndexList($functionid: [ID!], $functionsetid: [ID!]) {
+  insertIndexList(input: {functionId: $functionid, functionSetId: $functionsetid}) {
+    clientMutationId
+  }
 }
 '''

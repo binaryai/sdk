@@ -1,7 +1,9 @@
-from .graphql.function import q_create_function, q_query_function, q_create_function_set
-from .graphql.function import q_query_function_set, q_search_func_similarity
+from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
+from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity
+from .graphql.function import q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list
 from .client import Client
 from .error import BinaryAIException
+import time
 
 
 def upload_function(
@@ -11,8 +13,9 @@ def upload_function(
         source_code=None,
         source_file=None,
         source_line=None,
-        language=None,
-        funcset_id=None
+        binary_file=None,
+        platform=None,
+        throw_duplicate_error=False,
 ):
     '''
     upload function to BinaryAI server
@@ -24,9 +27,9 @@ def upload_function(
         source_code(string): Source code of the function
         source_file(string): Source file of the function
         source_line(int): line number of the function
-        language(string): Programming language of the function
-        funcset_id(string): If functionSetID specified, it would be added into that set when adding function;
-                            if not, it would not be added into any set
+        binary_file(string): Name of the binary file which contains this function
+        platform(string): Platform of the binary file, for example, metapc64, or x86_64, or mipsel
+        throw_duplicate_error(bool): If a duplicate error should be raised when two name equals
 
     Returns:
         * **id** (string) -- id of this function
@@ -39,10 +42,10 @@ def upload_function(
         'sourceCode': source_code,
         'sourceFile': source_file,
         'sourceLine': source_line,
-        'language': language,
-        'functionSetId': funcset_id
+        'binaryFileName': binary_file,
+        'platform': platform
     }
-    r = client.execute(q_create_function, var)
+    r = client.execute(q_create_function, var, throw_duplicate_error=throw_duplicate_error)
     return r['createFunction']['function']['id']
 
 
@@ -68,12 +71,15 @@ def query_function(client, function_id):
     return r['function']
 
 
-def create_function_set(client, function_ids=None):
+def create_function_set(client, name, description="", function_ids=None):
     '''
     Create a new function set and add functions if needed
 
     Args:
         client(binaryai.client.Client): Client instance
+        name(string): Name of the new functionset
+        description(string): Description of the new functionset.
+                             Can be empty string
         function_ids(list): Functions to be inserted into the new function set.
                             Can be null so no functions will be added into the set.
 
@@ -83,10 +89,53 @@ def create_function_set(client, function_ids=None):
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
-        'functionIds': function_ids
+        'name': name,
+        "description": description,
     }
-    r = client.execute(q_create_function_set, var)
-    return r['createFunctionSet']['functionSet']['id']
+    r = client.execute(q_create_function_set, var, throw_duplicate_error=True)
+    set_id = r['createFunctionSet']['functionSet']['id']
+    if not len(set_id) > 0:
+        raise BinaryAIException("SDK_ERROR", "create functionset failed")
+    if function_ids is not None:
+        var = {
+            'setID': set_id,
+            "functionIds": function_ids,
+        }
+        r = client.execute(q_insert_function_set_members, var)
+        new_set_id = r['insertFunctionSetMembers']['functionSet']['id']
+        if not len(set_id) == len(new_set_id):
+            raise BinaryAIException("SDK_ERROR", "insert functionset failed")
+    return set_id
+
+
+def insert_function_set_member(client, setid, function_ids):
+    '''
+    Insert functions into certain functionset
+
+    Args:
+        client(binaryai.client.Client): Client instance
+        setid(string): ID of the target
+        function_ids(list): Functions to be inserted into the new function set.
+                            Can be null so no functions will be added into the set.
+
+    Returns:
+        * **id** (string) -- id of the function set
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    assert(isinstance(function_ids, list))
+    assert(len(setid) > 0)
+    if len(function_ids) == 0:
+        return setid
+    var = {
+        'setID': setid,
+        "functionIds": function_ids,
+    }
+    r = client.execute(q_insert_function_set_members, var)
+    new_set_id = r['insertFunctionSetMembers']['functionSet']['id']
+    if not setid == new_set_id:
+        raise BinaryAIException("SDK_ERROR", "insert functionset failed")
+    return new_set_id
 
 
 def query_function_set(client, funcset_id):
@@ -113,14 +162,27 @@ def query_function_set(client, funcset_id):
     return r['functionSet']
 
 
-def search_sim_funcs(client, function_id, funcset_ids=None, topk=1):
+def query_created_function_set(client):
     '''
-    search top similar functions of the function
+    Get all function sets created by current user
+
+    Returns:
+        * **functionSetIDs** (list) -- functionSet's id
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    var = {}
+    result = client.execute(q_query_created_function_set, var)
+    return [node["id"] for node in result["viewer"]["createdFunctionSets"]["nodes"]]
+
+
+def search_sim_funcs(client, function_id=None, feature=None, topk=1):
+    '''
+    search top similar functions of the function in your retrieve list
 
     Args:
         client(binaryai.client.Client): Client instance
         function_id(string): id of the function
-        funcset_ids(list): ids of the function set to be compared, None means BinaryAI official sets.
         topk(int): return first topk results, default value is 1.
 
     Returns:
@@ -128,10 +190,69 @@ def search_sim_funcs(client, function_id, funcset_ids=None, topk=1):
     '''
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    if function_id is not None:
+        var = {
+            'funcId': function_id,
+            'topk': topk
+        }
+        r = client.execute(q_search_func_similarity, var)
+        return r['indexList']['searchByID']
+    elif feature is not None:
+        var = {
+            'feature': feature,
+            'topk': topk
+        }
+        r = client.execute(q_search_func_similarity_by_feature, var)
+        return r['indexList']['searchByRepresentation']
+    raise BinaryAIException("SDK_ERROR", "all arguments are None")
+
+
+def clear_index_list(client):
+    '''
+    Clear all things in your index list
+
+    Returns:
+        None
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    var = {}
+    client.execute(q_clear_index_list, var)
+    return None
+
+
+def insert_index_list(client, function_ids=None, functionset_ids=None):
+    '''
+    Insert functions into your retrive list
+
+    Args:
+        client(binaryai.client.Client): Client instance
+        function_ids(list): Functions to be inserted into the index list.
+                            Can be null so no functions will be added into the list.
+        functionset_ids(list): Functionsets to be inserted into the index list.
+                            Can be null so no sets will be added into the list.
+
+    Returns:
+        None
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
-        'funcId': function_id,
-        'setId': funcset_ids,
-        'topk': topk
+        "functionid": function_ids,
+        "functionsetid": functionset_ids
     }
-    r = client.execute(q_search_func_similarity, var)
-    return r['function']['similarity']
+    # do a back-off based retry
+    # maybe we not synced
+    backoff_time = [0, 0.05, 0.1, 0.1, 0.25, 0.5]
+    exc = None
+    for i in backoff_time:
+        time.sleep(i)
+        try:
+            client.execute(q_insert_index_list, var)
+        except Exception as e:
+            exc = e
+        else:
+            return None
+    if exc is not None:
+        raise exc
+    return None
