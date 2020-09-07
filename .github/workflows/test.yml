@@ -23,7 +23,7 @@ jobs:
         pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
 
   test_py2:
-  needs: [ test_py2 ]
+    needs: [ test_py2 ]
     if: ${{ contains(github.event.review.state, 'approved') }}
     runs-on: [self-hosted, py2.7]
     steps:
