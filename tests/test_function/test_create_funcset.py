@@ -5,7 +5,7 @@ import string
 
 
 def random_name(N):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+    return ''.join([random.choice(string.ascii_uppercase + string.digits) for _ in range(N)])
 
 
 def test_create_funcset_1(client, data_1):

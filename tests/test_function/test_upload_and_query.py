@@ -6,7 +6,7 @@ import string
 
 
 def random_name(N):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+    return ''.join([random.choice(string.ascii_uppercase + string.digits) for _ in range(N)])
 
 
 def test_upload_and_query(client, data_1):

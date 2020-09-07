@@ -8,8 +8,10 @@ import string
 
 runner = CliRunner()
 
+
 def random_name(N):
-    return ''.join(random.choices(string.ascii_uppercase + string.digits, k=N))
+    return ''.join([random.choice(string.ascii_uppercase + string.digits) for _ in range(N)])
+
 
 def format_response(response):
     return response.replace("'", '"').replace(' ', '').replace("None", "null")
