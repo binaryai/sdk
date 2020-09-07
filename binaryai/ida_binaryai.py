@@ -797,13 +797,16 @@ def cmd_match():
     bai_mgr = BinaryAIManager()
     output_json = {}
     for ea in idautils.Functions():
+        if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
+            continue
         try:
             targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], flag=2)
         except Exception as e:
             print(str(e))
             continue
 
-        if targets and func_id:
+        if targets and func_id and \
+                targets[0]['score'] >= bai_config['threshold']:
             bai_mark.apply_bai_high_score(
                 ea,
                 targets[0]['function']['name'],
