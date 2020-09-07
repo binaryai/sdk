@@ -81,19 +81,20 @@ def QueryFunction(ctx, funcid, cfg):
     cfg_dict = json.loads(cfg.read())
     client = Client(cfg_dict['token'], cfg_dict['url'])
     result = query_function(client, funcid)
-    result.pop("sourceCode")
+    result.pop("sourceCode", None)
     result = json.dumps(result, sort_keys=True, indent=2)
     click.echo(result)
 
 
 @cli.command('create_funcset', short_help='create a new function set')
+@click.option('--name', '-n', help='funcset name', type=str, required=True)
 @click.option('--cfg', '-c', help='binaryai configuration file', type=click.File(), show_default=True,
               default=os.path.join(get_user_idadir(), "cfg", "{}.cfg".format(binaryai.__name__)))
 @click.pass_context
-def CreateFuncSet(ctx, cfg):
+def CreateFuncSet(ctx, cfg, name):
     cfg_dict = json.loads(cfg.read())
     client = Client(cfg_dict['token'], cfg_dict['url'])
-    result = create_function_set(client)
+    result = create_function_set(client, name)
     click.echo(json.dumps({"funcsetid": result}))
 
 
