@@ -384,19 +384,19 @@ BinaryAI Options
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
             if not (0 < topk <= 15):
-                topk = BinaryAIManager.Default['topk']
+                topk = BinaryAIConfig.Default['topk']
             self.form_record['topk'] = topk
 
         if fid == self.ithreshold.id:
             threshold = self._get_float(self.ithreshold)
             if not (0 < threshold <= 1):
-                threshold = BinaryAIManager.Default['threshold']
+                threshold = BinaryAIConfig.Default['threshold']
             self.form_record['threshold'] = threshold
 
         if fid == self.iminsize.id:
             minsize = int(self._get_float(self.iminsize))
             if not (1 <= minsize <= 5):
-                minsize = BinaryAIManager.Default['minsize']
+                minsize = BinaryAIConfig.Default['minsize']
             self.form_record['minsize'] = minsize
 
         if fid == self.itoken.id:
@@ -528,10 +528,11 @@ class BinaryAIOperations(object):
             BinaryAILog.fatal(e)
         if targets is None:
             return fail
-        if not bai_mark.apply_bai_high_score(
-                ea,
-                targets[0]['function']['name'],
-                targets[0]['score']):
+        if targets[0]['score'] < bai_config['threshold'] or \
+                not bai_mark.apply_bai_high_score(
+                    ea,
+                    targets[0]['function']['name'],
+                    targets[0]['score']):
             return skip
         return succ
 
@@ -766,7 +767,7 @@ class UIManager:
         self.operations.apply(self.cview)
 
 
-class Plugin(idaapi.plugin_t):
+class BinaryAIIDAPlugin(idaapi.plugin_t):
     wanted_name = "BinaryAI"
     comment, help, wanted_hotkey = "", "", ""
     flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
@@ -774,9 +775,9 @@ class Plugin(idaapi.plugin_t):
     def init(self):
         if idaapi.init_hexrays_plugin():
             bai_mgr = BinaryAIManager()
-            ui_mgr = UIManager(Plugin.wanted_name, bai_mgr)
+            ui_mgr = UIManager(BinaryAIIDAPlugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
-                return idaapi.PLUGIN_OK
+                return idaapi.PLUGIN_KEEP
         return idaapi.PLUGIN_SKIP
 
     def run(self, ctx):
@@ -788,7 +789,7 @@ class Plugin(idaapi.plugin_t):
 
 def PLUGIN_ENTRY():
     BinaryAILog.level = BinaryAILog.DEBUG
-    return Plugin()
+    return BinaryAIIDAPlugin()
 
 
 def get_user_idadir():
