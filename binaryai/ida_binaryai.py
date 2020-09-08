@@ -785,6 +785,8 @@ def cmd_upload():
     succ = 0
     bai_mgr = BinaryAIManager()
     for ea in idautils.Functions():
+        if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
+            continue
         try:
             bai_mgr.upload(ea)
             succ += 1
