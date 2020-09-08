@@ -8,7 +8,7 @@ import click
 import json
 import os
 
-# diff between py3 and py3
+# diff between py2 and py3
 try:
     FileNotFoundError
 except NameError:
