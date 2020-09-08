@@ -8,6 +8,12 @@ import click
 import json
 import os
 
+# diff between py3 and py3
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 def get_user_idadir():
     system = platform.system()
@@ -111,17 +117,18 @@ def QueryFuncSet(ctx, funcset, cfg):
 
 
 @cli.command('upload_functions', short_help='upload the functions of the chosen file')
-@click.option('--file', '-f', help='file to be uploaded', type=click.File(), required=True)
-@click.option('--funcset', '-s', help='funcset id', type=str, required=True)
-@click.option('--idat', '-i', help='path of idat/idat64', type=click.File(), required=True)
+@click.option('--file', '-f', help='file to be uploaded', type=str, required=True)
+@click.option('--idat', '-i', help='path of idat/idat64', type=str, required=True)
 @click.pass_context
-def UploadFunctions(ctx, file, funcset, idat):
+def UploadFunctions(ctx, file, idat):
     plugin_path = get_plugin_path()
     log_path = os.path.join(get_user_idadir(), "log.txt")
-    cmd_str = '"{}" -L"{}" -A -S"{} {} 1" {}'.format(idat.name, log_path, plugin_path, funcset, file.name)
+    cmd_str = '"{}" -L"{}" -A -S"{} 1" {}'.format(idat, log_path, plugin_path, file)
     try:
-        p = subprocess.Popen(cmd_str)
-        p.wait()
+        # subprocess.Popen not work (when Popen or call, FileNotFound raised)
+        p = os.popen(cmd_str)
+        p.read()
+        p.close()
     except FileNotFoundError as e:
         print(e)
         ctx.exit()
