@@ -802,7 +802,7 @@ def cmd_match():
         if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
             continue
         try:
-            targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], flag=2)
+            targets, func_id = bai_mgr.retrieve(ea, 1, flag=2)
         except Exception as e:
             print(str(e))
             continue
