@@ -490,7 +490,7 @@ class BinaryAIOperations(object):
 
         cview.set_user_data(ea, targets)
 
-    def _match_with_check(self, ea, topk):
+    def _match_with_check(self, ea):
         fail, skip, succ = -1, 0, 1
         # < minsize
         pfn = idaapi.get_func(ea)
@@ -498,7 +498,7 @@ class BinaryAIOperations(object):
             return skip
         # do match
         try:
-            targets = self.mgr.retrieve_by_feature(ea, topk=bai_config['topk'])
+            targets = self.mgr.retrieve_by_feature(ea, topk=1)
         except DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
             return fail
@@ -537,7 +537,7 @@ class BinaryAIOperations(object):
                 return
             status = None
             try:
-                status = self._match_with_check(ea, bai_config['topk'])
+                status = self._match_with_check(ea)
             finally:
                 if status == 1:
                     succ += 1
