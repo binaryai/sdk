@@ -223,7 +223,7 @@ class BinaryAIManager(object):
             return targets
         return None
 
-    def upload(self, ea):
+    def upload(self, ea, funcset=None):
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
         hf = idaapi.hexrays_failure_t()
@@ -232,6 +232,8 @@ class BinaryAIManager(object):
             return None
         func_id = bai.function.upload_function(
             self.client, func_name, func_feat, source_code=str(cfunc))
+        if funcset and func_id:
+            bai.function.insert_function_set_member(self.client, funcset, [func_id])
         return func_id
 
 
@@ -781,14 +783,14 @@ def get_user_idadir():
         return ""
 
 
-def cmd_upload():
+def cmd_upload(funcset=None):
     succ = 0
     bai_mgr = BinaryAIManager()
     for ea in idautils.Functions():
         if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
             continue
         try:
-            bai_mgr.upload(ea)
+            bai_mgr.upload(ea, funcset)
             succ += 1
         except Exception:
             continue
@@ -824,8 +826,8 @@ def cmd_match():
 
 if __name__ == "__main__":
     ida_auto.auto_wait()
-    if idc.ARGV[-1] == '1':
-        cmd_upload()
-    if idc.ARGV[-1] == '2':
+    if idc.ARGV[1] == '1':
+        cmd_upload(*idc.ARGV[2:])
+    elif idc.ARGV[1] == '2':
         cmd_match()
     idaapi.qexit(0)

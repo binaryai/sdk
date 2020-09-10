@@ -119,11 +119,12 @@ def QueryFuncSet(ctx, funcset, cfg):
 @cli.command('upload_functions', short_help='upload the functions of the chosen file')
 @click.option('--file', '-f', help='file to be uploaded', type=str, required=True)
 @click.option('--idat', '-i', help='path of idat/idat64', type=str, required=True)
+@click.option('--funcset', '-s', help='function set you want to upload to', type=str, required=False, default='')
 @click.pass_context
-def UploadFunctions(ctx, file, idat):
+def UploadFunctions(ctx, file, idat, funcset):
     plugin_path = get_plugin_path()
     log_path = os.path.join(get_user_idadir(), "log.txt")
-    cmd_str = '"{}" -L"{}" -A -S"{} 1" {}'.format(idat, log_path, plugin_path, file)
+    cmd_str = '"{}" -L"{}" -A -S"{} 1 {}" {}'.format(idat, log_path, plugin_path, funcset, file)
     try:
         # subprocess.Popen not work (when Popen or call, FileNotFound raised)
         p = os.popen(cmd_str)
