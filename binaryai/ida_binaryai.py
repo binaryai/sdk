@@ -223,7 +223,7 @@ class BinaryAIManager(object):
             return targets
         return None
 
-    def upload(self, ea):
+    def upload(self, ea, funcset=None):
         func_feat = bai.ida.get_func_feature(ea)
         func_name = idaapi.get_func_name(ea)
         hf = idaapi.hexrays_failure_t()
@@ -232,6 +232,8 @@ class BinaryAIManager(object):
             return None
         func_id = bai.function.upload_function(
             self.client, func_name, func_feat, source_code=str(cfunc))
+        if funcset and func_id:
+            bai.function.insert_function_set_member(self.client, funcset, [func_id])
         return func_id
 
 
@@ -305,7 +307,7 @@ class SourceCodeViewer(object):
     def source_code_body(func):
         code = func['function']['sourceCodeInfo']['pseudocode']
         if code is None:
-            body = "/* No pseudoCode available for this function */"
+            body = ["/* No pseudoCode available for this function */"]
         else:
             body = code.split("\n")
         return filter(lambda l: not l.lstrip().startswith('#'), body)
@@ -490,7 +492,7 @@ class BinaryAIOperations(object):
 
         cview.set_user_data(ea, targets)
 
-    def _match_with_check(self, ea, topk):
+    def _match_with_check(self, ea):
         fail, skip, succ = -1, 0, 1
         # < minsize
         pfn = idaapi.get_func(ea)
@@ -498,7 +500,7 @@ class BinaryAIOperations(object):
             return skip
         # do match
         try:
-            targets = self.mgr.retrieve_by_feature(ea, topk=bai_config['topk'])
+            targets = self.mgr.retrieve_by_feature(ea, topk=1)
         except DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
             return fail
@@ -537,7 +539,7 @@ class BinaryAIOperations(object):
                 return
             status = None
             try:
-                status = self._match_with_check(ea, bai_config['topk'])
+                status = self._match_with_check(ea)
             finally:
                 if status == 1:
                     succ += 1
@@ -781,12 +783,14 @@ def get_user_idadir():
         return ""
 
 
-def cmd_upload():
+def cmd_upload(funcset=None):
     succ = 0
     bai_mgr = BinaryAIManager()
     for ea in idautils.Functions():
+        if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
+            continue
         try:
-            bai_mgr.upload(ea)
+            bai_mgr.upload(ea, funcset)
             succ += 1
         except Exception:
             continue
@@ -797,13 +801,16 @@ def cmd_match():
     bai_mgr = BinaryAIManager()
     output_json = {}
     for ea in idautils.Functions():
+        if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
+            continue
         try:
-            targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], flag=2)
+            targets, func_id = bai_mgr.retrieve(ea, 1, flag=2)
         except Exception as e:
             print(str(e))
             continue
 
-        if targets and func_id:
+        if targets and func_id and \
+                targets[0]['score'] >= bai_config['threshold']:
             bai_mark.apply_bai_high_score(
                 ea,
                 targets[0]['function']['name'],
@@ -819,8 +826,8 @@ def cmd_match():
 
 if __name__ == "__main__":
     ida_auto.auto_wait()
-    if idc.ARGV[-1] == '1':
-        cmd_upload()
-    if idc.ARGV[-1] == '2':
+    if idc.ARGV[1] == '1':
+        cmd_upload(*idc.ARGV[2:])
+    elif idc.ARGV[1] == '2':
         cmd_match()
     idaapi.qexit(0)
