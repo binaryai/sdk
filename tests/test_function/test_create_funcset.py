@@ -63,4 +63,4 @@ def test_query_empty_funcset(client):
     funcset_id = bai.function.create_function_set(client, name)
     fset = bai.function.query_function_set(client, funcset_id)
     funcs = fset['functions']['nodes']
-    assert funcs is None
+    assert not funcs
