@@ -753,8 +753,17 @@ class BinaryAIIDAPlugin(idaapi.plugin_t):
     comment, help, wanted_hotkey = "", "", ""
     flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
 
+    def check_ida(self):
+        if idaapi.IDA_SDK_VERSION < 730:
+            return False
+        if not idaapi.init_hexrays_plugin():
+            return False
+        if not idaapi.is_idaq():
+            return False
+        return True
+
     def init(self):
-        if idaapi.init_hexrays_plugin():
+        if idaapi.init_hexrays_plugin() and self.check_ida():
             bai_mgr = BinaryAIManager()
             ui_mgr = UIManager(BinaryAIIDAPlugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
