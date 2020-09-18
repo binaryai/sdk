@@ -151,7 +151,6 @@ def MatchFunctions(ctx, file, idat):
         if retcode != 0:
             print("Match functions fail, please check {} for more details".format(log_path))
             ctx.exit()
-        
         # print idb store path
         idat_base = os.path.splitext(idat)[0]
         idb_or_i64 = "idb" if idat_base.endswith("idat") else "i64"
