@@ -755,19 +755,24 @@ class BinaryAIIDAPlugin(idaapi.plugin_t):
 
     def check_ida(self):
         if idaapi.IDA_SDK_VERSION < 730:
+            BinaryAILog.log(BinaryAILog.ERROR, "Need IDA >= 7.3")
             return False
         if not idaapi.init_hexrays_plugin():
+            BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler not exists")
             return False
         if not idaapi.is_idaq():
+            BinaryAILog.log(BinaryAILog.INFO, "Plugin should not be loaded in idaq mode")
             return False
         return True
 
     def init(self):
-        if idaapi.init_hexrays_plugin() and self.check_ida():
+        if self.check_ida():
             bai_mgr = BinaryAIManager()
             ui_mgr = UIManager(BinaryAIIDAPlugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
                 return idaapi.PLUGIN_KEEP
+            else:
+                BinaryAILog.log(BinaryAILog.ERROR, "Register actions fail")
         return idaapi.PLUGIN_SKIP
 
     def run(self, ctx):
