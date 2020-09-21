@@ -58,6 +58,13 @@ def test_create_funcset_3(client, data_1):
     assert set([func['id'] for func in funcs]) == set(func_ids)
 
 
+def test_create_funcset_4(client):
+    name = random_name(32)
+    funcset_id_A = bai.function.create_function_set(client, name)
+    funcset_id_B = bai.function.create_function_set(client, name, throw_duplicate_error=False)
+    assert funcset_id_A == funcset_id_B
+
+
 def test_query_empty_funcset(client):
     name = random_name(32)
     funcset_id = bai.function.create_function_set(client, name)

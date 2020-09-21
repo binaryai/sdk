@@ -77,7 +77,7 @@ def query_function(client, function_id):
     return r['function']
 
 
-def create_function_set(client, name, description="", function_ids=None):
+def create_function_set(client, name, description="", function_ids=None, throw_duplicate_error=True):
     '''
     Create a new function set and add functions if needed
 
@@ -98,7 +98,7 @@ def create_function_set(client, name, description="", function_ids=None):
         'name': name,
         "description": description,
     }
-    r = client.execute(q_create_function_set, var, throw_duplicate_error=True)
+    r = client.execute(q_create_function_set, var, throw_duplicate_error=throw_duplicate_error)
     set_id = r['createFunctionSet']['functionSet']['id']
     if not len(set_id) > 0:
         raise BinaryAIException("SDK_ERROR", "create functionset failed")
