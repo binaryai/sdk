@@ -17,6 +17,7 @@ def upload_function(
         platform=None,
         throw_duplicate_error=False,
         pseudo_code=None,
+        package_name=None
 ):
     '''
     upload function to BinaryAI server
@@ -32,6 +33,7 @@ def upload_function(
         platform(string): Platform of the binary file, for example, metapc64, or x86_64, or mipsel
         throw_duplicate_error(bool): If a duplicate error should be raised when two name equals
         pseudo_code(string): Pseudo code of the function
+        package_name(string): Package name containing this function
 
     Returns:
         * **id** (string) -- id of this function
@@ -46,7 +48,8 @@ def upload_function(
         'sourceLine': source_line,
         'binaryFileName': binary_file,
         'platform': platform,
-        'pseudoCode': pseudo_code
+        'pseudoCode': pseudo_code,
+        'packageName': package_name
     }
     r = client.execute(q_create_function, var, throw_duplicate_error=throw_duplicate_error)
     return r['createFunction']['function']['id']
