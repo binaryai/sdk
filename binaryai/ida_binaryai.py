@@ -856,7 +856,7 @@ def cmd_match(funcset_ids=None):
 
 if __name__ == "__main__":
     ida_auto.auto_wait()
-    recode = 0
+    retcode = 0
     if check_ida():
         if idc.ARGV[1] == '1':
             cmd_upload(*idc.ARGV[2:])
