@@ -498,6 +498,7 @@ class BinaryAIOperations(object):
         func_name = idaapi.get_func_name(ea)
         funcset_ids = [self.mgr.funcset] if not bai_config['usepublic'] else None
 
+        targets = None
         try:
             targets = self.mgr.retrieve(ea, bai_config['topk'], funcset_ids)
         except DecompilationFailure as e:
@@ -566,6 +567,9 @@ class BinaryAIOperations(object):
         stop()
 
     def upload(self, ea):
+        if not self.check_before_use(check_funcset=True):
+            return
+        func_id = None
         try:
             func_id = self.mgr.upload(ea, self.mgr.funcset)
         except DecompilationFailure as e:
