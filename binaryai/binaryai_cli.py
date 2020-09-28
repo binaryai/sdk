@@ -9,6 +9,13 @@ import json
 import os
 
 
+# diff between py2 and py3
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
+
 def get_user_idadir():
     system = platform.system()
     if system == 'Windows':
