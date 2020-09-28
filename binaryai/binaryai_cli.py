@@ -126,10 +126,11 @@ def UploadFunctions(ctx, file, idat, funcset):
     log_path = os.path.join(get_user_idadir(), "log.txt")
     cmd_str = '"{}" -L"{}" -A -S"{} 1 {}" {}'.format(idat, log_path, plugin_path, funcset, file)
     try:
-        # subprocess.Popen not work (when Popen or call, FileNotFound raised)
-        p = os.popen(cmd_str)
-        p.read()
-        p.close()
+        p = subprocess.Popen(cmd_str, shell=True)
+        retcode = p.wait()
+        if retcode != 0:
+            print("Upload functions fail, please check {} for more detials".format(log_path))
+            ctx.exit()
     except FileNotFoundError as e:
         print(e)
         ctx.exit()
@@ -146,8 +147,10 @@ def MatchFunctions(ctx, file, idat):
     cmd_str = '"{}" -L"{}" -A -S"{} 2" {}'.format(idat, log_path, plugin_path, file)
     try:
         p = subprocess.Popen(cmd_str, shell=True)
-        p.wait()
-
+        retcode = p.wait()
+        if retcode != 0:
+            print("Match functions fail, please check {} for more details".format(log_path))
+            ctx.exit()
         # print idb store path
         idat_base = os.path.splitext(idat)[0]
         idb_or_i64 = "idb" if idat_base.endswith("idat") else "i64"
