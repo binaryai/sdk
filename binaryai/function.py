@@ -16,6 +16,8 @@ def upload_function(
         binary_file=None,
         platform=None,
         throw_duplicate_error=False,
+        pseudo_code=None,
+        package_name=None
 ):
     '''
     upload function to BinaryAI server
@@ -30,6 +32,8 @@ def upload_function(
         binary_file(string): Name of the binary file which contains this function
         platform(string): Platform of the binary file, for example, metapc64, or x86_64, or mipsel
         throw_duplicate_error(bool): If a duplicate error should be raised when two name equals
+        pseudo_code(string): Pseudo code of the function
+        package_name(string): Package name containing this function
 
     Returns:
         * **id** (string) -- id of this function
@@ -43,7 +47,9 @@ def upload_function(
         'sourceFile': source_file,
         'sourceLine': source_line,
         'binaryFileName': binary_file,
-        'platform': platform
+        'platform': platform,
+        'pseudoCode': pseudo_code,
+        'packageName': package_name
     }
     r = client.execute(q_create_function, var, throw_duplicate_error=throw_duplicate_error)
     return r['createFunction']['function']['id']
@@ -71,7 +77,7 @@ def query_function(client, function_id):
     return r['function']
 
 
-def create_function_set(client, name, description="", function_ids=None):
+def create_function_set(client, name, description="", function_ids=None, throw_duplicate_error=True):
     '''
     Create a new function set and add functions if needed
 
@@ -92,7 +98,7 @@ def create_function_set(client, name, description="", function_ids=None):
         'name': name,
         "description": description,
     }
-    r = client.execute(q_create_function_set, var, throw_duplicate_error=True)
+    r = client.execute(q_create_function_set, var, throw_duplicate_error=throw_duplicate_error)
     set_id = r['createFunctionSet']['functionSet']['id']
     if not len(set_id) > 0:
         raise BinaryAIException("SDK_ERROR", "create functionset failed")
