@@ -770,13 +770,26 @@ class UIManager:
         self.operations.apply(self.cview)
 
 
+def check_ida():
+    if idaapi.IDA_SDK_VERSION < 730:
+        BinaryAILog.log(BinaryAILog.ERROR, "Need IDA >= 7.3")
+        return False
+    if not idaapi.init_hexrays_plugin():
+        BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler not exists")
+        return False
+    return True
+
+
 class Plugin(idaapi.plugin_t):
     wanted_name = "BinaryAI"
     comment, help, wanted_hotkey = "", "", ""
     flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
 
     def init(self):
-        if idaapi.init_hexrays_plugin():
+        if not idaapi.is_idaq():
+            BinaryAILog.log(BinaryAILog.INFO, "Plugin should be loaded in idaq mode")
+            return idaapi.PLUGIN_SKIP
+        if check_ida():
             bai_mgr = BinaryAIManager()
             ui_mgr = UIManager(Plugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
@@ -843,8 +856,12 @@ def cmd_match(funcset_ids=None):
 
 if __name__ == "__main__":
     ida_auto.auto_wait()
-    if idc.ARGV[-1] == '1':
-        cmd_upload(idc.ARGV[1])
-    if idc.ARGV[-1] == '2':
-        cmd_match()
-    idaapi.qexit(0)
+    retcode = 0
+    if check_ida():
+        if idc.ARGV[1] == '1':
+            cmd_upload(*idc.ARGV[2:])
+        if idc.ARGV[1] == '2':
+            cmd_match()
+    else:
+        retcode = 1
+    idaapi.qexit(retcode)
