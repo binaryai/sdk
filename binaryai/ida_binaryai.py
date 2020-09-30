@@ -384,19 +384,19 @@ BinaryAI Options
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
             if not (0 < topk <= 15):
-                topk = BinaryAIManager.Default['topk']
+                topk = BinaryAIConfig.Default['topk']
             self.form_record['topk'] = topk
 
         if fid == self.ithreshold.id:
             threshold = self._get_float(self.ithreshold)
             if not (0 < threshold <= 1):
-                threshold = BinaryAIManager.Default['threshold']
+                threshold = BinaryAIConfig.Default['threshold']
             self.form_record['threshold'] = threshold
 
         if fid == self.iminsize.id:
             minsize = int(self._get_float(self.iminsize))
             if not (1 <= minsize <= 5):
-                minsize = BinaryAIManager.Default['minsize']
+                minsize = BinaryAIConfig.Default['minsize']
             self.form_record['minsize'] = minsize
 
         if fid == self.itoken.id:
