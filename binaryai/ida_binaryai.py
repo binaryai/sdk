@@ -834,6 +834,10 @@ def cmd_match(funcset_ids=None):
     bai_mgr = BinaryAIManager()
     output_json = {}
     for ea in idautils.Functions():
+        pfn = idaapi.get_func(ea)
+        if idaapi.FlowChart(pfn).size < bai_config['minsize']:
+            BinaryAILog.skip(idaapi.get_func_name(ea), 'size < minsize')
+            continue
         try:
             targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], funcset_ids, 2)
         except Exception as e:
