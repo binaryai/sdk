@@ -782,7 +782,7 @@ def check_ida():
     return True
 
 
-class Plugin(idaapi.plugin_t):
+class BinaryAIIDAPlugin(idaapi.plugin_t):
     wanted_name = "BinaryAI"
     comment, help, wanted_hotkey = "", "", ""
     flags = idaapi.PLUGIN_FIX | idaapi.PLUGIN_HIDE
@@ -793,7 +793,7 @@ class Plugin(idaapi.plugin_t):
             return idaapi.PLUGIN_SKIP
         if check_ida():
             bai_mgr = BinaryAIManager()
-            ui_mgr = UIManager(Plugin.wanted_name, bai_mgr)
+            ui_mgr = UIManager(BinaryAIIDAPlugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
                 return idaapi.PLUGIN_OK
         return idaapi.PLUGIN_SKIP
@@ -807,7 +807,7 @@ class Plugin(idaapi.plugin_t):
 
 def PLUGIN_ENTRY():
     BinaryAILog.level = BinaryAILog.DEBUG
-    return Plugin()
+    return BinaryAIIDAPlugin()
 
 
 def get_user_idadir():
