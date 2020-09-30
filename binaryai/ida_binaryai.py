@@ -384,19 +384,19 @@ BinaryAI Options
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
             if not (0 < topk <= 15):
-                topk = BinaryAIManager.Default['topk']
+                topk = BinaryAIConfig.Default['topk']
             self.form_record['topk'] = topk
 
         if fid == self.ithreshold.id:
             threshold = self._get_float(self.ithreshold)
             if not (0 < threshold <= 1):
-                threshold = BinaryAIManager.Default['threshold']
+                threshold = BinaryAIConfig.Default['threshold']
             self.form_record['threshold'] = threshold
 
         if fid == self.iminsize.id:
             minsize = int(self._get_float(self.iminsize))
             if not (1 <= minsize <= 5):
-                minsize = BinaryAIManager.Default['minsize']
+                minsize = BinaryAIConfig.Default['minsize']
             self.form_record['minsize'] = minsize
 
         if fid == self.itoken.id:
@@ -520,7 +520,7 @@ class BinaryAIOperations(object):
             return skip
         # do match
         try:
-            targets = self.mgr.retrieve(ea, topk=bai_config['topk'], funcset_ids=funcset_ids)
+            targets = self.mgr.retrieve(ea, topk=1, funcset_ids=funcset_ids)
         except DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
             return fail
@@ -529,6 +529,8 @@ class BinaryAIOperations(object):
             BinaryAILog.fatal(e)
         if targets is None:
             return fail
+        if targets[0]['score'] < bai_config['threshold']:
+            return skip
         if not bai_mark.apply_bai_high_score(
                 ea,
                 targets[0]['function']['name'],
@@ -834,13 +836,19 @@ def cmd_match(funcset_ids=None):
     bai_mgr = BinaryAIManager()
     output_json = {}
     for ea in idautils.Functions():
+        pfn = idaapi.get_func(ea)
+        if idaapi.FlowChart(pfn).size < bai_config['minsize']:
+            BinaryAILog.skip(idaapi.get_func_name(ea), 'size < minsize')
+            continue
         try:
-            targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], funcset_ids, 2)
+            targets, func_id = bai_mgr.retrieve(ea, 1, funcset_ids, 2)
         except Exception as e:
             print(str(e))
             continue
 
         if targets and func_id:
+            if targets[0]['score'] < bai_config['threshold']:
+                continue
             bai_mark.apply_bai_high_score(
                 ea,
                 targets[0]['function']['name'],
