@@ -520,7 +520,7 @@ class BinaryAIOperations(object):
             return skip
         # do match
         try:
-            targets = self.mgr.retrieve(ea, topk=bai_config['topk'], funcset_ids=funcset_ids)
+            targets = self.mgr.retrieve(ea, topk=1, funcset_ids=funcset_ids)
         except DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
             return fail
@@ -529,6 +529,8 @@ class BinaryAIOperations(object):
             BinaryAILog.fatal(e)
         if targets is None:
             return fail
+        if targets[0]['score'] < bai_config['threshold']:
+            return skip
         if not bai_mark.apply_bai_high_score(
                 ea,
                 targets[0]['function']['name'],
@@ -839,12 +841,14 @@ def cmd_match(funcset_ids=None):
             BinaryAILog.skip(idaapi.get_func_name(ea), 'size < minsize')
             continue
         try:
-            targets, func_id = bai_mgr.retrieve(ea, bai_config['topk'], funcset_ids, 2)
+            targets, func_id = bai_mgr.retrieve(ea, 1, funcset_ids, 2)
         except Exception as e:
             print(str(e))
             continue
 
         if targets and func_id:
+            if targets[0]['score'] < bai_config['threshold']:
+                continue
             bai_mark.apply_bai_high_score(
                 ea,
                 targets[0]['function']['name'],
