@@ -1,18 +1,20 @@
 # coding: utf-8
 import os
+import json
+import datetime
 import platform
 
 import idc
-import ida_auto
-import json
 import idaapi
 import idautils
-import datetime
+from idaapi import DecompilationFailure
+
 import binaryai as bai
-from PyQt5 import QtCore
-from ida_hexrays import DecompilationFailure
-from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 from binaryai import BinaryAIException
+
+if idaapi.IDA_SDK_VERSION >= 730:
+    from PyQt5 import QtCore
+    from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
 
 
 class BinaryAILog(object):
@@ -863,7 +865,7 @@ def cmd_match(funcset_ids=None):
 
 
 if __name__ == "__main__":
-    ida_auto.auto_wait()
+    idaapi.auto_wait()
     retcode = 0
     if check_ida():
         if idc.ARGV[1] == '1':
