@@ -17,7 +17,10 @@ def upload_function(
         platform=None,
         throw_duplicate_error=False,
         pseudo_code=None,
-        package_name=None
+        package_name=None,
+        binary_sha256=None,
+        fileoffset=None,
+        _bytes=None
 ):
     '''
     upload function to BinaryAI server
@@ -49,7 +52,10 @@ def upload_function(
         'binaryFileName': binary_file,
         'platform': platform,
         'pseudoCode': pseudo_code,
-        'packageName': package_name
+        'packageName': package_name,
+        'binarySha256': binary_sha256 ,
+        'fileoffset': fileoffset,
+        'bytes': _bytes
     }
     r = client.execute(q_create_function, var, throw_duplicate_error=throw_duplicate_error)
     return r['createFunction']['function']['id']
