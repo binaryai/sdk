@@ -6,7 +6,8 @@ mutation CreateFunction($name: String!, $sourceCode: String, $pseudoCode: String
     createFunction(input: {
         name: $name,
         representationInfo: {type: IR_IDA, version: 1, graph: $feature},
-        binaryInfo: {filename: $binaryFileName, sha256: $binarySha256, fileoffset: $fileoffset, bytes: $bytes, platform: $platform},
+        binaryInfo: {filename: $binaryFileName, sha256: $binarySha256, fileoffset: $fileoffset, 
+                     bytes: $bytes, platform: $platform},
         sourceCodeInfo: {code: $sourceCode, pseudocode: $pseudoCode, packagename: $packageName,
                          filename: $sourceFile, linenumber: $sourceLine}
     }) {
