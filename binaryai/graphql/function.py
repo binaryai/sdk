@@ -1,7 +1,7 @@
 q_create_function = r'''
 mutation CreateFunction($name: String!, $sourceCode: String, $pseudoCode: String, $sourceFile: String, $sourceLine: Int,
                         $packageName: String, 
-                        $binaryFileName: String, $binarySha256: String, $fileoffset: Int, $bytes: String,  $platform: String, 
+                        $binaryFileName: String, $binarySha256: String, $fileoffset: Int, $bytes: String, $platform: String, 
                         $feature: String!) {
     createFunction(input: {
         name: $name,

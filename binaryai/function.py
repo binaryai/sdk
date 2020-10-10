@@ -14,13 +14,13 @@ def upload_function(
         source_file=None,
         source_line=None,
         binary_file=None,
+        binary_sha256=None,
+        fileoffset=None,
+        _bytes=None,
         platform=None,
         throw_duplicate_error=False,
         pseudo_code=None,
-        package_name=None,
-        binary_sha256=None,
-        fileoffset=None,
-        _bytes=None
+        package_name=None
 ):
     '''
     upload function to BinaryAI server
@@ -33,6 +33,9 @@ def upload_function(
         source_file(string): Source file of the function
         source_line(int): line number of the function
         binary_file(string): Name of the binary file which contains this function
+        binary_sha256(string): Hash (sha256) of the binary file
+        fileoffset(int): File offset of the function
+        _bytes(string): Binary data of the function
         platform(string): Platform of the binary file, for example, metapc64, or x86_64, or mipsel
         throw_duplicate_error(bool): If a duplicate error should be raised when two name equals
         pseudo_code(string): Pseudo code of the function
@@ -50,12 +53,12 @@ def upload_function(
         'sourceFile': source_file,
         'sourceLine': source_line,
         'binaryFileName': binary_file,
-        'platform': platform,
-        'pseudoCode': pseudo_code,
-        'packageName': package_name,
         'binarySha256': binary_sha256 ,
         'fileoffset': fileoffset,
-        'bytes': _bytes
+        'bytes': _bytes,
+        'platform': platform,
+        'pseudoCode': pseudo_code,
+        'packageName': package_name
     }
     r = client.execute(q_create_function, var, throw_duplicate_error=throw_duplicate_error)
     return r['createFunction']['function']['id']
