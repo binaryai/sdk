@@ -53,7 +53,7 @@ def upload_function(
         'sourceFile': source_file,
         'sourceLine': source_line,
         'binaryFileName': binary_file,
-        'binarySha256': binary_sha256 ,
+        'binarySha256': binary_sha256,
         'fileoffset': fileoffset,
         'bytes': _bytes,
         'platform': platform,
