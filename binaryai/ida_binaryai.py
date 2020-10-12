@@ -1,11 +1,20 @@
 # coding: utf-8
+import idc
+import idaapi
+import ida_auto
+
+
+if idaapi.IDA_SDK_VERSION < 730:
+    print("[BinaryAI] Need IDA >= 730")
+    if not idaapi.is_idaq():
+        idc.qexit(1)            # save idb
+    else:
+        assert 0, "IDA version should be at least 7.3"
+
+
 import os
 import platform
-
-import idc
-import ida_auto
 import json
-import idaapi
 import idautils
 import datetime
 import binaryai as bai
@@ -772,10 +781,7 @@ class UIManager:
         self.operations.apply(self.cview)
 
 
-def check_ida():
-    if idaapi.IDA_SDK_VERSION < 730:
-        BinaryAILog.log(BinaryAILog.ERROR, "Need IDA >= 7.3")
-        return False
+def check_decompiler():
     if not idaapi.init_hexrays_plugin():
         BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler not exists")
         return False
@@ -791,7 +797,7 @@ class BinaryAIIDAPlugin(idaapi.plugin_t):
         if not idaapi.is_idaq():
             BinaryAILog.log(BinaryAILog.INFO, "Plugin should be loaded in idaq mode")
             return idaapi.PLUGIN_SKIP
-        if check_ida():
+        if check_decompiler():
             bai_mgr = BinaryAIManager()
             ui_mgr = UIManager(BinaryAIIDAPlugin.wanted_name, bai_mgr)
             if ui_mgr.register_actions():
@@ -865,7 +871,7 @@ def cmd_match(funcset_ids=None):
 if __name__ == "__main__":
     ida_auto.auto_wait()
     retcode = 0
-    if check_ida():
+    if check_decompiler():
         if idc.ARGV[1] == '1':
             cmd_upload(*idc.ARGV[2:])
         if idc.ARGV[1] == '2':
