@@ -7,7 +7,7 @@ on:
 jobs:
   test:
     if: ${{ contains(github.event.review.state, 'approved') }}
-    runs-on: self-hosted
+    runs-on: [self-hosted, py3.8]
     steps:
     - uses: actions/checkout@v2
     - name: Install dependencies
