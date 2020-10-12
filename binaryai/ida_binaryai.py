@@ -305,9 +305,12 @@ class SourceCodeViewer(object):
 
     @staticmethod
     def source_code_body(func):
-        code = func['function']['sourceCodeInfo']['pseudocode']
+        if func['function']['sourceCodeInfo']['code']:
+            code = func['function']['sourceCodeInfo']['code']
+        else:
+            code = func['function']['sourceCodeInfo']['pseudocode']
         if code is None:
-            body = ["/* No pseudoCode available for this function */"]
+            body = ["/* Source Code is not available for this function */"]
         else:
             body = code.split("\n")
         return filter(lambda l: not l.lstrip().startswith('#'), body)

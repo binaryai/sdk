@@ -21,6 +21,7 @@ query QueryFunction($funcId: ID!){
         id
         name
         sourceCodeInfo {
+            code
             pseudocode
             filename
             linenumber
@@ -89,6 +90,7 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
                 id
                 name
                 sourceCodeInfo {
+                    code
                     pseudocode
                     filename
                     linenumber
@@ -113,6 +115,7 @@ query SearchFuncSimilarity($feature: String!, $topk: Int!) {
         id
         name
         sourceCodeInfo {
+          code
           pseudocode
           filename
           linenumber
