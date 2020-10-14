@@ -3,7 +3,7 @@ mutation CreateFunction($name: String!, $sourceCode: String, $pseudoCode: String
                         $packageName: String, $binaryFileName: String, $platform: String, $feature: String!) {
     createFunction(input: {
         name: $name,
-        representationInfo: {type: IR_IDA, version: 1, graph: $feature},
+        representationInfo: {type: IR_IDA, version: 2, info: $feature},
         binaryInfo: {filename: $binaryFileName, platform: $platform},
         sourceCodeInfo: {code: $sourceCode, pseudocode: $pseudoCode, packagename: $packageName,
                          filename: $sourceFile, linenumber: $sourceLine}
@@ -109,7 +109,7 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
 q_search_func_similarity_by_feature = r'''
 query SearchFuncSimilarity($feature: String!, $topk: Int!) {
   indexList {
-    searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 1, graph: $feature}) {
+    searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 2, info: $feature}) {
       score
       function {
         id
