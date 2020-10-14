@@ -7,8 +7,6 @@ except ImportError:
 
 import ctypes
 import hashlib
-import json
-
 
 M_MAX = 0x49  # first unused opcode
 All_STR = dict(map(lambda i: (i.ea, str(i)), idautils.Strings()))
@@ -182,9 +180,9 @@ def get_func_feature(ea):
     Returns:
         func_feat(string): function feature
     """
-    pfn = idaapi.get_func(ea)
-    G = parse_func(pfn)
-    if G:
-        func_feat = json.dumps(G)
-        return func_feat
-    return None
+    try:
+        hf = idaapi.hexrays_failure_t()
+        cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
+        return str(cfunc)
+    except Exception:
+        return None

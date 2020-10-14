@@ -5,7 +5,7 @@ mutation CreateFunction($name: String!, $sourceCode: String, $pseudoCode: String
                         $feature: String!) {
     createFunction(input: {
         name: $name,
-        representationInfo: {type: IR_IDA, version: 1, graph: $feature},
+        representationInfo: {type: IR_IDA, version: 2, info: $feature},
         binaryInfo: {filename: $binaryFileName, sha256: $binarySha256, fileoffset: $fileoffset,
                      bytes: $bytes, platform: $platform},
         sourceCodeInfo: {code: $sourceCode, pseudocode: $pseudoCode, packagename: $packageName,
@@ -24,6 +24,7 @@ query QueryFunction($funcId: ID!){
         id
         name
         sourceCodeInfo {
+            code
             pseudocode
             filename
             linenumber
@@ -92,6 +93,7 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
                 id
                 name
                 sourceCodeInfo {
+                    code
                     pseudocode
                     filename
                     linenumber
@@ -110,12 +112,13 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
 q_search_func_similarity_by_feature = r'''
 query SearchFuncSimilarity($feature: String!, $topk: Int!) {
   indexList {
-    searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 1, graph: $feature}) {
+    searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 2, info: $feature}) {
       score
       function {
         id
         name
         sourceCodeInfo {
+          code
           pseudocode
           filename
           linenumber
