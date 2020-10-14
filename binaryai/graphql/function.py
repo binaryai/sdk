@@ -1,10 +1,13 @@
 q_create_function = r'''
 mutation CreateFunction($name: String!, $sourceCode: String, $pseudoCode: String, $sourceFile: String, $sourceLine: Int,
-                        $packageName: String, $binaryFileName: String, $platform: String, $feature: String!) {
+                        $packageName: String,
+                        $binaryFileName: String, $binarySha256: String, $fileoffset: Int, $bytes: String, $platform: String,
+                        $feature: String!) {
     createFunction(input: {
         name: $name,
         representationInfo: {type: IR_IDA, version: 2, info: $feature},
-        binaryInfo: {filename: $binaryFileName, platform: $platform},
+        binaryInfo: {filename: $binaryFileName, sha256: $binarySha256, fileoffset: $fileoffset,
+                     bytes: $bytes, platform: $platform},
         sourceCodeInfo: {code: $sourceCode, pseudocode: $pseudoCode, packagename: $packageName,
                          filename: $sourceFile, linenumber: $sourceLine}
     }) {
