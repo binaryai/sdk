@@ -16,7 +16,6 @@ jobs:
     - name: Test with pytest
       run: |
         export PATH=/home/docker/.local/bin:$PATH
-        pytest -v -n auto tests/test_cli --cfg $BAI_CFG
         pytest -v -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
         pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
 
@@ -34,6 +33,5 @@ jobs:
     - name: Test with pytest
       run: |
         export PATH=/home/docker/.local/bin:$PATH
-        pytest -v -n auto tests/test_cli --cfg $BAI_CFG
         pytest -v -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
         pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
