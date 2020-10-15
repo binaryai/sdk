@@ -1,8 +1,7 @@
-import json
-import binaryai as bai
-from binaryai import BinaryAIException
 import random
 import string
+import binaryai as bai
+from binaryai import BinaryAIException
 
 
 def random_name(N):
@@ -11,9 +10,8 @@ def random_name(N):
 
 def test_upload_and_query(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
-    func = json.loads(func_feat)
-    func_name = func['graph']['name']
-    func_id = bai.function.upload_function(client, func_name, func_feat)
+    func_name = random_name(8)
+    func_id = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
     assert func_id is not None
     res = bai.function.query_function(client, func_id)
     assert func_id == res['id']
@@ -22,16 +20,16 @@ def test_upload_and_query(client, data_1):
 
 def test_remove_duplicate_funcid(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
-    func = json.loads(func_feat)
-    func_name = func['graph']['name']
-    func_id1 = bai.function.upload_function(client, func_name, func_feat)
-    func_id2 = bai.function.upload_function(client, func_name, func_feat)
+    func_name = random_name(8)
+    func_id1 = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
+    func_id2 = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
     assert func_id1 == func_id2
 
 
 def test_query_with_topk(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
-    func_id = bai.function.upload_function(client, "foo", func_feat)
+    func_name = random_name(8)
+    func_id = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
     bai.function.clear_index_list(client)
 
     try:

@@ -1,8 +1,6 @@
 name: TEST
 
-on:
-  pull_request_review:
-    branches: [ master ]
+on: pull_request_review
 
 jobs:
   test_py3:
