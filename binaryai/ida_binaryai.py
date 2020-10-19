@@ -224,6 +224,7 @@ class BinaryAIManager(object):
             self._funcset = bai.function.create_function_set(self.client)
             if self._funcset:
                 bai_config['first_use'] = False
+                bai_config['funcset'] = self._funcset
 
         if self._funcset is None:
             try:
