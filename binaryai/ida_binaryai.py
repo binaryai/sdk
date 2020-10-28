@@ -752,9 +752,6 @@ class UIManager:
 
 
 def check_ida():
-    if idaapi.IDA_SDK_VERSION < 730:
-        BinaryAILog.log(BinaryAILog.ERROR, "Need IDA >= 7.3")
-        return False
     if not idaapi.init_hexrays_plugin():
         BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler not exists")
         return False
