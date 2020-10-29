@@ -52,10 +52,10 @@ class BinaryAILog(object):
                             func_name, reason))
 
     @staticmethod
-    def success(func_name, status):
+    def success(func_name, func_id, status):
         BinaryAILog.log(BinaryAILog.INFO,
-                        "{} successfully {}.".format(
-                            func_name, status))
+                        "{} successfully {}. ID: {}".format(
+                            func_name, status, func_id))
 
     @staticmethod
     def summary(succ, skip, fail, status):
@@ -224,14 +224,17 @@ class BinaryAIManager(object):
         return None
 
     def upload(self, ea, funcset=None):
-        func_feat = bai.ida.get_func_feature(ea)
-        func_name = idaapi.get_func_name(ea)
-        hf = idaapi.hexrays_failure_t()
-        cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
-        if not (func_feat and func_name):
+        func = bai.ida.get_upload_func_info(ea)
+        if func is None:
             return None
+
         func_id = bai.function.upload_function(
-            self.client, func_name, func_feat, source_code=str(cfunc))
+            self.client, func['name'], func['feature'],
+            source_code=None, source_file=None, source_line=None,
+            binary_file=func['binary_file'], binary_sha256=func['binary_sha256'], fileoffset=func['binary_offset'],
+            _bytes=func['func_bytes'], platform=func['platform'], throw_duplicate_error=False,
+            pseudo_code=func['pseudo_code'], package_name=None)
+
         if funcset and func_id:
             bai.function.insert_function_set_member(self.client, funcset, [func_id])
         return func_id
@@ -567,7 +570,7 @@ class BinaryAIOperations(object):
             BinaryAILog.fatal(e)
 
         if func_id:
-            BinaryAILog.success(idaapi.get_func_name(ea), "uploaded")
+            BinaryAILog.success(idaapi.get_func_name(ea), func_id, "uploaded")
 
     def upload_funcs(self, funcs):
 
