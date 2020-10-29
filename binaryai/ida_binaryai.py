@@ -198,8 +198,8 @@ class BinaryAIManager(object):
         if self._client is None:
             try:
                 self._client = bai.client.Client(bai_config['token'], bai_config['url'])
-            except Exception:
-                pass
+            except Exception as e:
+                print(str(e))
         return self._client
 
     def update_token(self, token):
@@ -274,8 +274,13 @@ class SourceCodeViewer(object):
                     widget = pseudo_view.toplevel
                 pseudo_title = idaapi.get_widget_title(widget)
 
-                idaapi.display_widget(self.GetWidget(),
-                                      idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                if idaapi.IDA_SDK_VERSION >= 730:
+                    idaapi.display_widget(self.GetWidget(),
+                                        idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                else:
+                    idaapi.display_widget(self.GetWidget(),
+                                        idaapi.PluginForm.WOPN_TAB | idaapi.PluginForm.WOPN_RESTORE)
+
                 idaapi.set_dock_pos(self.title, pseudo_title, idaapi.DP_RIGHT)
 
         def OnKeydown(self, vkey, shift):
@@ -468,7 +473,7 @@ class BinaryAIOperations(object):
 
     def check_before_use(self):
         if not self.mgr.client:
-            idaapi.warning("Wrong token!")
+            idaapi.warning("Wrong Options!")
             BinaryAIOptionsForm.change_options(self.mgr, check_token=True)
             return False
         return True

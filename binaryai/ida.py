@@ -182,7 +182,11 @@ def get_func_feature(ea):
     """
     try:
         hf = idaapi.hexrays_failure_t()
-        cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
+        if idaapi.IDA_SDK_VERSION >= 730:
+            cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
+        else:
+            cfunc = idaapi.decompile(ea, hf)
         return str(cfunc)
-    except Exception:
+    except Exception as e:
+        print(str(e))
         return None
