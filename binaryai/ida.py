@@ -240,4 +240,3 @@ def get_upload_func_info(ea):
     func_info['func_bytes'] = hashlib.md5(func_bytes).hexdigest()
 
     return func_info
-

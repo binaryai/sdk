@@ -278,11 +278,9 @@ class SourceCodeViewer(object):
                 pseudo_title = idaapi.get_widget_title(widget)
 
                 if idaapi.IDA_SDK_VERSION >= 730:
-                    idaapi.display_widget(self.GetWidget(),
-                                        idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                    idaapi.display_widget(self.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
                 else:
-                    idaapi.display_widget(self.GetWidget(),
-                                        idaapi.PluginForm.WOPN_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                    idaapi.display_widget(self.GetWidget(), idaapi.PluginForm.WOPN_TAB | idaapi.PluginForm.WOPN_RESTORE)
 
                 idaapi.set_dock_pos(self.title, pseudo_title, idaapi.DP_RIGHT)
 
