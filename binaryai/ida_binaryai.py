@@ -344,7 +344,8 @@ class BinaryAIOptionsForm(idaapi.Form):
         self.mgr = mgr
         self.token = bai_config['token']
         self.form_record = {}
-        retrieveListLabel = "<a href='https://binaryai.tencent.com'>View in browser</a>"
+        dashboard = bai_config['url'].replace("api.", '').replace('v1/endpoint', 'dashboard')
+        retrieveListLabel = "<a href='{}'>View in browser</a>".format(dashboard)
         super(BinaryAIOptionsForm, self).__init__(
             r'''STARTITEM 0
 BUTTON YES* OK
