@@ -52,10 +52,10 @@ class BinaryAILog(object):
                             func_name, reason))
 
     @staticmethod
-    def success(func_name, status):
+    def success(func_name, func_id, status):
         BinaryAILog.log(BinaryAILog.INFO,
-                        "{} successfully {}.".format(
-                            func_name, status))
+                        "{} successfully {}. ID: {}".format(
+                            func_name, status, func_id))
 
     @staticmethod
     def summary(succ, skip, fail, status):
@@ -198,8 +198,8 @@ class BinaryAIManager(object):
         if self._client is None:
             try:
                 self._client = bai.client.Client(bai_config['token'], bai_config['url'])
-            except Exception:
-                pass
+            except Exception as e:
+                print(str(e))
         return self._client
 
     def update_token(self, token):
@@ -224,14 +224,17 @@ class BinaryAIManager(object):
         return None
 
     def upload(self, ea, funcset=None):
-        func_feat = bai.ida.get_func_feature(ea)
-        func_name = idaapi.get_func_name(ea)
-        hf = idaapi.hexrays_failure_t()
-        cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
-        if not (func_feat and func_name):
+        func = bai.ida.get_upload_func_info(ea)
+        if func is None:
             return None
+
         func_id = bai.function.upload_function(
-            self.client, func_name, func_feat, source_code=str(cfunc))
+            self.client, func['name'], func['feature'],
+            source_code=None, source_file=None, source_line=None,
+            binary_file=func['binary_file'], binary_sha256=func['binary_sha256'], fileoffset=func['binary_offset'],
+            _bytes=func['func_bytes'], platform=func['platform'], throw_duplicate_error=False,
+            pseudo_code=func['pseudo_code'], package_name=None)
+
         if funcset and func_id:
             bai.function.insert_function_set_member(self.client, funcset, [func_id])
         return func_id
@@ -274,8 +277,11 @@ class SourceCodeViewer(object):
                     widget = pseudo_view.toplevel
                 pseudo_title = idaapi.get_widget_title(widget)
 
-                idaapi.display_widget(self.GetWidget(),
-                                      idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                if idaapi.IDA_SDK_VERSION >= 730:
+                    idaapi.display_widget(self.GetWidget(), idaapi.PluginForm.WOPN_DP_TAB | idaapi.PluginForm.WOPN_RESTORE)
+                else:
+                    idaapi.display_widget(self.GetWidget(), idaapi.PluginForm.WOPN_TAB | idaapi.PluginForm.WOPN_RESTORE)
+
                 idaapi.set_dock_pos(self.title, pseudo_title, idaapi.DP_RIGHT)
 
         def OnKeydown(self, vkey, shift):
@@ -339,7 +345,8 @@ class BinaryAIOptionsForm(idaapi.Form):
         self.mgr = mgr
         self.token = bai_config['token']
         self.form_record = {}
-        retrieveListLabel = "<a href='https://binaryai.tencent.com'>View in browser</a>"
+        dashboard = bai_config['url'].replace("api.", '').replace('v1/endpoint', 'dashboard')
+        retrieveListLabel = "<a href='{}'>View in browser</a>".format(dashboard)
         super(BinaryAIOptionsForm, self).__init__(
             r'''STARTITEM 0
 BUTTON YES* OK
@@ -468,7 +475,7 @@ class BinaryAIOperations(object):
 
     def check_before_use(self):
         if not self.mgr.client:
-            idaapi.warning("Wrong token!")
+            idaapi.warning("Wrong Options!")
             BinaryAIOptionsForm.change_options(self.mgr, check_token=True)
             return False
         return True
@@ -561,7 +568,7 @@ class BinaryAIOperations(object):
             BinaryAILog.fatal(e)
 
         if func_id:
-            BinaryAILog.success(idaapi.get_func_name(ea), "uploaded")
+            BinaryAILog.success(idaapi.get_func_name(ea), func_id, "uploaded")
 
     def upload_funcs(self, funcs):
 
@@ -752,6 +759,9 @@ class UIManager:
 
 
 def check_ida():
+    if idaapi.IDA_SDK_VERSION < 700:
+        BinaryAILog.log(BinaryAILog.ERROR, "Need IDA >= 7.0")
+        return False
     if not idaapi.init_hexrays_plugin():
         BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler not exists")
         return False

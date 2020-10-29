@@ -170,6 +170,18 @@ def parse_func(pfn):
     return G.graph
 
 
+def get_platform_info():
+    info = idaapi.get_inf_structure()
+    if info.is_64bit():
+        bits = '64'
+    elif info.is_32bit():
+        bits = '32'
+    else:
+        bits = ''
+
+    return ''.join([info.procName, bits])
+
+
 def get_func_feature(ea):
     """
     get function feature by IDA Pro
@@ -182,7 +194,49 @@ def get_func_feature(ea):
     """
     try:
         hf = idaapi.hexrays_failure_t()
-        cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
+        if idaapi.IDA_SDK_VERSION >= 730:
+            cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
+        else:
+            cfunc = idaapi.decompile(ea, hf)
         return str(cfunc)
-    except Exception:
+    except Exception as e:
+        print(str(e))
         return None
+
+
+def get_upload_func_info(ea):
+    """
+    get function upload info by IDA Pro
+
+    Args:
+        ea(ea_t): function address
+
+    Returns:
+        func_info(dict): function info
+    """
+    func_info = {}
+    try:
+        hf = idaapi.hexrays_failure_t()
+        if idaapi.IDA_SDK_VERSION >= 730:
+            cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
+        else:
+            cfunc = idaapi.decompile(ea, hf)
+        func_info['feature'] = str(cfunc)
+        func_info['pseudo_code'] = str(cfunc)
+    except Exception as e:
+        print(str(e))
+        return None
+
+    func_info['binary_file'] = idaapi.get_root_filename()
+    func_info['binary_sha256'] = idaapi.retrieve_input_file_sha256()
+    func_info['binary_offset'] = idaapi.get_fileregion_offset(ea)
+    func_info['platform'] = get_platform_info()
+    func_info['name'] = idaapi.get_func_name(ea)
+
+    func_bytes = b''
+    for start, end in idautils.Chunks(idaapi.get_func(ea).start_ea):
+        fb = idaapi.get_bytes(start, end-start)
+        func_bytes += fb
+    func_info['func_bytes'] = hashlib.md5(func_bytes).hexdigest()
+
+    return func_info
