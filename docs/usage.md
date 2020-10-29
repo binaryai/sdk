@@ -7,9 +7,17 @@
 
 **Token** is a string that identifies the user. Please see [Registration]( https://binaryai.readthedocs.io/en/latest/registration.html ) for more information.
 
-**Function set (funcset)** is a set of functions that can be created by users. Users can upload functions to a certain function set, so that users can define the scope of retrieval by themselves.
+**Function set (funcset)** is a set of functions that can be created by users. Users can upload functions to a certain function set, so that users can define the scope of retrieval by themselves. The newly released version enables users to upload to their default function sets.
 
-**Retrieve list** is the scope of retrieval. Users can retrieve in the scope of public or private function set. If private function set is chosen, users need to specify the private function set by its id.
+**Default function set** is a function set that every user has. The purpose of the default function set is to enable users to manage the functions that have been uploaded to the cloud.
+
+**Retrieve list** is the scope of retrieval just like the 'playlist' in the music applications. Users can retrieve in the scope defined by themselves. 
+
+**Save** is an operation that copies the selected functions to the users' function sets.
+
+**Add** is an operation that inserts the selected functions into the users' retrieve list. 
+
+**Star** is similar to the 'star' in the GitHub.
 
 ### Shortcuts
 
@@ -25,11 +33,9 @@ BinaryAI plugin can be configured in two ways: the "Options" dialog box or the`b
 
 Please modify the default options by the "BinaryAI" button or "BinaryAI" menu (BinaryAI > About) and then clicking the "Options" button.
 
-![about](image/about.png)
-
 ![options](image/options.png)
 
-Or, you can manually edit  `binaryai.cfg`. The default path is as follows. IDA Pro must restart for these changes to take effect.
+Or, you can manually edit  `binaryai.cfg`. The default path is as follows. IDA Pro must be restarted for these changes to take effect.
 
 |     OS      |                 Config File                 |
 | :---------: | :-----------------------------------------: |
@@ -42,11 +48,9 @@ The supported options are listed below.
 {
     "token": "",
     "url": "https://api.binaryai.tencent.com/v1/endpoint",
-    "funcset": "",
     "topk": 10,
     "minsize": 3,
     "threshold": 0.9,
-    "usepublic": true,
     "color": "0x817FFF"
 }
 ```
@@ -58,8 +62,6 @@ The supported options are listed below.
 **Minsize field** specifies the minimum basic block size of function. If the basic block size of the function to be matched or retrieved is smaller, the result will not be automatically applied.
 
 **Threshold field** species the minimum score of retrieval result. If the function to be matched or retrieved receives a score lower than the threshold, the result will not be automatically applied.
-
-**Usepublic field** shows the current retrieve list. If the user wants to retrieve from the public function set, it should be set to `true`.
 
 **Color field** defines the color that BinaryAI uses to mark those functions that are successfully matched or applied.
 
@@ -97,7 +99,7 @@ This command retrieves top-k results of the current function. The user can then 
 
 ### Upload
 
-This command uploads the selected function(s) to the function set as configured in "Options". The function set can be used as the user's own scope of retrieval. When the user uploads for the first time, it will automatically create a function set.
+This command uploads the selected function(s) to the default function set.
 
 ![upload_menu](image/upload_menu.png)
 
@@ -105,7 +107,7 @@ This command uploads the selected function(s) to the function set as configured 
 
 ### Upload all functions
 
-This command uploads all functions to the function set as configured in "Options".  The function set can be used as the user's scope of retrieval. When the user uploads for the first time, it will automatically create a function set.
+This command uploads all functions to the default function set.
 
 ![upload_all_menu](image/upload_all_menu.png)
 
@@ -135,8 +137,10 @@ Options:
   -v, --version  show version
 
 Commands:
-  create_funcset      create a new function set and add functions if needed
+  create_funcset      create a new function set
   install_ida_plugin  install IDA plugin
+  match_functions			match the functions of the chosen file
   query_funcset       get function set info by id
   query_function      get function info by given id
+  upload_functions		uplload the functions of the chosen file
 ```
