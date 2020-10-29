@@ -84,7 +84,8 @@ class Client(object):
             if code == "INVALID_ARGUMENT_DUPLICATE_ARGUMENT" and not throw_duplicate_error:
                 pass
             else:
-                raise BinaryAIException(code, errors['message'], jdata['data'], jdata)
+                data = jdata['data'] if 'data' in jdata.keys() else None
+                raise BinaryAIException(code, errors['message'], data, jdata)
 
         if "data" not in jdata.keys():
             raise BinaryAIException("SDK_ERROR", "Invalid response: {}".format(response.content))
