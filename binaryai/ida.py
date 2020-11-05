@@ -228,7 +228,9 @@ def get_upload_func_info(ea):
         return None
 
     func_info['binary_file'] = idaapi.get_root_filename()
-    func_info['binary_sha256'] = idaapi.retrieve_input_file_sha256()
+    binary_sha256 = idaapi.retrieve_input_file_sha256()
+    binary_sha256 = binary_sha256.hex() if isinstance(binary_sha256, bytes) else binary_sha256
+    func_info['binary_sha256'] = binary_sha256
     func_info['binary_offset'] = idaapi.get_fileregion_offset(ea)
     func_info['platform'] = get_platform_info()
     func_info['name'] = idaapi.get_func_name(ea)
@@ -237,6 +239,7 @@ def get_upload_func_info(ea):
     for start, end in idautils.Chunks(idaapi.get_func(ea).start_ea):
         fb = idaapi.get_bytes(start, end-start)
         func_bytes += fb
-    func_info['func_bytes'] = hashlib.md5(func_bytes).hexdigest()
+    func_bytes = func_bytes.hex() if isinstance(func_bytes, bytes) else func_bytes
+    func_info['func_bytes'] = func_bytes
 
     return func_info
