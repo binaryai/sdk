@@ -47,3 +47,5 @@ Please see the [Documentation]( https://binaryai.readthedocs.io/ ) for more deta
 ### Additional Reading
 
 [Order Matters: Semantic-Aware Neural Networksfor Binary Code Similarity Detection](https://keenlab.tencent.com/en/whitepapers/Ordermatters.pdf)
+
+[CodeCMR: Cross-Modal Retrieval For Function-Level Binary Source Code Matching](https://keenlab.tencent.com/zh/whitepapers/neurips-2020-cameraready.pdf)
