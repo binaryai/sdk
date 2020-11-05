@@ -126,7 +126,9 @@ query SearchFuncSimilarity($feature: String!, $topk: Int!) {
         }
         binaryInfo {
           filename
+          fileoffset
           platform
+          sha256
         }
       }
     }

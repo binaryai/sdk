@@ -297,15 +297,24 @@ class SourceCodeViewer(object):
         score = func["score"] if func["score"] < 1 else 1
         comment = '/*\n'
         comment += "query:  {}\n".format(query)
-        comment += "target[{}]: {}\n".format(idx, func['function']['name'])
         comment += "score:  {:6f}\n".format(score)
-        filename = func['function']['sourceCodeInfo']['filename']
-        linenumber = func['function']['sourceCodeInfo']['linenumber']
-        if filename is not None and linenumber is not None:
-            comment += "target[{}] info: {}:{}\n".format(idx, filename, linenumber)
+
+        comment += "target[{}]: {}\n".format(idx, func['function']['name'])
         packagename = func['function']['sourceCodeInfo']['packagename']
         if packagename is not None:
             comment += "package name: {}\n".format(packagename)
+        sourcefile = func['function']['sourceCodeInfo']['filename']
+        linenumber = func['function']['sourceCodeInfo']['linenumber']
+        if sourcefile is not None:
+            comment += "target[{}] sourceInfo: {}:{}\n".format(idx, sourcefile, linenumber)
+        binaryfile = func['function']['binaryInfo']['filename']
+        fileoffset = func['function']['binaryInfo']['fileoffset']
+        fileoffset = fileoffset if fileoffset is not None else 0
+        platform = func['function']['binaryInfo']['platform']
+        sha256 = func['function']['binaryInfo']['sha256']
+        if binaryfile is not None:
+            comment += "target[{}]: binaryInfo: {}:{}, {}, {}\n".format(idx, binaryfile, hex(fileoffset), platform, sha256)
+
         comment += "*/\n"
         return comment
 
