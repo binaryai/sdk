@@ -94,13 +94,14 @@ def QueryFunction(ctx, funcid, cfg):
 
 @cli.command('create_funcset', short_help='create a new function set')
 @click.option('--name', '-n', help='funcset name', type=str, required=True)
+@click.option('--description', '-d', help='funcset description', type=str, default='')
 @click.option('--cfg', '-c', help='binaryai configuration file', type=click.File(), show_default=True,
               default=os.path.join(get_user_idadir(), "cfg", "{}.cfg".format(binaryai.__name__)))
 @click.pass_context
-def CreateFuncSet(ctx, cfg, name):
+def CreateFuncSet(ctx, cfg, name, description):
     cfg_dict = json.loads(cfg.read())
     client = Client(cfg_dict['token'], cfg_dict['url'])
-    result = create_function_set(client, name)
+    result = create_function_set(client, name, description)
     click.echo(json.dumps({"funcsetid": result}))
 
 
