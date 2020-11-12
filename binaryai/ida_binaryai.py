@@ -97,7 +97,6 @@ class BinaryAIConfig(Config):
         'topk': 10,
         'minsize': 3,
         'threshold': 0.9,
-        'color': "0x817FFF",
         'first_use': True
     }
 
@@ -669,7 +668,10 @@ class UIManager:
         def get_chooser_item_attrs(self, chooser, n, attrs):
             func = idaapi.getn_func(n)
             if bai_mark.is_bai_func(func.start_ea):
-                attrs.color = int(bai_config['color'], 16)
+                colors = [0x8B98B3, 0x6F82AB, 0x5B74AB, 0x3B5BA1, 0x304A82]
+                score = bai_mark.record[func.start_ea]['score']
+                index = max(int((score*100-80)/5), 0)
+                attrs.color = colors[index]
 
         def updating_actions(self, ctx):
             if not self.is_function_window_hooked:
