@@ -312,7 +312,7 @@ class SourceCodeViewer(object):
         platform = func['function']['binaryInfo']['platform']
         sha256 = func['function']['binaryInfo']['sha256']
         if binaryfile is not None:
-            comment += "target[{}]: binaryInfo: {}:{}, {}, {}\n".format(idx, binaryfile, hex(fileoffset), platform, sha256)
+            comment += "target[{}] binaryInfo: {}:{}, {}, {}\n".format(idx, binaryfile, hex(fileoffset), platform, sha256)
 
         comment += "*/\n"
         return comment
