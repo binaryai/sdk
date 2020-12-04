@@ -5,6 +5,7 @@ try:
 except ImportError:
     raise BinaryAIException("SDK_ERROR", "Failed to import idaapi or idautils", None, None)
 
+import base64
 import ctypes
 import hashlib
 
@@ -239,7 +240,6 @@ def get_upload_func_info(ea):
     for start, end in idautils.Chunks(idaapi.get_func(ea).start_ea):
         fb = idaapi.get_bytes(start, end-start)
         func_bytes += fb
-    func_bytes = func_bytes.hex() if isinstance(func_bytes, bytes) else func_bytes
-    func_info['func_bytes'] = func_bytes
+    func_info['func_bytes'] = base64.b64encode(func_bytes).decode('ascii')
 
     return func_info
