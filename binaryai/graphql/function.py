@@ -151,3 +151,14 @@ mutation InsertIndexList($functionid: [ID!], $functionsetid: [ID!]) {
   }
 }
 '''
+
+
+q_retrieve_list = r'''
+query RetrieveList($offset: Int!, $limit: Int!, $isFunction: Boolean!) {
+  indexList {
+    functions(offset: $offset, limit: $limit) @include(if: $isFunction) {
+      totalCount
+    }
+  }
+}
+'''
