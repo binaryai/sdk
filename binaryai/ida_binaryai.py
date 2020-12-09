@@ -668,7 +668,7 @@ class UIManager:
         def get_chooser_item_attrs(self, chooser, n, attrs):
             func = idaapi.getn_func(n)
             if bai_mark.is_bai_func(func.start_ea):
-                colors = [0x8B98B3, 0x6F82AB, 0x5B74AB, 0x3B5BA1, 0x304A82]
+                colors = [0xE8E4FF, 0xC0BAFF, 0x817FFF, 0x5E58FF]
                 score = bai_mark.record[func.start_ea]['score']
                 index = max(int((score*100-80)/5), 0)
                 attrs.color = colors[index]
