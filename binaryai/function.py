@@ -1,6 +1,6 @@
 from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
 from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity
-from .graphql.function import q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list
+from .graphql.function import q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list, q_retrieve_list
 from .client import Client
 from .error import BinaryAIException
 import time
@@ -271,3 +271,26 @@ def insert_index_list(client, function_ids=None, functionset_ids=None):
     if exc is not None:
         raise exc
     return None
+
+
+def query_retrieve_list(client, offset=0, limit=20, isFunction=True):
+    '''
+    query function count in the retrive list
+
+    Args:
+        client(binaryai.client.Client): Client instance
+        offset(int): Offset in the functions, default 0, no results if exceed the total functions in index list.
+        limit(int): Limit number of results, range 1-100, default 20.
+
+    Returns:
+        * **total_count** (int) -- Identifies the total count of items in the retrieve list.
+    '''
+    if not isinstance(client, Client):
+        raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
+    var = {
+        "offset": offset,
+        "limit": limit,
+        "isFunction": isFunction
+    }
+    r = client.execute(q_retrieve_list, var)
+    return r['indexList']['functions']['totalCount']

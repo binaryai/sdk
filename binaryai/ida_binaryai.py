@@ -351,8 +351,15 @@ class BinaryAIOptionsForm(idaapi.Form):
         self.mgr = mgr
         self.token = bai_config['token']
         self.form_record = {}
+
         dashboard = bai_config['url'].replace("api.", '').replace('v1/endpoint', 'dashboard')
-        retrieveListLabel = "<a href='{}'>View in browser</a>".format(dashboard)
+        retrieve_list_info = "Official function list"
+        if mgr.client:
+            total_count = bai.function.query_retrieve_list(mgr.client)
+            if total_count > 0:
+                retrieve_list_info = "Personal function list({} functions)".format(total_count)
+        retrieveListLabel = "<a href='{}'>{}</a>".format(dashboard, retrieve_list_info)
+
         super(BinaryAIOptionsForm, self).__init__(
             r'''STARTITEM 0
 BUTTON YES* OK
