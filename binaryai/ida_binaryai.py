@@ -93,11 +93,9 @@ class BinaryAIConfig(Config):
     Default = {
         'token': '',
         'url': 'https://api.binaryai.tencent.com/v1/endpoint',
-        'usepublic': True,
         'topk': 10,
         'minsize': 3,
         'threshold': 0.9,
-        'first_use': True
     }
 
     def __init__(self, path=None, default=None):
@@ -383,10 +381,6 @@ BinaryAI Options
             return -1
 
     def on_form_change(self, fid):
-        if fid == self.iretrieve_list.id:
-            v = self.GetControlValue(self.iretrieve_list)
-            self.form_record['usepublic'] = False if v else True
-
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
             if not (0 < topk <= 15):
