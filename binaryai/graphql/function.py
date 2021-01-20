@@ -50,8 +50,8 @@ mutation CreateFunctionSet($name: String!, $description: String){
 '''
 
 q_insert_function_set_members = r'''
-mutation InsertFunctionSetMembers($setID: ID!, $functionIds: [ID!]!){
-    insertFunctionSetMembers(input: {functionSetID: $setID, functionIDs: $functionIds}){
+mutation saveToFunctionSetMembers($setID: ID!, $functionIds: [ID!]!){
+    saveToFunctionSetMembers(input: {functionSetID: $setID, functionIDs: $functionIds}){
         functionSet{
             id
         }
@@ -86,7 +86,7 @@ query QueryCreatedFuncitonSet {
 
 q_search_func_similarity = r'''
 query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
-    indexList {
+    retrieveList {
         searchByID(id: $funcId, topK: $topk) {
             score
             function {
@@ -111,7 +111,7 @@ query SearchFuncSimilarity($funcId: ID!, $topk: Int!) {
 
 q_search_func_similarity_by_feature = r'''
 query SearchFuncSimilarity($feature: String!, $topk: Int!) {
-  indexList {
+  retrieveList {
     searchByRepresentation(topK: $topk, representationInfo: {type: IR_IDA, version: 2, info: $feature}) {
       score
       function {
@@ -137,16 +137,16 @@ query SearchFuncSimilarity($feature: String!, $topk: Int!) {
 '''
 
 q_clear_index_list = r'''
-mutation ClearIndexList {
-  clearIndexList {
+mutation ClearRetrieveList {
+  clearRetrieveList {
     clientMutationId
   }
 }
 '''
 
 q_insert_index_list = r'''
-mutation InsertIndexList($functionid: [ID!], $functionsetid: [ID!]) {
-  insertIndexList(input: {functionId: $functionid, functionSetId: $functionsetid}) {
+mutation AddToRetrieveList($functionid: [ID!], $functionsetid: [ID!]) {
+  addToRetrieveList(input: {functionId: $functionid, functionSetId: $functionsetid}) {
     clientMutationId
   }
 }
@@ -155,7 +155,7 @@ mutation InsertIndexList($functionid: [ID!], $functionsetid: [ID!]) {
 
 q_retrieve_list = r'''
 query RetrieveList($offset: Int!, $limit: Int!, $isFunction: Boolean!) {
-  indexList {
+  retrieveList {
     functions(offset: $offset, limit: $limit) @include(if: $isFunction) {
       totalCount
     }

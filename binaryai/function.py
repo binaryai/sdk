@@ -147,7 +147,7 @@ def insert_function_set_member(client, setid, function_ids):
         "functionIds": function_ids,
     }
     r = client.execute(q_insert_function_set_members, var)
-    new_set_id = r['insertFunctionSetMembers']['functionSet']['id']
+    new_set_id = r['saveToFunctionSetMembers']['functionSet']['id']
     if not setid == new_set_id:
         raise BinaryAIException("SDK_ERROR", "insert functionset failed")
     return new_set_id
@@ -211,14 +211,14 @@ def search_sim_funcs(client, function_id=None, feature=None, topk=1):
             'topk': topk
         }
         r = client.execute(q_search_func_similarity, var)
-        return r['indexList']['searchByID']
+        return r['retrieveList']['searchByID']
     elif feature is not None:
         var = {
             'feature': feature,
             'topk': topk
         }
         r = client.execute(q_search_func_similarity_by_feature, var)
-        return r['indexList']['searchByRepresentation']
+        return r['retrieveList']['searchByRepresentation']
     raise BinaryAIException("SDK_ERROR", "all arguments are None")
 
 
@@ -293,4 +293,4 @@ def query_retrieve_list(client, offset=0, limit=20, isFunction=True):
         "isFunction": isFunction
     }
     r = client.execute(q_retrieve_list, var)
-    return r['indexList']['functions']['totalCount']
+    return r['retrieveList']['functions']['totalCount']
