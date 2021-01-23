@@ -16,8 +16,8 @@ jobs:
     - name: Test with pytest
       run: |
         export PATH=/home/docker/.local/bin:$PATH
-        pytest -v -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
-        pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
+        pytest -v tests/test_others --url $BAI_URL --token $BAI_TOKEN
+        pytest -v tests/test_function --url $BAI_URL --token $BAI_TOKEN
 
   test_py2:
     needs: [ test_py3 ]
@@ -33,5 +33,5 @@ jobs:
     - name: Test with pytest
       run: |
         export PATH=/home/docker/.local/bin:$PATH
-        pytest -v -n auto tests/test_others --url $BAI_URL --token $BAI_TOKEN
-        pytest -v -n auto tests/test_function --url $BAI_URL --token $BAI_TOKEN
+        pytest -v tests/test_others --url $BAI_URL --token $BAI_TOKEN
+        pytest -v tests/test_function --url $BAI_URL --token $BAI_TOKEN
