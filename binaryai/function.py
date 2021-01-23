@@ -117,7 +117,7 @@ def create_function_set(client, name, description="", function_ids=None, throw_d
             "functionIds": function_ids,
         }
         r = client.execute(q_insert_function_set_members, var)
-        new_set_id = r['insertFunctionSetMembers']['functionSet']['id']
+        new_set_id = r['saveToFunctionSetMembers']['functionSet']['id']
         if not len(set_id) == len(new_set_id):
             raise BinaryAIException("SDK_ERROR", "insert functionset failed")
     return set_id

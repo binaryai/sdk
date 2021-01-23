@@ -40,10 +40,8 @@ def test_query_with_topk(client, data_1):
         assert False, "Backend didn't throw Exception: INVALID_ARGUMENT"
 
     try:
-        name = random_name(32)
-        funcset_id = bai.function.create_function_set(client, name)
-        bai.function.insert_index_list(client, functionset_ids=[funcset_id])
-        sim = bai.function.search_sim_funcs(client, func_id, topk=1)
+        bai.function.insert_index_list(client, function_ids=[func_id])
+        sim = bai.function.search_sim_funcs(client, func_id, topk=2)
     except BinaryAIException as e:
         assert e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"
     else:
