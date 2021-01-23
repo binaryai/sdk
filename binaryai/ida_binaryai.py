@@ -92,10 +92,10 @@ class Config(dict):
 class BinaryAIConfig(Config):
     Default = {
         'token': '',
-        'url': 'https://api.binaryai.tencent.com/v1/endpoint',
+        'url': 'https://api.binaryai.tencent.com/v2/endpoint',
         'topk': 10,
-        'minsize': 3,
-        'threshold': 0.9,
+        'minsize': 5,
+        'threshold': 0.90,
     }
 
     def __init__(self, path=None, default=None):
@@ -390,8 +390,6 @@ BinaryAI Options
     def on_form_change(self, fid):
         if fid == self.itopk.id:
             topk = int(self._get_float(self.itopk))
-            if not (0 < topk <= 15):
-                topk = BinaryAIConfig.Default['topk']
             self.form_record['topk'] = topk
 
         if fid == self.ithreshold.id:
@@ -402,8 +400,6 @@ BinaryAI Options
 
         if fid == self.iminsize.id:
             minsize = int(self._get_float(self.iminsize))
-            if not (1 <= minsize <= 5):
-                minsize = BinaryAIConfig.Default['minsize']
             self.form_record['minsize'] = minsize
 
         if fid == self.itoken.id:
