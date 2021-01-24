@@ -613,21 +613,20 @@ class UIManager:
         action.register_action(self.binaryai_callback, menupath=menupath)
         action = UIManager.ActionHandler("BinaryAI:RetrieveFunction", "Retrieve function", "Ctrl+Shift+d", icon=99)
         action.register_action(self.retrieve_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
-        action.register_action(self.upload_callback, toolbar_name, menupath)
+        # action = UIManager.ActionHandler("BinaryAI:UploadFunction", "Upload function", "", icon=97)
+        # action.register_action(self.upload_callback, toolbar_name, menupath)
         action = UIManager.ActionHandler("BinaryAI:MatchAll", "Match all functions", "", icon=188)
         action.register_action(self.match_all_callback, toolbar_name, menupath)
-        action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
-        action.register_action(self.upload_all_callback, toolbar_name, menupath)
+        # action = UIManager.ActionHandler("BinaryAI:UploadAll", "Upload all functions", "", icon=88)
+        # action.register_action(self.upload_all_callback, toolbar_name, menupath)
 
         apply_action = UIManager.ActionHandler("BinaryAI:Apply", "Apply")
         apply_action.register_action(self.apply_callback)
 
         match_action = UIManager.ActionHandler("BinaryAI:MatchSelected", "Match")
-        upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
+        # upload_action = UIManager.ActionHandler("BinaryAI:UploadSelected", "Upload")
         revert_action = UIManager.ActionHandler("BinaryAI:RevertSelected", "Revert")
         if match_action.register_action(self.selected_callback) and \
-                upload_action.register_action(self.selected_callback) and \
                 revert_action.register_action(self.selected_callback):
             self.hooks.hook()
             return True
