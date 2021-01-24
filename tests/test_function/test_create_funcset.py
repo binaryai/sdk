@@ -30,7 +30,7 @@ def test_create_funcset_2(client, data_1):
     func_name = random_name(8)
     func_id = bai.function.upload_function(
         client, func_name, func_feat, source_code=func_feat)
-    bai.function.insert_function_set_member(client, funcset_id, [func_id])
+    bai.function.saveto_function_set_members(client, funcset_id, [func_id])
     assert func_id is not None
     fset = bai.function.query_function_set(client, funcset_id)
     fset_id, funcs = fset['id'], fset['functions']['nodes']

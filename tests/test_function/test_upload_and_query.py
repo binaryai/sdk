@@ -30,7 +30,7 @@ def test_query_with_topk(client, data_1):
     func_feat = data_1.sample(1).iloc[0].sample(1).iloc[0]
     func_name = random_name(8)
     func_id = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
-    bai.function.clear_index_list(client)
+    bai.function.clear_retrieve_list(client)
 
     try:
         sim = bai.function.search_sim_funcs(client, func_id, topk=-1)
@@ -40,7 +40,7 @@ def test_query_with_topk(client, data_1):
         assert False, "Backend didn't throw Exception: INVALID_ARGUMENT"
 
     try:
-        bai.function.insert_index_list(client, function_ids=[func_id])
+        bai.function.insert_retrieve_list(client, function_ids=[func_id])
         sim = bai.function.search_sim_funcs(client, func_id, topk=2)
     except BinaryAIException as e:
         assert e.code == "INVALID_ARGUMENT_TOPK_EXCEED_CAPACITY"

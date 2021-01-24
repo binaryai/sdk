@@ -1,6 +1,7 @@
-from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_insert_function_set_members
+from .graphql.function import q_create_function, q_query_function, q_create_function_set, q_saveto_function_set_members
 from .graphql.function import q_query_function_set, q_query_created_function_set, q_search_func_similarity
-from .graphql.function import q_search_func_similarity_by_feature, q_clear_index_list, q_insert_index_list, q_retrieve_list
+from .graphql.function import q_search_func_similarity_by_feature
+from .graphql.function import q_clear_retrieve_list, q_insert_retrieve_list, q_retrieve_list_count
 from .client import Client
 from .error import BinaryAIException
 import time
@@ -96,7 +97,7 @@ def create_function_set(client, name, description="", function_ids=None, throw_d
         description(string): Description of the new functionset.
                              Can be empty string
         function_ids(list): Functions to be inserted into the new function set.
-                            Can be null so no functions will be added into the set.
+                            Can be None if there are no functions to be added into the set.
 
     Returns:
         * **id** (string) -- id of the function set
@@ -116,22 +117,22 @@ def create_function_set(client, name, description="", function_ids=None, throw_d
             'setID': set_id,
             "functionIds": function_ids,
         }
-        r = client.execute(q_insert_function_set_members, var)
+        r = client.execute(q_saveto_function_set_members, var)
         new_set_id = r['saveToFunctionSetMembers']['functionSet']['id']
         if not len(set_id) == len(new_set_id):
             raise BinaryAIException("SDK_ERROR", "insert functionset failed")
     return set_id
 
 
-def insert_function_set_member(client, setid, function_ids):
+def saveto_function_set_members(client, setid, function_ids):
     '''
-    Insert functions into certain functionset
+    Save a function to the function set
 
     Args:
         client(binaryai.client.Client): Client instance
         setid(string): ID of the target
         function_ids(list): Functions to be inserted into the new function set.
-                            Can be null so no functions will be added into the set.
+                            Can be None if there are no functions to be added into the set.
 
     Returns:
         * **id** (string) -- id of the function set
@@ -146,7 +147,7 @@ def insert_function_set_member(client, setid, function_ids):
         'setID': setid,
         "functionIds": function_ids,
     }
-    r = client.execute(q_insert_function_set_members, var)
+    r = client.execute(q_saveto_function_set_members, var)
     new_set_id = r['saveToFunctionSetMembers']['functionSet']['id']
     if not setid == new_set_id:
         raise BinaryAIException("SDK_ERROR", "insert functionset failed")
@@ -222,9 +223,9 @@ def search_sim_funcs(client, function_id=None, feature=None, topk=1):
     raise BinaryAIException("SDK_ERROR", "all arguments are None")
 
 
-def clear_index_list(client):
+def clear_retrieve_list(client):
     '''
-    Clear all things in your index list
+    Clear all things in your retrieve list
 
     Returns:
         None
@@ -232,20 +233,20 @@ def clear_index_list(client):
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {}
-    client.execute(q_clear_index_list, var)
+    client.execute(q_clear_retrieve_list, var)
     return None
 
 
-def insert_index_list(client, function_ids=None, functionset_ids=None):
+def insert_retrieve_list(client, function_ids=None, functionset_ids=None):
     '''
-    Insert functions into your retrive list
+    Insert functions into your retrieve list
 
     Args:
         client(binaryai.client.Client): Client instance
         function_ids(list): Functions to be inserted into the index list.
-                            Can be null so no functions will be added into the list.
+                            Can be None if there are no functions to be added into the set.
         functionset_ids(list): Functionsets to be inserted into the index list.
-                            Can be null so no sets will be added into the list.
+                            Can be None if there are no functions to be added into the set.
 
     Returns:
         None
@@ -263,7 +264,7 @@ def insert_index_list(client, function_ids=None, functionset_ids=None):
     for i in backoff_time:
         time.sleep(i)
         try:
-            client.execute(q_insert_index_list, var)
+            client.execute(q_insert_retrieve_list, var)
         except Exception as e:
             exc = e
         else:
@@ -273,24 +274,22 @@ def insert_index_list(client, function_ids=None, functionset_ids=None):
     return None
 
 
-def query_retrieve_list(client, offset=0, limit=20, isFunction=True):
+def query_retrieve_list_count(client):
     '''
-    query function count in the retrive list
+    query function count in the retrieve list
 
     Args:
         client(binaryai.client.Client): Client instance
-        offset(int): Offset in the functions, default 0, no results if exceed the total functions in index list.
-        limit(int): Limit number of results, range 1-100, default 20.
 
     Returns:
-        * **total_count** (int) -- Identifies the total count of items in the retrieve list.
+        * **total_count** (int) -- the total count of items in the retrieve list.
     '''
     if not isinstance(client, Client):
         raise BinaryAIException("SDK_ERROR", "Invalid client argument", None, None)
     var = {
-        "offset": offset,
-        "limit": limit,
-        "isFunction": isFunction
+        "offset": 0,
+        "limit": 20,
+        "isFunction": True
     }
-    r = client.execute(q_retrieve_list, var)
+    r = client.execute(q_retrieve_list_count, var)
     return r['retrieveList']['functions']['totalCount']

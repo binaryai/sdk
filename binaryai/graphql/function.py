@@ -49,7 +49,7 @@ mutation CreateFunctionSet($name: String!, $description: String){
 }
 '''
 
-q_insert_function_set_members = r'''
+q_saveto_function_set_members = r'''
 mutation saveToFunctionSetMembers($setID: ID!, $functionIds: [ID!]!){
     saveToFunctionSetMembers(input: {functionSetID: $setID, functionIDs: $functionIds}){
         functionSet{
@@ -136,7 +136,7 @@ query SearchFuncSimilarity($feature: String!, $topk: Int!) {
 }
 '''
 
-q_clear_index_list = r'''
+q_clear_retrieve_list = r'''
 mutation ClearRetrieveList {
   clearRetrieveList {
     clientMutationId
@@ -144,7 +144,7 @@ mutation ClearRetrieveList {
 }
 '''
 
-q_insert_index_list = r'''
+q_insert_retrieve_list = r'''
 mutation AddToRetrieveList($functionid: [ID!], $functionsetid: [ID!]) {
   addToRetrieveList(input: {functionId: $functionid, functionSetId: $functionsetid}) {
     clientMutationId
@@ -153,7 +153,7 @@ mutation AddToRetrieveList($functionid: [ID!], $functionsetid: [ID!]) {
 '''
 
 
-q_retrieve_list = r'''
+q_retrieve_list_count = r'''
 query RetrieveList($offset: Int!, $limit: Int!, $isFunction: Boolean!) {
   retrieveList {
     functions(offset: $offset, limit: $limit) @include(if: $isFunction) {

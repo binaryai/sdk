@@ -233,7 +233,7 @@ class BinaryAIManager(object):
             pseudo_code=func['pseudo_code'], package_name=None)
 
         if funcset and func_id:
-            bai.function.insert_function_set_member(self.client, funcset, [func_id])
+            bai.function.saveto_function_set_members(self.client, funcset, [func_id])
         return func_id
 
 
@@ -355,7 +355,7 @@ class BinaryAIOptionsForm(idaapi.Form):
         dashboard = bai_config['url'].replace("api.", '').replace('v1/endpoint', 'dashboard')
         retrieve_list_info = "Official function list"
         if mgr.client:
-            total_count = bai.function.query_retrieve_list(mgr.client)
+            total_count = bai.function.query_retrieve_list_count(mgr.client)
             if total_count > 0:
                 retrieve_list_info = "Personal function list({} functions)".format(total_count)
         retrieveListLabel = "<a href='{}'>{}</a>".format(dashboard, retrieve_list_info)

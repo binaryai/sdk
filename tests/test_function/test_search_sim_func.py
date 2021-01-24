@@ -14,11 +14,11 @@ def test_search_sim_func_1(client, data_1):
     func_id = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
     funcset_name = random_name(32)
     funcset_id = bai.function.create_function_set(client, funcset_name)
-    bai.function.insert_function_set_member(client, funcset_id, [func_id])
+    bai.function.saveto_function_set_members(client, funcset_id, [func_id])
     # Sleep 1 sec to ensure all embeddings have been transfered
     time.sleep(1)
-    bai.function.clear_index_list(client)
-    bai.function.insert_index_list(client, functionset_ids=[funcset_id])
+    bai.function.clear_retrieve_list(client)
+    bai.function.insert_retrieve_list(client, functionset_ids=[funcset_id])
     # Sleep 1 sec to ensure index list flushed
     time.sleep(1)
     sim = bai.function.search_sim_funcs(client, func_id, topk=1)
@@ -38,13 +38,13 @@ def test_search_sim_func_2(client, data_1):
         func_name = random_name(8)
         func_names.append(func_name)
         func_id = bai.function.upload_function(client, func_name, func_feat, source_code=func_feat)
-        bai.function.insert_function_set_member(client, corpus_set, [func_id])
+        bai.function.saveto_function_set_members(client, corpus_set, [func_id])
 
     # Sleep 1 sec to ensure all embeddings have been transfered
     time.sleep(1)
 
-    bai.function.clear_index_list(client)
-    bai.function.insert_index_list(client, functionset_ids=[corpus_set])
+    bai.function.clear_retrieve_list(client)
+    bai.function.insert_retrieve_list(client, functionset_ids=[corpus_set])
 
     # Sleep 1 sec to ensure index list flushed
     time.sleep(1)
