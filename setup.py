@@ -27,6 +27,6 @@ setup(
     python_requires=">=2.7",
     entry_points='''
         [console_scripts]
-        binaryai=binaryai.binaryai_cli:main
+        binaryai=binaryai.cli:main
     '''
 )

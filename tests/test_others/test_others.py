@@ -1,5 +1,5 @@
 import binaryai as bai
-from binaryai.binaryai_cli import cli
+from binaryai.cli import cli
 from binaryai import BinaryAIException
 from click.testing import CliRunner
 
