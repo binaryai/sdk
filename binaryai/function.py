@@ -3,7 +3,7 @@ from .graphql.function import q_query_function_set, q_query_created_function_set
 from .graphql.function import q_search_func_similarity_by_feature
 from .graphql.function import q_clear_retrieve_list, q_insert_retrieve_list, q_retrieve_list_count
 from .client import Client
-from .error import BinaryAIException
+from .utils import BinaryAIException
 import time
 
 

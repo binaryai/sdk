@@ -1,113 +1,15 @@
 # coding: utf-8
 import os
-import platform
-
-import idc
-import ida_auto
 import json
+import datetime
+
 import idaapi
 import idautils
-import datetime
-import binaryai as bai
 from PyQt5 import QtCore
-from ida_hexrays import DecompilationFailure
 from PyQt5.QtWidgets import QVBoxLayout, QHBoxLayout, QLabel, QPushButton, QWidget
-from binaryai import BinaryAIException
 
-
-class BinaryAILog(object):
-    DEBUG = 0
-    INFO = 1
-    WARN = 2
-    ERROR = 3
-    level = INFO
-    name = "BinaryAI"
-
-    @staticmethod
-    def log(level, msg, *args, **kwargs):
-        if level >= BinaryAILog.level:
-            if args:
-                for v in args:
-                    msg += str(args)
-            if kwargs:
-                msg += str(kwargs)
-
-            print("[{}] {}".format(BinaryAILog.name, msg))
-
-    @staticmethod
-    def debug(msg, *args, **kwargs):
-        BinaryAILog.log(BinaryAILog.DEBUG,
-                        msg, *args, **kwargs)
-
-    @staticmethod
-    def skip(func_name, reason):
-        BinaryAILog.log(BinaryAILog.INFO,
-                        "{} is skipped because {}.".format(
-                            func_name, reason))
-
-    @staticmethod
-    def fail(func_name, reason):
-        BinaryAILog.log(BinaryAILog.WARN,
-                        "{} failed because {}.".format(
-                            func_name, reason))
-
-    @staticmethod
-    def success(func_name, func_id, status):
-        BinaryAILog.log(BinaryAILog.INFO,
-                        "{} successfully {}. ID: {}".format(
-                            func_name, status, func_id))
-
-    @staticmethod
-    def summary(succ, skip, fail, status):
-        BinaryAILog.log(BinaryAILog.INFO,
-                        "{} successfully {}, {} skipped, {} failed".format(
-                            succ, status, skip, fail))
-
-    @staticmethod
-    def fatal(e):
-        assert False, "[{}] {}".format(BinaryAILog.name, str(e))
-
-
-class Config(dict):
-
-    def __init__(self, path, default):
-        self.path = path
-        if not os.path.exists(path):
-            json.dump(default, open(self.path, 'w'), indent=4)
-        self.cfg = json.load(open(path))
-        for k, v in default.items():
-            if not (k in self.cfg and self.cfg[k] is not None):
-                self.__setitem__(k, v)
-
-    def __getitem__(self, key):
-        return self.cfg[key]
-
-    def __setitem__(self, key, val):
-        if key in self.cfg and self.cfg[key] == val:
-            return
-        self.cfg[key] = val
-        json.dump(self.cfg, open(self.path, 'w'), indent=4)
-
-
-class BinaryAIConfig(Config):
-    Default = {
-        'token': '',
-        'url': 'https://api.binaryai.tencent.com/v2/endpoint',
-        'topk': 10,
-        'minsize': 5,
-        'threshold': 0.90,
-    }
-
-    def __init__(self, path=None, default=None):
-        if path is None:
-            path = os.path.join(idaapi.get_user_idadir(), idaapi.CFG_SUBDIR)
-            if not os.path.exists(path):
-                os.makedirs(path)
-            path = os.path.join(path, "binaryai.cfg")
-        if default is None:
-            default = BinaryAIConfig.Default
-
-        super(BinaryAIConfig, self).__init__(path, default)
+import binaryai as bai
+from binaryai import BinaryAIException, BinaryAIConfig, BinaryAILog
 
 
 class IDBStore(object):
@@ -128,9 +30,7 @@ class IDBStore(object):
 
 
 class BinaryAIMark(object):
-
     def __init__(self):
-        # record bai apply
         # {ea: {'name': name, 'score': score}
         self.record = IDBStore("BinaryAIMark")
 
@@ -180,8 +80,8 @@ class BinaryAIMark(object):
             return False
 
 
-"""global resource"""
-bai_config = BinaryAIConfig()
+# global resource
+bai_config = BinaryAIConfig(os.path.join(idaapi.get_user_idadir(), idaapi.CFG_SUBDIR))
 bai_mark = BinaryAIMark()
 
 
@@ -352,26 +252,24 @@ class BinaryAIOptionsForm(idaapi.Form):
         self.token = bai_config['token']
         self.form_record = {}
 
-        dashboard = bai_config['url'].replace("api.", '').replace('v1/endpoint', 'dashboard')
-        retrieve_list_info = "Official function list"
-        if mgr.client:
+        retrieveListLabel = "Official Function Database"
+        if self.token and mgr.client:
             total_count = bai.function.query_retrieve_list_count(mgr.client)
-            if total_count > 0:
-                retrieve_list_info = "Personal function list({} functions)".format(total_count)
-        retrieveListLabel = "<a href='{}'>{}</a>".format(dashboard, retrieve_list_info)
+            if total_count != 0:
+                retrieveListLabel = "Private Function Database({} functions)".format(total_count)
 
         super(BinaryAIOptionsForm, self).__init__(
             r'''STARTITEM 0
 BUTTON YES* OK
 BinaryAI Options
             {FormChangeCb}
-            Retrieve List   {iretrieve_list}
+            RetrieveList   {iretrieve_list}
             <Topk           :{itopk}>
             <Threshold      :{ithreshold}>
             <Minsize        :{iminsize}>
             <Token          :{itoken}>
             ''', {
-                'iretrieve_list': self.StringLabel(retrieveListLabel, tp=self.FT_HTML_LABEL),
+                'iretrieve_list': self.StringLabel(retrieveListLabel),
                 'itopk': self.StringInput(value=str(bai_config["topk"])),
                 'ithreshold': self.StringInput(value=str(bai_config["threshold"])),
                 'iminsize': self.StringInput(value=str(bai_config["minsize"])),
@@ -492,7 +390,7 @@ class BinaryAIOperations(object):
 
         try:
             targets = self.mgr.retrieve_by_feature(ea, bai_config['topk'])
-        except DecompilationFailure as e:
+        except idaapi.DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
         except BinaryAIException as e:
             BinaryAILog.fatal(e)
@@ -516,7 +414,7 @@ class BinaryAIOperations(object):
         # do match
         try:
             targets = self.mgr.retrieve_by_feature(ea, topk=1)
-        except DecompilationFailure as e:
+        except idaapi.DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
             return fail
         except BinaryAIException as e:
@@ -567,7 +465,7 @@ class BinaryAIOperations(object):
     def upload(self, ea):
         try:
             func_id = self.mgr.upload(ea)
-        except DecompilationFailure as e:
+        except idaapi.DecompilationFailure as e:
             BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
         except BinaryAIException as e:
             BinaryAILog.fatal(e)
@@ -601,7 +499,7 @@ class BinaryAIOperations(object):
             func_id = None
             try:
                 func_id = self.mgr.upload(ea)
-            except DecompilationFailure as e:
+            except idaapi.DecompilationFailure as e:
                 BinaryAILog.fail(idaapi.get_func_name(ea), str(e))
                 fail += 1
                 continue
@@ -771,7 +669,7 @@ def check_ida():
         BinaryAILog.log(BinaryAILog.ERROR, "Need IDA >= 7.0")
         return False
     if not idaapi.init_hexrays_plugin():
-        BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler not exists")
+        BinaryAILog.log(BinaryAILog.ERROR, "Hex-Rays decompiler does not exists")
         return False
     return True
 
@@ -791,7 +689,7 @@ class BinaryAIIDAPlugin(idaapi.plugin_t):
             if ui_mgr.register_actions():
                 return idaapi.PLUGIN_KEEP
             else:
-                BinaryAILog.log(BinaryAILog.ERROR, "Register actions fail")
+                BinaryAILog.log(BinaryAILog.ERROR, "Register actions failed")
         return idaapi.PLUGIN_SKIP
 
     def run(self, ctx):
@@ -804,67 +702,3 @@ class BinaryAIIDAPlugin(idaapi.plugin_t):
 def PLUGIN_ENTRY():
     BinaryAILog.level = BinaryAILog.DEBUG
     return BinaryAIIDAPlugin()
-
-
-def get_user_idadir():
-    system = platform.system()
-    if system == 'Windows':
-        return os.path.join(os.getenv('APPDATA'), "Hex-Rays", "IDA Pro")
-    elif system in ['Linux', 'Darwin']:
-        return os.path.join(os.getenv('HOME'), ".idapro")
-    else:
-        return ""
-
-
-def cmd_upload(funcset=None):
-    succ = 0
-    bai_mgr = BinaryAIManager()
-    for ea in idautils.Functions():
-        if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
-            continue
-        try:
-            bai_mgr.upload(ea, funcset)
-            succ += 1
-        except Exception:
-            continue
-    return succ
-
-
-def cmd_match():
-    bai_mgr = BinaryAIManager()
-    output_json = {}
-    for ea in idautils.Functions():
-        if idaapi.FlowChart(idaapi.get_func(ea)).size < bai_config['minsize']:
-            continue
-        try:
-            targets, func_id = bai_mgr.retrieve(ea, 1, flag=2)
-        except Exception as e:
-            print(str(e))
-            continue
-
-        if targets and func_id and \
-                targets[0]['score'] >= bai_config['threshold']:
-            bai_mark.apply_bai_high_score(
-                ea,
-                targets[0]['function']['name'],
-                targets[0]['score'])
-        cur_json = {'id': func_id, 'score': targets[0]['score'],
-                    'target': {'id': targets[0]['function']['id'], 'name': targets[0]['function']['name']}}
-        output_json[str(ea)] = cur_json
-    path = os.path.join(get_user_idadir(), "output.json")
-    with open(path, "w") as f:
-        f.write(str(json.dumps(output_json, sort_keys=True, indent=2)))
-        f.close()
-
-
-if __name__ == "__main__":
-    ida_auto.auto_wait()
-    retcode = 0
-    if check_ida():
-        if idc.ARGV[1] == '1':
-            cmd_upload(*idc.ARGV[2:])
-        elif idc.ARGV[1] == '2':
-            cmd_match()
-    else:
-        retcode = 1
-    idaapi.qexit(retcode)

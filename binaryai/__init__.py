@@ -1,5 +1,6 @@
 from binaryai import client, function
-from .error import BinaryAIException
+from .utils import get_user_idadir
+from .utils import BinaryAIException, BinaryAILog, BinaryAIConfig
 
 
 def _get_version(default='version not found'):
@@ -19,7 +20,10 @@ __version__ = _get_version()
 __all__ = [
     'client',
     'function',
-    'BinaryAIException'
+    'get_user_idadir',
+    'BinaryAIException',
+    'BinaryAILog',
+    'BinaryAIConfig'
 ]
 
 try:

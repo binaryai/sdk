@@ -1,6 +1,6 @@
 import requests
 import json
-from .error import BinaryAIException
+from .utils import BinaryAIException
 
 
 class Client(object):

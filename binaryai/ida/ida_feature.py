@@ -1,4 +1,4 @@
-from .error import BinaryAIException
+from binaryai import BinaryAIException
 try:
     import idaapi
     import idautils
@@ -183,15 +183,15 @@ def get_platform_info():
     return ''.join([info.procName, bits])
 
 
-def get_func_feature(ea):
+def get_func_pseudocode(ea):
     """
-    get function feature by IDA Pro
+    get function pseudocode by IDA Pro
 
     Args:
         ea(ea_t): function address
 
     Returns:
-        func_feat(string): function feature
+        pseudocode(string): function pseudocode
     """
     try:
         hf = idaapi.hexrays_failure_t()
@@ -205,6 +205,10 @@ def get_func_feature(ea):
         return None
 
 
+def get_func_feature(ea):
+    return get_func_pseudocode(ea)
+
+
 def get_upload_func_info(ea):
     """
     get function upload info by IDA Pro
@@ -216,18 +220,8 @@ def get_upload_func_info(ea):
         func_info(dict): function info
     """
     func_info = {}
-    try:
-        hf = idaapi.hexrays_failure_t()
-        if idaapi.IDA_SDK_VERSION >= 730:
-            cfunc = idaapi.decompile(ea, hf, idaapi.DECOMP_NO_WAIT)
-        else:
-            cfunc = idaapi.decompile(ea, hf)
-        func_info['feature'] = str(cfunc)
-        func_info['pseudo_code'] = str(cfunc)
-    except Exception as e:
-        print(str(e))
-        return None
-
+    func_info['feature'] = get_func_feature(ea)
+    func_info['pseudo_code'] = get_func_pseudocode(ea)
     func_info['binary_file'] = idaapi.get_root_filename()
     binary_sha256 = idaapi.retrieve_input_file_sha256()
     binary_sha256 = binary_sha256.hex() if isinstance(binary_sha256, bytes) else binary_sha256
