@@ -56,11 +56,11 @@ The supported options are listed below.
 
 This command tries to retrieve the top-1 similar source codes of the selected function(s) and directly change the name(s) of the function(s) according to the result(s). 
 
-<img src="image/match.png" alt="match" style="zoom:50%;" />
+![match](image/match.png)
 
 Automatic name replacement and color annotation take place if the score(s) are higher than "threshold" and basic block size(s) are larger than "minsize". Otherwise, the function(s) will be skipped. The darker the color is, the higher the score is.
 
-<img src="image/match_result.png" alt="match_result" style="zoom:50%;" />
+![match_result](image/match_result.png)
 
 If the result(s) are not satisfactory, it is possible for the user to manually revert the change(s).
 
@@ -68,7 +68,7 @@ If the result(s) are not satisfactory, it is possible for the user to manually r
 
 This command tries to retrieve the top-1 similar source codes of all functions and directly change the names of the functions according to the results. 
 
-<img src="image/match_all_button.png" alt="match_all_menu" style="zoom:50%;" />
+![match_all_button](image/match_all_button.png)
 
 Automatic name replacement and color annotation take place when the score(s) are higher than "threshold" and basic block size(s) are larger than "minsize". Otherwise, the functions will be skipped.
 
@@ -78,13 +78,13 @@ If the results are not satisfactory, it is possible for the user to manually rev
 
 This command retrieves top-k results of the current function. The user can then select the desired target function and apply it to the current function. If the user applies the wrong function, it is possible to revert the change.
 
-<img src="image/retrieve_button.png" alt="retrieve_button" style="zoom:50%;" />
+![retrieve_button](image/retrieve_button.png)
 
 ### Revert
 
 This command reverts the change of the selected functions (name and color) .
 
-<img src="image/revert.png" alt="revert" style="zoom:50%;" />
+![revert](image/revert.png)
 
 ## Command Line
 
