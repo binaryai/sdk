@@ -24,7 +24,7 @@ import binaryai
 # -- Project information -----------------------------------------------------
 
 project = 'BinaryAI'
-copyright = '2020, Tencent Security KEEN Lab'
+copyright = '2021, Tencent Security KEEN Lab'
 author = 'BinaryAI Team'
 version = binaryai.__version__
 
