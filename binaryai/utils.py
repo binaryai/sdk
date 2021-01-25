@@ -109,7 +109,7 @@ class Config(dict):
 class BinaryAIConfig(Config):
     Default = {
         'token': '',
-        'url': 'https://api.binaryai.tencent.com/v2/endpoint',
+        'url': 'https://binaryai.tencent.com/api/v3/endpoint',
         'topk': 10,
         'minsize': 5,
         'threshold': 0.90,

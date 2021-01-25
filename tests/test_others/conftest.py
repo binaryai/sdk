@@ -3,7 +3,7 @@ import pytest
 
 
 def pytest_addoption(parser):
-    parser.addoption("--url", action="store", default="https://api.binaryai.tencent.com/v1/endpoint")
+    parser.addoption("--url", action="store")
     parser.addoption("--token", action="store")
 
 
