@@ -23,7 +23,7 @@ BinaryAI plugin can be configured in two ways: the "Options" dialog box or the `
 
 Please modify the default options by the "BinaryAI" button or "BinaryAI" menu (BinaryAI > About) and then clicking the "Options" button.
 
-<img src="image/options.png" alt="options" style="zoom:50%;" />
+![options](image/options.png)
 
 Or, you can manually edit  `binaryai.cfg`. The default path is as follows. IDA Pro must be restarted for these changes to take effect.
 
