@@ -13,7 +13,7 @@ BinaryAI provides three ways to access core APIs of BinaryAI Search Engine frame
 
 1. Python SDK
 
-   BinaryAI provides users with the ability to write custom tools to analyze binaries. Please refer to [BinaryAI SDK Reference](https://binaryai.readthedocs.io/en/latest/binaryai.html#)
+   BinaryAI provides users with the ability to write custom tools to analyze binaries. Please refer to [BinaryAI SDK Reference](https://binaryai.readthedocs.io/en/stable/binaryai.html#)
 
 2. IDA plugin
 
