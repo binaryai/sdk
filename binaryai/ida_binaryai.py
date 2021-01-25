@@ -685,11 +685,13 @@ class UIManager:
             func = idaapi.getn_func(n)
             if bai_mark.is_bai_func(func.start_ea):
                 attrs.color = int(bai_config['color'], 16)
-
+        
+        """
         def updating_actions(self, ctx):
             if not self.is_function_window_hooked:
                 self.is_function_window_hooked = \
                     idaapi.enable_chooser_item_attrs("Functions window", True)
+        """
 
     class ActionHandler(idaapi.action_handler_t):
         def __init__(self, name, label, shortcut=None, tooltip=None, icon=-1, flags=0):

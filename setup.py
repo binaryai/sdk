@@ -9,7 +9,7 @@ setup(
     packages=find_packages(),
     setup_requires=['setuptools_scm'],
     use_scm_version=True,
-    install_requires=['requests', 'Click'],
+    install_requires=['requests', 'Click', 'lazy_object_proxy'],
     url="https://github.com/binaryai/sdk",
     license='GPLv3',
     classifiers=[
