@@ -10,7 +10,7 @@
 **DEPRECATED**
 
 - The current SDK and service are **no longer maintained**.
-- We are currently working on a new version. Stay tuned for our upcoming launch in 2022!
+- You can first upload your binary to [binaryai.net](https://binaryai.net) and download the json file by clicking the BinaryAI similarity button when the analysis finishes. You can use our latest [plugin](https://github.com/binaryai/plugins) to load result in Ghidra/IDA Pro.
 
 BinaryAI is a Neural Search Engine for binaries developed by Tencent Security KEEN Lab, aiming to help security researchers match the most similar source codes in a given binary.
 
