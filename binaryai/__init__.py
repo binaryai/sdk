@@ -1,35 +1,38 @@
-from binaryai import client, function
-from .utils import get_user_idadir
-from .utils import BinaryAIException, BinaryAILog, BinaryAIConfig
+import warnings
 
+from gql.transport.requests import RequestsHTTPTransport
 
-def _get_version(default='version not found'):
-    try:
-        from pkg_resources import DistributionNotFound, get_distribution
-    except ImportError:
-        return default
-    else:
-        try:
-            return get_distribution(__name__).version
-        except DistributionNotFound:
-            return default
+from .binaryai_file import BinaryAIFile
+from .client import BinaryAI
+from .component import Component
+from .compressed_file import CompressedFile
+from .cve import CVE
+from .exceptions import (
+    BinaryAIException,
+    BinaryAIGQLError,
+    BinaryAIGQLErrorDetail,
+    BinaryAIResponseError,
+    FileNotExistError,
+)
+from .function import Function
+from .license import License
 
-
-__version__ = _get_version()
+# Add deprecation warnings
+warnings.filterwarnings("default", category=DeprecationWarning)
+warnings.filterwarnings("default", category=PendingDeprecationWarning)
 
 __all__ = [
-    'client',
-    'function',
-    'get_user_idadir',
-    'BinaryAIException',
-    'BinaryAILog',
-    'BinaryAIConfig'
+    BinaryAI,
+    BinaryAIFile,
+    Component,
+    CompressedFile,
+    CVE,
+    BinaryAIException,
+    BinaryAIGQLError,
+    BinaryAIGQLErrorDetail,
+    BinaryAIResponseError,
+    FileNotExistError,
+    Function,
+    License,
+    RequestsHTTPTransport,
 ]
-
-try:
-    import idaapi   # noqa # pylint: disable=unused-import
-    from binaryai import ida    # noqa # pylint: disable=unused-import
-except ImportError:
-    pass
-else:
-    __all__.append('ida')

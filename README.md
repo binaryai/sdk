@@ -1,35 +1,46 @@
 # BinaryAI Python SDK
 
-![ida](https://img.shields.io/badge/IDA->%3D7.3-brightgreen.svg)
 ![PUBLISH](https://github.com/binaryai/sdk/workflows/PUBLISH/badge.svg)
 [![Downloads](https://pepy.tech/badge/binaryai/month)](https://pepy.tech/project/binaryai/month)
 [![Gitter](https://badges.gitter.im/binaryai/community.svg)](https://gitter.im/binaryai/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
-## Introduction
+BinaryAI is a binary file security analysis platform. This SDK aims at providing
+a simple client to upload file and get analysis result. It can also works as
+a demo on calling BinaryAI's GraphQL API directly.
+The Python3 SDK for BinaryAI provides an abstracted client module to simplify the procedure of uploading file for analysis.
 
-**DEPRECATED**
+To use SDK, you need a valid credentials. Read [BinaryAI docs](https://www.binaryai.cn/doc/) about detailed instructions.
 
-- The current SDK and service are **no longer maintained**.
-- You can first upload your binary to [binaryai.net](https://binaryai.net) and download the json file by clicking the BinaryAI similarity button when the analysis finishes. You can use our latest [plugin](https://github.com/binaryai/plugins) to load result in Ghidra/IDA Pro.
+## Dependency
 
-BinaryAI is a Neural Search Engine for binaries developed by Tencent Security KEEN Lab, aiming to help security researchers match the most similar source codes in a given binary.
+Python >= 3.8
 
-BinaryAI provides three ways to access core APIs of BinaryAI Search Engine framework.
+## Download and installation
 
-1. Python SDK
+```bash
+python3 -m pip install binaryai
+```
 
-   BinaryAI provides users with the ability to write custom tools to analyze binaries.
+## Contributing
 
-2. IDA plugin
+See [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-   BinaryAI provides an IDA plugin to assist reverse engineering analysis with the IDA Pro user interface. The IDA Pro plugin enables users to apply BinaryAI retrieval results from source codes of millions of functions in the cloud to the file loaded in IDA Pro with a few clicks.
+## Internals
 
-3. Command line tool
+### Endpoints
 
-   The command line tool now facilitates users with easy access to install the IDA plugin.
+The default endpoint is `https://api.binaryai.cn/v1/endpoint`.
 
-## Additional Reading
+### API Credentials
 
-[Order Matters: Semantic-Aware Neural Networksfor Binary Code Similarity Detection](https://keenlab.tencent.com/en/whitepapers/Ordermatters.pdf)
+API Credentials are used for signing requests. We suggest you using our SDK or our library to sign it, but you can also
+have your own implementation. We are using the signing method `TC3-HMAC-SHA256`, same with the Tencent Cloud. You can
+read their [document](https://cloud.tencent.com/document/product/213/30654) about how to sign requests. BinaryAI would
+require following fields:
 
-[CodeCMR: Cross-Modal Retrieval For Function-Level Binary Source Code Matching](https://keenlab.tencent.com/zh/whitepapers/neurips-2020-cameraready.pdf)
+```toml
+Region  = "ap-shanghai"
+service = "binaryai"
+Action  = "BinaryAI"
+Version = "2023-04-15"
+```
