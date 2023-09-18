@@ -23,7 +23,7 @@ class FunctionInfoFileDecompileResult(BaseModel):
 class FunctionInfoFileDecompileResultFunction(BaseModel):
     offset: Any
     name: str
-    embedding: Optional["FunctionInfoFileDecompileResultFunctionEmbedding"]
+    embedding: Optional["FunctionInfoFileDecompileResultFunctionEmbedding"] = None
     pseudo_code: Optional["FunctionInfoFileDecompileResultFunctionPseudoCode"] = Field(alias="pseudoCode")
 
 
