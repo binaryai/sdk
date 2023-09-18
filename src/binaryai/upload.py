@@ -153,7 +153,7 @@ class Uploader(object):
 
         with httpx.Client() as upload_client:
             if self._mem:
-                upload_client.put(url=ticket["url"], headers=auth_header, content=self._mem)
+                upload_client.put(url=ticket.url, headers=auth_header, content=self._mem)
             else:
                 with open(self._filepath, "rb") as upload_file:
-                    upload_client.put(url=ticket["url"], headers=auth_header, content=upload_file)
+                    upload_client.put(url=ticket.url, headers=auth_header, content=upload_file)

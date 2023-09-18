@@ -8,7 +8,6 @@ from typing import Dict, Iterator, List, Optional, Union
 from urllib.parse import urlparse
 
 import httpx
-from qcloud_requests_auth.qcloud_auth import QCloudRequestsAuth
 
 from binaryai import client_stub
 from binaryai.component import Component
@@ -17,6 +16,7 @@ from binaryai.exceptions import FileNotExistError
 from binaryai.function import Function, MatchedFunction
 from binaryai.license import License
 from binaryai.upload import Uploader
+from binaryai.utils import QCloudHttpxAuth
 
 # Default constance SDK name string
 DEFAULT_SDK_NAME = "PythonSDK"
@@ -60,7 +60,7 @@ class BinaryAI(object):
             verify=True,
             retries=3,
         )
-        auth = QCloudRequestsAuth(
+        auth = QCloudHttpxAuth(
             secret_id,
             secret_key,
             urlparse(endpoint).netloc,  # netloc is real host header
