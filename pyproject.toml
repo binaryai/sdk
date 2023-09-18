@@ -19,6 +19,7 @@ python = "^3.9"
 qcloud-requests-auth = "^0.0.1"
 deprecated = "^1.2.14"
 httpx = "^0.25.0"
+pydantic = "^2.3.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "4.0.1"
