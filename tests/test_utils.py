@@ -1,8 +1,9 @@
 import datetime
-import unittest.mock as mock
-import httpx
 import unittest
+import unittest.mock as mock
 import zoneinfo
+
+import httpx
 
 from binaryai.utils import QCloudHttpxAuth
 
