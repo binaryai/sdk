@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "binaryai"
-version = "0.7.0"
+version = "0.7.0alpha2"
 description = "BinaryAI-SDK is a library provides an abstracted client module to simplify the procedure of uploading file for analysis."
 license = "GPLv3"
 authors = ["binaryai <binaryai@tencent.com>"]

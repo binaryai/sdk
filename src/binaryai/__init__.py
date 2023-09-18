@@ -6,10 +6,7 @@ from .client import BinaryAI
 from .component import Component
 from .compressed_file import CompressedFile
 from .cve import CVE
-from .exceptions import (
-    FileNotExistError,
-    FileRequiredError,
-)
+from .exceptions import FileNotExistError, FileRequiredError
 from .function import Function
 from .license import License
 
