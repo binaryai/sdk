@@ -25,11 +25,6 @@ def main():
     for cve_name in cve_names:
         print(cve_name)
 
-    # Or you can get all CVE in object type
-    cve_list = bai.get_all_cves(sha256)
-    for cve in cve_list:
-        print(cve.name)
-
     print("done")
 
 
