@@ -4,6 +4,7 @@ import logging
 import os
 import threading
 import time
+from importlib.metadata import version
 from typing import Dict, Iterator, List, Optional, Union
 from urllib.parse import urlparse
 
@@ -18,6 +19,8 @@ from binaryai.license import License
 from binaryai.upload import Uploader
 from binaryai.utils import QCloudHttpxAuth
 
+SDK_VERSION = version("binaryai")
+
 # Default constance SDK name string
 DEFAULT_SDK_NAME = "PythonSDK"
 
@@ -28,7 +31,10 @@ DEFAULT_POLL_INTERVAL = 2
 DEFAULT_POLL_TIMEOUT = 60
 
 # A request source header map
-HEADER_REQUEST_SOURCE = {"x-request-tags": DEFAULT_SDK_NAME}
+HEADER_REQUEST_SOURCE = {
+    "x-request-tags": DEFAULT_SDK_NAME,
+    "user-agent": f"python-httpx/{httpx.__version__} (python; {DEFAULT_SDK_NAME}/{SDK_VERSION})",
+}
 
 # Default GraphQL transport
 DEFAULT_ENDPOINT = "https://api.binaryai.cn/v1/endpoint"
@@ -51,7 +57,7 @@ class BinaryAI(object):
         *,
         secret_id: Optional[str] = os.environ.get("BINARYAI_SECRET_ID"),
         secret_key: Optional[str] = os.environ.get("BINARYAI_SECRET_KEY"),
-        endpoint: str = DEFAULT_ENDPOINT,
+        endpoint: str = os.environ.get("BINARYAI_ENDPOINT", DEFAULT_ENDPOINT),
     ) -> None:
         super().__init__()
         if secret_id is None or secret_key is None:
@@ -69,9 +75,8 @@ class BinaryAI(object):
             "BinaryAI",
             "2023-04-15",
         )
-        self._http_client = httpx.Client(auth=auth, transport=transport)
-        headers = HEADER_REQUEST_SOURCE
-        self._client = client_stub.Client(url=endpoint, headers=headers, http_client=self._http_client)
+        self._http_client = httpx.Client(auth=auth, transport=transport, headers=HEADER_REQUEST_SOURCE)
+        self._client = client_stub.Client(url=endpoint, http_client=self._http_client)
         self._logger = logging.getLogger(__name__)
 
     def upload(

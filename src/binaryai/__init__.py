@@ -1,8 +1,7 @@
 import warnings
-from importlib.metadata import version
 
 from .binaryai_file import BinaryAIFile
-from .client import BinaryAI
+from .client import SDK_VERSION, BinaryAI
 from .component import Component
 from .compressed_file import CompressedFile
 from .cve import CVE
@@ -10,7 +9,7 @@ from .exceptions import FileNotExistError, FileRequiredError
 from .function import Function
 from .license import License
 
-__version__ = version("binaryai")
+__version__ = SDK_VERSION
 
 # Add deprecation warnings
 warnings.filterwarnings("default", category=DeprecationWarning)
