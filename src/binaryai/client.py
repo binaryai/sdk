@@ -154,7 +154,7 @@ class BinaryAI(object):
             reason = resp.noop_reason
             if not reason:
                 self._logger.info("noopReason does not exist, seems a new analysis started")
-            elif reason in ["WouldNotChange", "RateLimited"]:
+            elif reason in [client_stub.NoopReason.WouldNotChange, client_stub.NoopReason.RateLimited]:
                 self._logger.info("noopReason is {}, consider as done".format(reason))
                 break
             else:
