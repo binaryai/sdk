@@ -1,0 +1,7 @@
+cff-version: 1.0
+message: "If you use BinaryAI, please cite it as below."
+authors:
+- family-names: "Tencent Security Keen Lab"  
+title: "BinaryAI"
+\date-released: 2021-08-11
+url: "https://binaryai.net"

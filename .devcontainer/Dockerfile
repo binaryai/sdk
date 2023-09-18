@@ -7,3 +7,7 @@ RUN pip config --global set global.index-url https://mirrors.tencent.com/pypi/si
 # Add devcontainer user
 RUN groupdel users ; useradd -mUs /bin/bash devcontainer
 USER devcontainer
+
+ENV LC_ALL=C.UTF-8
+ENV LANG=C.UTF-8
+ENV LANGUAGE=C.UTF-8

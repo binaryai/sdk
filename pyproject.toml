@@ -1,32 +1,28 @@
 [build-system]
-requires = ["setuptools>=61", "wheel", "setuptools_scm[toml]>=6.2"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "binaryai"
-description = """
-BinaryAI-SDK is a library provides an abstracted client module \
-to simplify the procedure of uploading file for analysis."""
-license = {text = "GPLv3"}
-authors = [
-    {name = "binaryai", email = "binaryai@tencent.com"},
-]
-requires-python = ">=3.8"
-dependencies = [
-    "Deprecated",
-    "gql[requests]",
-    "qcloud-requests-auth",
-]
-dynamic = ["version"]
-
-[project.urls]
+version = "0.7.0"
+description = "BinaryAI-SDK is a library provides an abstracted client module to simplify the procedure of uploading file for analysis."
+license = "GPLv3"
+authors = ["binaryai <binaryai@tencent.com>"]
+readme = "README.md"
 homepage = "https://www.binaryai.cn/"
 documentation = "https://www.binaryai.cn/doc/"
 repository = "https://github.com/binaryai/sdk/"
-
-[tool.setuptools.packages.find]
-include = ["binaryai"]
 exclude = ["examples"]
 
-[tool.setuptools_scm]
-fallback_version = "0.0.0"
+[tool.poetry.dependencies]
+python = "^3.8"
+qcloud-requests-auth = "^0.0.1"
+gql = {extras = ["requests"], version = "^3.4.1"}
+deprecated = "^1.2.14"
+
+
+[tool.poetry.group.dev.dependencies]
+flake8 = "4.0.1"
+black = "22.6.0"
+isort = "5.10.1"
+

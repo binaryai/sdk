@@ -10,10 +10,13 @@
 		"dockerfile": "./Dockerfile"
 	},
 	"features": {
-		"ghcr.io/devcontainers/features/python:1": {},
+		"ghcr.io/devcontainers/features/python:1": {
+			"version": "none" // do not touch os python
+		},
 		"ghcr.io/devcontainers-contrib/features/black:2": {},
 		"ghcr.io/devcontainers-contrib/features/flake8:2": {},
-		"ghcr.io/devcontainers-contrib/features/pylint:2": {}
+		"ghcr.io/devcontainers-contrib/features/pylint:2": {},
+		"ghcr.io/devcontainers-contrib/features/poetry:2": {}
 	},
 	"customizations": {
 		"vscode": {
@@ -27,11 +30,11 @@
 			"settings": {
 				"[python]": {
 					"editor.formatOnSave": true,
-          "editor.defaultFormatter": "ms-python.black-formatter"
+					"editor.defaultFormatter": "ms-python.black-formatter"
 				},
-        "black-formatter.args": [
-          "--line-length=120"
-        ]
+				"black-formatter.args": [
+					"--line-length=120"
+				]
 			}
 		}
 	},
@@ -40,10 +43,7 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": {
-		"1": "pip install flake8==4.0.1 black==22.6.0 isort==5.10.1",
-		"2": "pip install -r requirements.txt"
-	},
+	"postCreateCommand": "poetry install --with=dev --no-interaction",
 	// Configure tool-specific properties.
 	// "customizations": {},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

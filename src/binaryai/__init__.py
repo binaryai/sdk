@@ -1,4 +1,5 @@
 import warnings
+from importlib.metadata import version
 
 from gql.transport.requests import RequestsHTTPTransport
 
@@ -16,6 +17,8 @@ from .exceptions import (
 )
 from .function import Function
 from .license import License
+
+__version__ = version("pycounts")
 
 # Add deprecation warnings
 warnings.filterwarnings("default", category=DeprecationWarning)
