@@ -3,12 +3,10 @@ import logging
 import os
 from typing import Dict, Optional
 
-import requests
-from gql import Client, gql
-from gql.transport.exceptions import TransportQueryError
+import httpx
 
+from binaryai import client_stub
 from binaryai.exceptions import FileRequiredError
-from binaryai.query import MUTATION_CREATE_TICKET, MUTATON_CREATE_FILE
 from binaryai.utils import sha256sum
 
 logger = logging.getLogger(__name__)
@@ -21,7 +19,7 @@ class Uploader(object):
 
     def __init__(
         self,
-        client: Client,
+        client: client_stub.Client,
         *,
         filepath: Optional[str] = None,
         mem: Optional[bytes] = None,
@@ -63,15 +61,12 @@ class Uploader(object):
     def upload(self) -> str:
         """
         Starts the upload sequence.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
         ticket = self.__create_ticket(filename=self._filename, sha256=self._sha256, md5=self._md5)
-        ticket_type = ticket.get("__typename")
+        ticket_type = ticket.typename__
 
         if ticket_type == "File":
-            return ticket["sha256"]
+            return ticket.sha256
 
         reply_pos = None
 
@@ -84,46 +79,42 @@ class Uploader(object):
         else:
             raise ValueError("unknown upload type, upgrade SDK or contact developers")
 
-        ticket_id = ticket.get("ticketID")
+        ticket_id = ticket.ticket_i_d
         logger.info("creating file")
-        verify_response = self.__verify_ticket(ticket_id, reply_pos=reply_pos)
+        req = client_stub.CreateFileInput(ticketID=ticket_id, ownershipPoS=reply_pos)
+        verify_response = self._client.create_file(req)
 
-        return verify_response["sha256"]
+        return verify_response.create_file.sha256
 
     def __create_ticket(
         self, *, filename: Optional[str] = None, sha256: Optional[str] = None, md5: Optional[str] = None
     ):
         """
         Checks if file exists on FileManager with filename and file's hashsum.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
-        variables = {"input": {"name": filename, "sha256": sha256, "md5": md5}}
-        data = gql(MUTATION_CREATE_TICKET)
+        req = client_stub.CreateUploadTicketInput(name=filename, sha256=sha256, md5=md5)
         try:
-            response = self._client.execute(data, variable_values=variables)
-        except TransportQueryError as err:
+            response = self._client.check_or_upload(req)
+        except client_stub.GraphQLClientGraphQLMultiError as err:
             # If only md5 is provided, the error is hash missing
             is_hash_missing = False
-            if err.errors:
-                for e in err.errors:
-                    if isinstance(e, dict):
-                        if "No hash provided" in e.get("message", ""):
-                            is_hash_missing = True
+            for e in err.errors:
+                if "No hash provided" in e.message:
+                    is_hash_missing = True
+                    break
             if is_hash_missing:
                 raise FileRequiredError("File upload need a file to continue") from None
             raise
 
-        return response.get("createUploadTicket", {})
+        return response.create_upload_ticket
 
-    def __reply_ticket_pos(self, ticket: Dict):
+    def __reply_ticket_pos(self, ticket: client_stub.CheckOrUploadCreateUploadTicketOwnershipTicket):
         """
         Calculate the POS argument
         """
-        assert ticket["__typename"] == "OwnershipTicket"
-        secret_prepend = ticket.get("secretPrepend")
-        secret_append = ticket.get("secretAppend")
+        assert ticket.typename__ == "OwnershipTicket"
+        secret_prepend = ticket.secret_prepend
+        secret_append = ticket.secret_append
         assert secret_prepend and secret_append
         if not self._filepath and not self._mem:
             raise FileRequiredError("PoS verify need a file to continue")
@@ -148,41 +139,21 @@ class Uploader(object):
         hasher.update(secret_append.encode())
         return hasher.hexdigest().lower()
 
-    def __reply_ticket_upload(self, ticket: dict):
+    def __reply_ticket_upload(self, ticket: client_stub.CheckOrUploadCreateUploadTicketUploadTicket):
         """
         Uploads file to FileManager.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
-        assert ticket["__typename"] == "UploadTicket"
+        assert ticket.typename__ == "UploadTicket"
         if not self._filepath and not self._mem:
             raise FileRequiredError("File upload need a file to continue")
 
         if self._hooks.get("upload_ticket"):
             ticket = self._hooks["upload_ticket"](ticket)
-        auth_header = {kv["key"]: kv["value"] for kv in ticket.get("requestHeaders", [])}
+        auth_header = {kv.key: kv.value for kv in ticket.request_headers}
 
-        with requests.Session() as session:
+        with httpx.Client() as upload_client:
             if self._mem:
-                session.put(url=ticket["url"], headers=auth_header, data=self._mem)
+                upload_client.put(url=ticket["url"], headers=auth_header, content=self._mem)
             else:
                 with open(self._filepath, "rb") as upload_file:
-                    session.put(url=ticket["url"], headers=auth_header, data=upload_file)
-
-    def __verify_ticket(self, ticket_id: str, *, reply_pos: Optional[str] = None):
-        """
-        Registers uploaded file on BinaryAI service.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-        """
-        variables = {
-            "input": {
-                "ticketID": ticket_id,
-            }
-        }
-        if reply_pos:
-            variables["input"]["ownershipPoS"] = reply_pos
-        data = gql(MUTATON_CREATE_FILE)
-        return self._client.execute(data, variable_values=variables)["createFile"]
+                    upload_client.put(url=ticket["url"], headers=auth_header, content=upload_file)

@@ -15,14 +15,20 @@ repository = "https://github.com/binaryai/sdk/"
 exclude = ["examples"]
 
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.9"
 qcloud-requests-auth = "^0.0.1"
-gql = {extras = ["requests"], version = "^3.4.1"}
 deprecated = "^1.2.14"
-
+httpx = "^0.25.0"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "4.0.1"
 black = "22.6.0"
 isort = "5.10.1"
+ariadne-codegen = "^0.9.0"
 
+[tool.ariadne-codegen]
+remote_schema_url = "https://api.binaryai.cn/v1/endpoint"
+queries_path = "./src/binaryai/query.graphql"
+target_package_name = "client_stub"
+target_package_path = "./src/binaryai"
+async_client = false

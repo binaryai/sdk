@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 
-from binaryai import BinaryAI, BinaryAIException
+from binaryai import BinaryAI
 
 DEFAULT_SHA256 = "29b54fcc694f39f108ce0cf6cbf3b8f2b43165b72bfda95e755b52b037a443a7"
 
@@ -17,18 +17,15 @@ def main():
     # Initial BinaryAI client
     bai = BinaryAI()
 
-    try:
-        # Analyze the file just in case it's not been analyzed.
-        bai.wait_until_analysis_done(sha256)
+    # Analyze the file just in case it's not been analyzed.
+    bai.wait_until_analysis_done(sha256)
 
-        # Get all ASCII strings
-        ascii_strings = bai.get_all_ascii_strings(sha256)
-        for s in ascii_strings:
-            print(s)
+    # Get all ASCII strings
+    ascii_strings = bai.get_all_ascii_strings(sha256)
+    for s in ascii_strings:
+        print(s)
 
-        print("done")
-    except BinaryAIException as e:
-        print(f"analysis error: {e}")
+    print("done")
 
 
 if __name__ == "__main__":

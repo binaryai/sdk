@@ -7,42 +7,16 @@ import time
 from typing import Dict, Iterator, List, Optional, Union
 from urllib.parse import urlparse
 
-from deprecated import deprecated
-from gql import Client, gql
-from gql.transport import Transport
-from gql.transport.exceptions import TransportQueryError
-from gql.transport.requests import RequestsHTTPTransport
+import httpx
 from qcloud_requests_auth.qcloud_auth import QCloudRequestsAuth
-from requests.auth import AuthBase
 
+from binaryai import client_stub
 from binaryai.component import Component
 from binaryai.compressed_file import CompressedFile
-from binaryai.cve import CVE
-from binaryai.exceptions import BinaryAIGQLError, BinaryAIResponseError, FileNotExistError
+from binaryai.exceptions import FileNotExistError
 from binaryai.function import Function, MatchedFunction
 from binaryai.license import License
-from binaryai.query import (
-    MUTATION_REANALYZE,
-    QUERY_ASCII_STRING,
-    QUERY_CHECK_STATE,
-    QUERY_COMPRESSED_FILE,
-    QUERY_CVE_NAME,
-    QUERY_DOWNLOAD_LINK,
-    QUERY_FILE_SIZE,
-    QUERY_FILENAMES,
-    QUERY_FUNCTION_INFO,
-    QUERY_FUNCTION_LIST,
-    QUERY_FUNCTION_MATCH,
-    QUERY_FUNCTIONS_INFO,
-    QUERY_LICENSE,
-    QUERY_LICENSE_SHORT_NAME,
-    QUERY_MIME_TYPE,
-    QUERY_OVERVIEW,
-    QUERY_SCA,
-    QUERY_SHA256,
-)
 from binaryai.upload import Uploader
-from binaryai.utils import get_result
 
 # Default constance SDK name string
 DEFAULT_SDK_NAME = "PythonSDK"
@@ -74,52 +48,31 @@ class BinaryAI(object):
 
     def __init__(
         self,
-        transport: Transport = None,
-        poll_timeout: int = DEFAULT_POLL_TIMEOUT,
-        poll_interval: int = DEFAULT_POLL_INTERVAL,
+        *,
         secret_id: Optional[str] = os.environ.get("BINARYAI_SECRET_ID"),
         secret_key: Optional[str] = os.environ.get("BINARYAI_SECRET_KEY"),
-        auth: Optional[AuthBase] = None,
         endpoint: str = DEFAULT_ENDPOINT,
     ) -> None:
         super().__init__()
         if secret_id is None or secret_key is None:
             raise ValueError("Please set secret id and key in your code or environ")
-        if not transport:
-            transport = RequestsHTTPTransport(
-                url=endpoint,
-                headers=HEADER_REQUEST_SOURCE,
-                verify=True,
-                retries=3,
-            )
-        if auth is None:
-            transport.auth = QCloudRequestsAuth(
-                secret_id,
-                secret_key,
-                urlparse(transport.url).netloc,  # netloc is real host header
-                "ap-shanghai",
-                "binaryai",
-                "BinaryAI",
-                "2023-04-15",
-            )
-        else:
-            transport.auth = auth
-        if transport.headers is None:
-            transport.headers = HEADER_REQUEST_SOURCE
-        else:
-            transport.headers.update(HEADER_REQUEST_SOURCE)
-
-        self._transport = transport
-        self._client = Client(transport=transport, fetch_schema_from_transport=True)
-        self._poll_timeout = int(poll_timeout)
-        self._poll_interval = int(poll_interval)
+        transport = httpx.HTTPTransport(
+            verify=True,
+            retries=3,
+        )
+        auth = QCloudRequestsAuth(
+            secret_id,
+            secret_key,
+            urlparse(endpoint).netloc,  # netloc is real host header
+            "ap-shanghai",
+            "binaryai",
+            "BinaryAI",
+            "2023-04-15",
+        )
+        self._http_client = httpx.Client(auth=auth, transport=transport)
+        headers = HEADER_REQUEST_SOURCE
+        self._client = client_stub.Client(url=endpoint, headers=headers, http_client=self._http_client)
         self._logger = logging.getLogger(__name__)
-
-    def _execute_gql_sync(self, *args, **kwargs):
-        try:
-            return self._client.execute(*args, **kwargs)
-        except TransportQueryError as e:
-            raise BinaryAIGQLError(self._transport.response_headers.get("x-trace-id"), e.errors)
 
     def upload(
         self,
@@ -150,10 +103,6 @@ class BinaryAI(object):
             md5(Optional): A string for hash upload.
         Returns:
             A actual sha256 that server calculates and returns.
-        Raises:
-            BinaryAIGQLError: An error that GraphQL endpoint could possibly returns to show anything went wrong.
-            FileRequiredError: Only hash is provided but file is necessary. If a file is not provided, future request
-                is not possible.
         """
         uploader = Uploader(self._client, filepath=filepath, mem=mem, hooks=hooks, sha256=sha256, md5=md5)
         return uploader.upload()
@@ -163,49 +112,9 @@ class BinaryAI(object):
 
         Args:
             sha256: File sha256sum.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
-        variables = {
-            "sha256": sha256,
-        }
-        data = gql(MUTATION_REANALYZE)
-        return self._execute_gql_sync(data, variable_values={"input": variables})
-
-    def _poll_status_ready_storm(self, sha256: str) -> None:
-        """Polls analysis status.
-
-        Args:
-            sha256: File sha256sum.
-
-        Raise:
-            TimeoutError: An error occur when polling timeout
-        """
-        start = time.time()
-        analysis_ok = False
-        while time.time() - start < self._poll_timeout:
-            analysis_ok = False
-            response = self._get_file(sha256)
-            if response["file"] is None:
-                raise FileNotExistError("File is not existed")
-            analyzeStatus = response["file"]["smartBinaryStatus"]
-            status = None if analyzeStatus is None else analyzeStatus["status"]
-            if status == "Success":
-                analysis_ok = True
-                break
-            elif status in ("Fail", "Timeout"):
-                analysis_ok = False
-                break
-            elif status in ("Ready", "Waiting", "Running"):
-                pass
-            else:
-                raise BinaryAIResponseError(f"Unknown SmartBinary analyzeStatus: {status}")
-
-            self._logger.debug("=")
-            time.sleep(self._poll_interval)
-        if not analysis_ok:
-            raise TimeoutError
+        req = client_stub.ReanalyzeInput(sha256=sha256)
+        return self._client.reanalyze(req).reanalyze
 
     def wait_until_analysis_done(
         self,
@@ -239,11 +148,10 @@ class BinaryAI(object):
         sleeper = threading.Event()
         wait_since = time.time()
         while timeout < 0 or (time.time() - wait_since) < timeout:
-            resp: dict
-            resp = self._reanalyze(sha256).get("reanalyze")
+            resp = self._reanalyze(sha256)
             if not resp:
                 raise FileNotExistError("File not found")
-            reason = resp.get("noopReason")
+            reason = resp.noop_reason
             if not reason:
                 self._logger.info("noopReason does not exist, seems a new analysis started")
             elif reason in ["WouldNotChange", "RateLimited"]:
@@ -255,73 +163,24 @@ class BinaryAI(object):
         else:
             raise TimeoutError("analysis still not in finished result after timeout")
 
-    @deprecated()
-    def analyze(
-        self,
-        sha256: str,
-        force: bool = False,
-        short_wait_for: bool = True,
-        long_wait_for: bool = False,
-    ):
-        """Ask server to analyze a file identified by sha256, and polls
-        for status until analysis is complete or an error occurs.
-
-        .. note:: This function is now deprecated and only works as an example of showing
-                  how to wait some certain analyzers. To wait for a file's result, use
-                  new function `wait_until_analysis_done`. It works better and have more
-                  reasonable check.
-
-        Args:
-            sha256: File sha256sum.
-            force: A boolean to force server or not to (re)analyze the
-                   given file. If force is False, server will return results
-                   if any without analyzing it, or do analyze when server has
-                   no results at all. If force is True, then server will
-                   analyze the file from the very beginning whatsoever.
-            short_wait_for: Wait for a while on those simple analysis to complete,
-                   so that we can retrieve some information as soon as possible, e.g.
-                   executable info and sca info.
-            long_wait_for: Wait for all analysis to complete, including those
-                   long-time-consuming operations, e.g. decompiling.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returned errors.
-            TimeoutError: if the operation timed out
-        """
-        if not force:
-            resp = self._get_file(sha256)
-            if resp["file"] is None:
-                raise FileNotExistError("File is not existed")
-            analyzeStatus = resp["file"]["smartBinaryStatus"]
-            if analyzeStatus is None or analyzeStatus["status"] == "Ready":
-                self._reanalyze(sha256)
-        else:
-            self._reanalyze(sha256)
-
-        self._logger.info("started analysis")
-        if long_wait_for:
-            self._poll_status_ready_storm(sha256)
-            self._poll_status_ready_beat(sha256)
-        elif short_wait_for:
-            self._poll_status_ready_storm(sha256)
-        self._logger.info("completed analysis")
-
     def get_analyze_status(self, sha256: str) -> Dict:
         """Return current state of each analyzers. Read API document about relationship between analyzer and results.
 
         Args:
             sha256: File sha256sum.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returned errors.
-            TimeoutError: if the operation timed out
         """
-        resp = self._get_analyze_status(sha256).get("file")
+        resp = self._client.check_state(sha256).file
         if resp is None:
             raise FileNotExistError("File not exists, or never analyzed")
+        beatStatus = None
+        if resp.smart_beat_status:
+            beatStatus = resp.smart_beat_status.status
+        binaryStatus = None
+        if resp.smart_binary_status:
+            binaryStatus = resp.smart_binary_status.status
         return {
-            "smartBinary": resp.get("smartBinaryStatus", {}).get("status"),
-            "smartBeat": resp.get("smartBeatStatus", {}).get("status"),
+            "smartBinary": binaryStatus,
+            "smartBeat": beatStatus,
         }
 
     def get_sha256(self, md5: str) -> str:
@@ -333,10 +192,10 @@ class BinaryAI(object):
         Returns:
             str: File sha256sum.
         """
-        vars = {"md5": md5}
-        data = gql(QUERY_SHA256)
-        resp = self._client.execute(data, variable_values=vars)
-        return get_result(resp, ["file", "sha256"])
+        f = self._client.sha256(md5).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
+        return f.sha256
 
     def get_filenames(self, sha256: str) -> List[str]:
         """Get all uploaded filenames for a given file.
@@ -347,10 +206,10 @@ class BinaryAI(object):
         Returns:
             List[str]: A list of filenames.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_FILENAMES)
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        return get_result(resp, ["file", "name"])
+        f = self._client.filename(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
+        return f.name
 
     def get_mime_type(self, sha256: str) -> str:
         """Get MIME type for a given file.
@@ -361,10 +220,10 @@ class BinaryAI(object):
         Returns:
             str: MIME type string.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_MIME_TYPE)
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        return get_result(resp, ["file", "mimeType"])
+        f = self._client.m_i_m_e_type(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
+        return f.mime_type
 
     def get_size(self, sha256: str) -> int:
         """Get size in bytes of a given file.
@@ -375,10 +234,10 @@ class BinaryAI(object):
         Returns:
             int: File size in bytes.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_FILE_SIZE)
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        return get_result(resp, ["file", "size"])
+        f = self._client.file_size(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
+        return f.size
 
     def get_compressed_files(self, sha256: str) -> List[CompressedFile]:
         """Get a list of files inside a compressed file identified by a sha256.
@@ -388,73 +247,36 @@ class BinaryAI(object):
 
          Returns:
                 int: File size in bytes.
-
-         Raises:
-                BinaryAIGQLError: if the GraphQL endpoints returns errors.
-                BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data.
         """
-        variables = {"sha256": sha256}
-        data = gql(QUERY_COMPRESSED_FILE)
-
-        resp = self._execute_gql_sync(data, variable_values=variables)
-        compressed_files = get_result(resp, ["file", "decompressed"])
+        f = self._client.compressed_file(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
 
         file_list = []
-        for compressed_file in compressed_files or []:
+        for compressed_file in f.decompressed or []:
             if compressed_file:
                 file_list.append(
                     CompressedFile(
-                        path=compressed_file.get("path"),
-                        sha256=compressed_file.get("sha256"),
+                        path=compressed_file.path,
+                        sha256=compressed_file.sha256,
                     )
                 )
         return file_list
-
-    def get_all_cves(self, sha256: str) -> List[CVE]:
-        """Get all CVEs for a given file.
-
-        Args:
-            sha256: File sha256sum.
-
-        Returns:
-            List[str]: A list of CVE string.
-        """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_CVE_NAME)
-
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        scainfo = get_result(resp, ["file", "scainfo"])
-
-        cve_list = []
-        for elem in scainfo or []:
-            for mapping in elem["cves"] or []:
-                cve_name = mapping["name"]
-                if cve_name:
-                    cve_list.append(CVE(name=cve_name))
-        return cve_list
 
     def get_all_cve_names(self, sha256: str) -> List[str]:
         """Get all CVE names for a given file.
 
         Args:
             sha256: File sha256sum.
-
-        Returns:
-            List[str]: A list of CVE names.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_CVE_NAME)
-
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        scainfo = get_result(resp, ["file", "scainfo"])
+        f = self._client.c_v_e_name(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
 
         cve_list = []
-        for elem in scainfo or []:
-            for mapping in elem["cves"] or []:
-                cve_name = mapping["name"]
-                if cve_name:
-                    cve_list.append(cve_name)
+        for elem in f.scainfo or []:
+            for mapping in elem.cves or []:
+                cve_list.append(mapping.name)
         return cve_list
 
     def get_all_licenses(self, sha256: str) -> List[License]:
@@ -466,27 +288,24 @@ class BinaryAI(object):
         Returns:
             List[str]: A list of license string.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_LICENSE)
-
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        scainfo = get_result(resp, ["file", "scainfo"])
+        f = self._client.license(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
 
         license_list = []
-        for mapping in scainfo or []:
-            array = mapping.get("licenselist")
-            for item in array or []:
+        for mapping in f.scainfo or []:
+            for item in mapping.licenselist or []:
                 d = {
-                    "full_name": item.get("fullName"),
-                    "short_name": item.get("shortName"),
-                    "content": item.get("content"),
-                    "risk": item.get("risk"),
-                    "tags": item.get("tags"),
-                    "source": item.get("source"),
-                    "url": item.get("url"),
-                    "extra": item.get("extra"),
-                    "is_pass": item.get("pass"),
-                    "check_reason": item.get("checkreason"),
+                    "full_name": item.full_name,
+                    "short_name": item.short_name,
+                    "content": item.content,
+                    "risk": item.risk,
+                    "tags": item.tags,
+                    "source": item.source,
+                    "url": item.url,
+                    "extra": item.extra,
+                    "is_pass": item.pass_,
+                    "check_reason": item.checkreason,
                 }
                 license_list.append(License(**d))
         return license_list
@@ -500,16 +319,14 @@ class BinaryAI(object):
         Returns:
             List[str]: A list of license short names.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_LICENSE_SHORT_NAME)
-
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        scainfo = get_result(resp, ["file", "scainfo"])
+        f = self._client.license_short_name(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
 
         license_list = []
-        for elem in scainfo or []:
+        for elem in f.scainfo or []:
             # value of "license" is a string joined by comma
-            license_short_names = elem["license"]
+            license_short_names = elem.license
             if license_short_names:
                 license_list.extend(license_short_names.split(DEFAULT_LICENSE_SEPARATOR))
         return license_list
@@ -523,14 +340,12 @@ class BinaryAI(object):
         Returns:
             List[str]: A list of ASCII strings.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_ASCII_STRING)
+        f = self._client.a_s_c_i_i_string(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
 
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        executable = get_result(resp, ["file", "executable"])
-
-        if executable and "asciiStrings" in executable:
-            return executable["asciiStrings"]
+        if f.executable and f.executable.ascii_strings:
+            return f.executable.ascii_strings
         else:
             return []
 
@@ -543,78 +358,45 @@ class BinaryAI(object):
         Returns:
             List[Component]: A list of software components.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_SCA)
-
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        scainfo = get_result(resp, ["file", "scainfo"])
+        f = self._client.s_c_a(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists or no permission")
 
         component_list = []
-        for elem in scainfo or []:
+        for elem in f.scainfo or []:
             component_list.append(
                 Component(
-                    name=elem.get("name"),
-                    version=elem.get("version"),
-                    description=elem.get("description"),
-                    source_code_url=elem.get("sourceCodeURL"),
-                    summary=elem.get("summary"),
+                    name=elem.name,
+                    version=elem.version,
+                    description=elem.description,
+                    source_code_url=elem.source_code_u_r_l,
+                    summary=elem.summary,
                 )
             )
         return component_list
-
-    def _get_analyze_status(self, sha256: str) -> Dict:
-        vars = {"sha256": sha256}
-        data = gql(QUERY_CHECK_STATE)
-        return self._execute_gql_sync(data, variable_values=vars)
-
-    def _poll_status_ready_beat(self, sha256: str) -> bool:
-        start = time.time()
-        analysis_ok = False
-        while time.time() - start < self._poll_timeout:
-            analysis_ok = False
-            response = self._get_file(sha256)
-            if response["file"] is None:
-                raise FileNotExistError("File is not existed")
-            analyzeStatus = response["file"]["smartBeatStatus"]
-            status = None if analyzeStatus is None else analyzeStatus["status"]
-            if status == "Success":
-                analysis_ok = True
-                break
-            elif status in ("Fail", "Timeout"):
-                analysis_ok = False
-                break
-            elif status in ("Ready", "Waiting", "Running"):
-                pass
-            else:
-                raise BinaryAIResponseError(f"Unknown SmartBeat analyzeStatus: {status}")
-
-            self._logger.debug("=")
-            time.sleep(self._poll_interval)
-        return analysis_ok
 
     def get_overview(self, sha256: str) -> Dict[str, Union[str, int]]:
         """Fetch analysis overview from BinaryAI Beat server by file's sha256.
 
         Returns:
             A key-value pair containing overview of the binary file
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
-        variables = {"sha256": sha256}
-        data = gql(QUERY_OVERVIEW)
-        resp = self._execute_gql_sync(data, variable_values=variables)
-        basicInfo = get_result(resp, ["file", "decompileResult", "basicInfo"])
+        f = self._client.overview(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists")
+        if not f.decompile_result:
+            return {}
+        basicInfo = f.decompile_result.basic_info
 
         return (
             {
-                "fileType": basicInfo["fileType"],
-                "machine": basicInfo["machine"],
-                "platform": basicInfo["platform"],
-                "endian": basicInfo["endian"],
-                "loader": basicInfo["loader"],
-                "entryPoint": int(basicInfo["entryPoint"]),
-                "baseAddress": int(basicInfo["baseAddress"]),
+                "fileType": basicInfo.file_type,
+                "machine": basicInfo.machine,
+                "platform": basicInfo.platform,
+                "endian": basicInfo.endian,
+                "loader": basicInfo.loader,
+                "entryPoint": int(basicInfo.entry_point),
+                "baseAddress": int(basicInfo.base_address),
             }
             if basicInfo
             else {}
@@ -625,17 +407,12 @@ class BinaryAI(object):
 
         Returns:
             A link can be used to download link later. The link might expire.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
-        variables = {"sha256": sha256}
-        data = gql(QUERY_DOWNLOAD_LINK)
-        resp = self._execute_gql_sync(data, variable_values=variables)
-        if resp.get("file") is None:
+        f = self._client.download_link(sha256).file
+        if not f:
             raise FileNotExistError("File not exists")
 
-        lnk = get_result(resp, ["file", "downloadLink"])
+        lnk = f.download_link
         if not isinstance(lnk, str):
             return None
         if len(lnk) == 0:
@@ -647,17 +424,16 @@ class BinaryAI(object):
 
         Returns:
             list of function offset
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
-        vars = {"sha256": sha256}
-        data = gql(QUERY_FUNCTION_LIST)
-        resp = self._client.execute(data, variable_values=vars)
-        func_list = get_result(resp, ["file", "decompileResult", "functions"])
+        f = self._client.function_list(sha256).file
+        if not f:
+            raise FileNotExistError("File not exists")
+        decompileResult = f.decompile_result
+        func_list = None if not decompileResult else decompileResult.functions
 
         offset_list = []
         for func in func_list or []:
-            offset_list.append(int(func["offset"]))
+            offset_list.append(int(func.offset))
         return offset_list
 
     def list_funcs(self, sha256: str, batch_size: int = 32) -> Iterator[Function]:
@@ -671,9 +447,6 @@ class BinaryAI(object):
 
         Returns:
             Function Iterator
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
         offset_list = self.list_func_offset(sha256)
         self._logger.info("found {} functions".format(len(offset_list)))
@@ -693,23 +466,19 @@ class BinaryAI(object):
         Returns:
             Function instance containing the given function's
             name, fileoffset, bytes, pseudocode
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data.
         """
-        vars = {"sha256": sha256, "offset": str(offset), "withEmbedding": with_embedding}
-        data = gql(QUERY_FUNCTION_INFO)
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        func = get_result(resp, ["file", "decompileResult", "function"])
+        f = self._client.function_info(sha256, offset, with_embedding).file
+        if not f:
+            raise FileNotExistError("File not exists")
+        decompileResult = f.decompile_result
+        func = None if not decompileResult else decompileResult.function
 
         return (
             Function(
-                func["name"],
-                int(func["offset"]),
-                func.get("pseudoCode", {}).get("code", None),
-                func.get("embedding", {}).get("vector", None),
+                func.name,
+                int(func.offset),
+                (None if not func.pseudo_code else func.pseudo_code.code),
+                (None if not func.embedding else func.embedding.vector),
             )
             if func
             else None
@@ -729,9 +498,6 @@ class BinaryAI(object):
             Function iterator
 
         Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data.
             ValueError: invalid batch size
         """
         if not offsets:
@@ -745,18 +511,20 @@ class BinaryAI(object):
     ) -> Iterator[Function]:
         """Get functions' info in batches"""
         for i in range(0, len(offsets), step):
-            vars = {"sha256": sha256, "offset": offsets[i : i + step], "withEmbedding": with_embedding}
-            data = gql(QUERY_FUNCTIONS_INFO)
-            resp = self._execute_gql_sync(data, variable_values=vars)
-            funcs = get_result(resp, ["file", "decompileResult", "functions"])
+            f = self._client.functions_info(sha256, with_embedding, offsets[i : i + step]).file
+            if not f:
+                raise FileNotExistError("File not exists")
+            decompileResult = f.decompile_result
+            funcs = None if not decompileResult else decompileResult.functions
             if not funcs:
                 return []
+
             yield from [
                 Function(
-                    func["name"],
-                    int(func["offset"]),
-                    func.get("pseudoCode", {}).get("code", None),
-                    func.get("embedding", {}).get("vector", None),
+                    func.name,
+                    int(func.offset),
+                    (None if not func.pseudo_code else func.pseudo_code.code),
+                    (None if not func.embedding else func.embedding.vector),
                 )
                 for func in funcs
             ]
@@ -772,24 +540,20 @@ class BinaryAI(object):
             a List containing 10 match results, every result is a Dict
             the contains score and pseudocode. The List is sorted by
             score from high to low
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data
         """
-        vars = {"sha256": sha256, "offset": str(offset)}
-        data = gql(QUERY_FUNCTION_MATCH)
-        resp = self._execute_gql_sync(data, variable_values=vars)
-        func = get_result(resp, ["file", "decompileResult", "function"])
+        f = self._client.function_match(sha256, offset).file
+        if not f:
+            raise FileNotExistError("File not exists")
+        decompileResult = f.decompile_result
+        func = None if not decompileResult else decompileResult.function
         if not func:
             return []
 
         matched_func_list = []
-        for item in func.get("match", []):
+        for item in func.match:
             matched_func = MatchedFunction(
-                score=item.get("score"),
-                code=item.get("function", {}).get("code"),
+                score=item.score,
+                code=(None if not item.function else item.function.code),
             )
             matched_func_list.append(matched_func)
         return matched_func_list

@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 
-from binaryai import BinaryAI, BinaryAIException
+from binaryai import BinaryAI
 
 DEFAULT_SHA256 = "29b54fcc694f39f108ce0cf6cbf3b8f2b43165b72bfda95e755b52b037a443a7"
 
@@ -17,33 +17,30 @@ def main():
     # Initial BinaryAI client
     bai = BinaryAI()
 
-    try:
-        # Analyze the file just in case it's not been analyzed.
-        bai.wait_until_analysis_done(sha256)
+    # Analyze the file just in case it's not been analyzed.
+    bai.wait_until_analysis_done(sha256)
 
-        # Get all uploaded filenames
-        print("get all uploaded filenames")
-        filenames = bai.get_filenames(sha256)
-        print(filenames)
+    # Get all uploaded filenames
+    print("get all uploaded filenames")
+    filenames = bai.get_filenames(sha256)
+    print(filenames)
 
-        # Get MIME type
-        print("get MIME type")
-        mime_type = bai.get_mime_type(sha256)
-        print(mime_type)
+    # Get MIME type
+    print("get MIME type")
+    mime_type = bai.get_mime_type(sha256)
+    print(mime_type)
 
-        # Get size in bytes
-        print("get size in bytes")
-        size = bai.get_size(sha256)
-        print(size)
+    # Get size in bytes
+    print("get size in bytes")
+    size = bai.get_size(sha256)
+    print(size)
 
-        # Get analysis overview
-        print("get analysis overview")
-        overview = bai.get_overview(sha256)
-        print(overview)
+    # Get analysis overview
+    print("get analysis overview")
+    overview = bai.get_overview(sha256)
+    print(overview)
 
-        print("done")
-    except BinaryAIException as e:
-        print(f"analysis error: {e}")
+    print("done")
 
 
 if __name__ == "__main__":

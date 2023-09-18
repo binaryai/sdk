@@ -13,7 +13,7 @@ To use SDK, you need a valid credentials. Read [BinaryAI docs](https://www.binar
 
 ## Dependency
 
-Python >= 3.8
+Python >= 3.9
 
 ## Download and installation
 

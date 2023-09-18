@@ -53,11 +53,6 @@ class BinaryAIFile(object):
 
         Returns:
             List[CompressedFile]: A list of compressed files.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data.
         """
         return self._bai.get_compressed_files(self.sha256)
 
@@ -114,9 +109,6 @@ class BinaryAIFile(object):
 
         Returns:
             Dict[str, str]: A key-value pair containing overview of the file
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
         return self._bai.get_overview(self.sha256)
 
@@ -125,9 +117,6 @@ class BinaryAIFile(object):
 
         Returns:
             List[int]: A list of function offsets
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
         return self._bai.list_func_offset(self.sha256)
 
@@ -138,9 +127,6 @@ class BinaryAIFile(object):
 
         Returns:
             Iterator[Function]: A Function iterator
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
         """
         return self._bai.list_funcs(self.sha256)
 
@@ -155,11 +141,6 @@ class BinaryAIFile(object):
         Returns:
             Function: A Function instance containing the given function's
             name, fileoffset, bytes, pseudocode
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data.
         """
         return self._bai.get_func_info(self.sha256, offset, with_embedding)
 
@@ -174,11 +155,6 @@ class BinaryAIFile(object):
         Returns:
             Iterator[Function]: A iterator Functions instance containing the given
             function's name, fileoffset, bytes, pseudocode.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data.
         """
         return self._bai.get_funcs_info(self.sha256, offset, with_embedding)
 
@@ -193,10 +169,5 @@ class BinaryAIFile(object):
             List[MatchedFunction]: a List containing 10 match results,
             every result is a Dict the contains score and pseudocode.
             The List is sorted by score from high to low.
-
-        Raises:
-            BinaryAIGQLError: if the GraphQL endpoints returns errors.
-            BinaryAIResponseError: if the GraphQL endpoints
-                returns unparsable data
         """
         return self._bai.get_func_match(self.sha256, offset)

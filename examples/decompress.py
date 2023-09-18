@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 import argparse
 
-from binaryai import BinaryAI, BinaryAIException
+from binaryai import BinaryAI
 
 DEFAULT_SHA256 = "472aa646840dda3036dd1a2ec2c3f8383fbda1b3c588b079b757fa0522cc16c3"
 
@@ -17,18 +17,15 @@ def main():
     # Initial BinaryAI client
     bai = BinaryAI()
 
-    try:
-        # Analyze the file just in case it's not been analyzed.
-        bai.wait_until_analysis_done(sha256)
+    # Analyze the file just in case it's not been analyzed.
+    bai.wait_until_analysis_done(sha256)
 
-        # Get all compreessed files
-        compressed_files = bai.get_compressed_files(sha256)
-        for compressed_file in compressed_files:
-            print(compressed_file.__dict__)
+    # Get all compreessed files
+    compressed_files = bai.get_compressed_files(sha256)
+    for compressed_file in compressed_files:
+        print(compressed_file.__dict__)
 
-        print("done")
-    except BinaryAIException as e:
-        print(f"analysis error: {e}")
+    print("done")
 
 
 if __name__ == "__main__":
