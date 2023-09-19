@@ -1,0 +1,143 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-19 11:09+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../../README.md:2
+msgid "BinaryAI Python SDK"
+msgstr ""
+
+#: ../../../README.md:4
+msgid ""
+"![PUBLISH](https://github.com/binaryai/sdk/workflows/PUBLISH/badge.svg) "
+"[![Downloads](https://pepy.tech/badge/binaryai/month)](https://pepy.tech/project/binaryai/month)"
+" "
+"[![Gitter](https://badges.gitter.im/binaryai/community.svg)](https://gitter.im/binaryai/community?utm_source=badge&utm_medium=badge&utm_campaign"
+"=pr-badge)"
+msgstr ""
+
+#: ../../../README.md:4
+msgid "PUBLISH"
+msgstr ""
+
+#: ../../../README.md:4
+msgid "Downloads"
+msgstr ""
+
+#: ../../../README.md:4
+msgid "Gitter"
+msgstr ""
+
+#: ../../../README.md:8
+msgid ""
+"[BinaryAI](https://www.binaryai.cn) is a binary file security analysis "
+"platform. This SDK aims at providing a simple client to upload file and "
+"get analysis result. It also works as a demo on calling BinaryAI's "
+"GraphQL API directly."
+msgstr "[BinaryAI](https://www.binaryai.cn)是腾讯安全科恩实验室基于在静态分析和"
+"AI安全领域的经验研发的二进制安全智能分析平台。本SDK旨在帮助用户上传文件并获取分析结果，"
+"也可以作为调用BinaryAI API的一个参考"
+
+#: ../../../README.md:12
+msgid ""
+"To use SDK, you need a valid credentials. Read [BinaryAI "
+"docs](https://www.binaryai.cn/doc/) about detailed instructions."
+msgstr "要使用SDK，你需要相应的凭据。查看[BinaryAI的"
+"文档](https://www.binaryai.cn/doc/) 获取指引。"
+
+#: ../../../README.md:14
+msgid "Dependency"
+msgstr "依赖版本"
+
+#: ../../../README.md:16
+msgid "Python >= 3.9"
+msgstr ""
+
+#: ../../../README.md:18
+msgid "Download and installation"
+msgstr "下载和安装"
+
+#: ../../../README.md:24
+msgid "Quick start"
+msgstr "快速入门"
+
+#: ../../../README.md:26
+msgid "See the [SDK document](https://binaryai.readthedocs.io) for guide."
+msgstr "请查看[SDK文档](https://binaryai.readthedocs.io)。"
+
+#: ../../../README.md:28
+msgid "Internals"
+msgstr "内部细节"
+
+#: ../../../README.md:30
+msgid "Endpoints"
+msgstr "API地址"
+
+#: ../../../README.md:32
+msgid "The default endpoint is `https://api.binaryai.cn/v1/endpoint`."
+msgstr "对公众的默认API地址是`https://api.binaryai.cn/v1/endpoint`。"
+
+#: ../../../README.md:34
+msgid "API Credentials"
+msgstr "API凭据"
+
+#: ../../../README.md:36
+msgid ""
+"API Credentials are used for signing requests. We suggest you using our "
+"SDK or our library to sign it, but you can also have your own "
+"implementation. We are using the signing method `TC3-HMAC-SHA256`, same "
+"with the Tencent Cloud. You can read their "
+"[document](https://cloud.tencent.com/document/product/213/30654) about "
+"how to sign requests. BinaryAI would require following fields:"
+msgstr "API凭据用于签名请求。您可以使用SDK进行签名，但您也可以自行编写签名方法。我们使用"
+"和腾讯云一致的 `TC3-HMAC-SHA256` 方案，您可以阅读"
+" [腾讯云文档](https://cloud.tencent.com/document/product/213/30654) 获取"
+"技术细节。BinaryAI需要的签名信息是："
+
+#: ../../../README.md:48
+msgid "Additional Reading"
+msgstr "更多资料"
+
+#: ../../../README.md:50
+msgid ""
+"Read the "
+"[Changelog](https://www.binaryai.cn/doc/zh/releasenotes/releasenotes.html)"
+" of our product, and hope you can also have fun reading papers related to"
+" our job:"
+msgstr "我们的 "
+"[发布记录](https://www.binaryai.cn/doc/zh/releasenotes/releasenotes.html)"
+"记录了历史版本，你也可以参考我们此前的论文："
+
+#: ../../../README.md:52
+msgid ""
+"Yu, Zeping, et al. \"Codecmr: Cross-modal retrieval for function-level "
+"binary source code matching.\" Advances in Neural Information Processing "
+"Systems 33 (2020): 3872-3883."
+msgstr ""
+
+#: ../../../README.md:53
+msgid ""
+"Yu, Zeping, et al. \"Order matters: Semantic-aware neural networks for "
+"binary code similarity detection.\" Proceedings of the AAAI conference on"
+" artificial intelligence. Vol. 34. No. 01. 2020."
+msgstr ""
+
+
+

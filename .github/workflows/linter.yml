@@ -6,15 +6,20 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Set up Python
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
-        python-version: '3.x'
+        python-version: '3.9'
+    - name: Set up poetry
+      uses: abatilo/actions-poetry@v2
+      with:
+        poetry-version: '1.6'
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        pip install flake8==v4.0.1
-    - name: Lint with flake8
+        poetry install --with=dev
+    - name: Perform linting
       run: |
-        flake8 . --count --max-complexity=10 --max-line-length=127 --show-source --statistics
+        poetry run flake8 .
+        poetry run black --check --line-length=120 .
+        poetry run isort --profile=black --line-length=120 -c .

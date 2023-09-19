@@ -1,0 +1,280 @@
+query Sha256($md5: String!) {
+  file: fileByHash(input: {md5: $md5}) {
+    sha256
+  }
+}
+
+
+query Filename($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    name
+  }
+}
+
+
+query MIMEType($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    mimeType
+  }
+}
+
+
+query FileSize($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    size
+  }
+}
+
+
+query CVEName($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    scainfo {
+      cves {
+        name
+      }
+    }
+  }
+}
+
+
+query LicenseShortName($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    scainfo {
+      license
+    }
+  }
+}
+
+
+query License($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    scainfo {
+      licenselist {
+        checkreason
+        content
+        extra
+        fullName
+        pass
+        risk
+        shortName
+        source
+        url
+        tags {
+          permission {
+            tagName
+            description
+          }
+          condition {
+            tagName
+            description
+          }
+          forbidden {
+            tagName
+            description
+          }
+        }
+      }
+    }
+  }
+}
+
+
+query ASCIIString($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    executable {
+      ... on COFFInfo {
+        asciiStrings
+      }
+      ... on ELFInfo {
+        asciiStrings
+      }
+      ... on MachoInfo {
+        asciiStrings
+      }
+      ... on PEInfo {
+        asciiStrings
+      }
+    }
+  }
+}
+
+
+query SCA($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    scainfo {
+      name
+      version
+      description
+      sourceCodeURL
+      summary
+    }
+  }
+}
+
+
+query Overview($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    decompileResult {
+      basicInfo {
+        fileType
+        machine
+        platform
+        endian
+        loader
+        entryPoint
+        baseAddress
+      }
+    }
+  }
+}
+
+
+query DownloadLink($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    downloadLink
+  }
+}
+
+
+query CheckState($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    smartBinaryStatus : analyzeStatus(analyzer: SmartBinary) {
+      status
+    }
+    smartBeatStatus : analyzeStatus(analyzer: SmartBeat) {
+      status
+    }
+    text {
+      content           # trigger smartBinary
+    }
+    decompileResult {
+      basicInfo {
+        fileType        # trigger smartBeat
+      }
+    }
+  }
+}
+
+
+query FunctionList($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    decompileResult {
+      functions {
+        offset
+      }
+    }
+  }
+}
+
+
+query FunctionInfo($sha256: String!, $offset: BigInt!, $withEmbedding: Boolean!) {
+    file: fileByHash(input: {sha256: $sha256}) {
+        decompileResult {
+            function(offset: $offset) {
+                offset
+                name
+                embedding @include(if: $withEmbedding) {
+                    vector
+                    version
+                }
+                pseudoCode {
+                    code
+                }
+            }
+        }
+    }
+}
+
+
+query FunctionsInfo($sha256: String!, $offset: [BigInt!], $withEmbedding: Boolean!) {
+    file: fileByHash(input: {sha256: $sha256}) {
+        decompileResult {
+            functions(offset: $offset) {
+                offset
+                name
+                embedding @include(if: $withEmbedding) {
+                    vector
+                    version
+                }
+                pseudoCode {
+                    code
+                }
+            }
+        }
+    }
+}
+
+
+query FunctionMatch($sha256: String!, $offset: BigInt!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    decompileResult {
+      function(offset: $offset) {
+        match(topK: 10) {
+          score
+          function {
+            code
+          }
+        }
+      }
+    }
+  }
+}
+
+
+query CompressedFile($sha256: String!) {
+  file: fileByHash(input: {sha256: $sha256}) {
+    decompressed {
+      ... on CompressedFile {
+        path
+        sha256
+      }
+    }
+  }
+}
+
+
+mutation Reanalyze($input: ReanalyzeInput!) {
+  reanalyze(input: $input) {
+    noopReason
+    file {
+      analyzeStatus {
+        status
+      }
+    }
+  }
+}
+
+mutation CheckOrUpload($input: CreateUploadTicketInput!) {
+  createUploadTicket(input: $input) {
+    __typename
+    ... on File {
+      sha256
+    }
+    ... on UploadTicket {
+      ticketID
+      url
+      requestHeaders {
+        key
+        value
+      }
+    }
+    ... on OwnershipTicket {
+      ticketID
+      secretPrepend
+      secretAppend
+    }
+  }
+}
+
+
+mutation CreateFile($input: CreateFileInput!) {
+  createFile(input: $input) {
+    sha256
+    md5
+    name
+    size
+    mimeType
+    createTime
+  }
+}
+

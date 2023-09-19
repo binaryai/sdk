@@ -1,0 +1,389 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-18 19:49+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../autoapi/binaryai/client/index.rst:2
+msgid ":py:mod:`binaryai.client`"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:8
+msgid "Module Contents"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:11
+msgid "Classes"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:19:<autosummary>:1
+msgid ":py:obj:`BinaryAI <binaryai.client.BinaryAI>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:19:<autosummary>:1
+msgid "BinaryAI client used to interact with servers."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:21
+msgid "Attributes"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ":py:obj:`SDK_VERSION <binaryai.client.SDK_VERSION>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ":py:obj:`DEFAULT_SDK_NAME <binaryai.client.DEFAULT_SDK_NAME>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ":py:obj:`DEFAULT_POLL_INTERVAL <binaryai.client.DEFAULT_POLL_INTERVAL>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ":py:obj:`DEFAULT_POLL_TIMEOUT <binaryai.client.DEFAULT_POLL_TIMEOUT>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ":py:obj:`HEADER_REQUEST_SOURCE <binaryai.client.HEADER_REQUEST_SOURCE>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ":py:obj:`DEFAULT_ENDPOINT <binaryai.client.DEFAULT_ENDPOINT>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:33:<autosummary>:1
+msgid ""
+":py:obj:`DEFAULT_LICENSE_SEPARATOR "
+"<binaryai.client.DEFAULT_LICENSE_SEPARATOR>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:70
+msgid "Bases: :py:obj:`object`"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:72
+msgid ""
+"BinaryAI client used to interact with servers. Users can receive upload, "
+"do analysis, and receive the detailed results by using this client. .. "
+"note::"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:82
+msgid "Uploads a file to server."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:84
+msgid ""
+"At least one of following input should be not None: * File upload: fill "
+"`filepath` for the file to be upload on the disk * Memory upload: `mem` "
+"for the file to be upload in the memory"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:88
+msgid ""
+"If you only have the hash, you can try to fill `sha256` and `md5`, but "
+"the error FileRequiredError might be raised. Hash is ignored if file is "
+"already provided through `filepath` or `mem. When multiple hashes "
+"provided, only use sha256."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:92
+msgid ""
+"Memory upload, hash upload and `hooks` are experimental features. They "
+"might be changed without noticed."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst
+msgid "Parameters"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:94
+msgid "A pathname to a given file for file upload."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:96
+msgid "A byte buffer for a file in memory to be upload."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:98
+msgid "A dict to modify arguments before certain operations."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:100
+#: ../../autoapi/binaryai/client/index.rst:102
+msgid "A string for hash upload."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst
+msgid "Returns"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:105
+msgid "A actual sha256 that server calculates and returns."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:110
+msgid "Reanalyze target file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:112
+#: ../../autoapi/binaryai/client/index.rst:139
+#: ../../autoapi/binaryai/client/index.rst:148
+#: ../../autoapi/binaryai/client/index.rst:156
+#: ../../autoapi/binaryai/client/index.rst:166
+#: ../../autoapi/binaryai/client/index.rst:176
+#: ../../autoapi/binaryai/client/index.rst:186
+#: ../../autoapi/binaryai/client/index.rst:196
+#: ../../autoapi/binaryai/client/index.rst:203
+#: ../../autoapi/binaryai/client/index.rst:213
+#: ../../autoapi/binaryai/client/index.rst:223
+#: ../../autoapi/binaryai/client/index.rst:233
+#: ../../autoapi/binaryai/client/index.rst:266
+msgid "File sha256sum."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:117
+msgid ""
+"Wait until having a latest stable result, by waiting for if all analysis "
+"on this file done. You can set the wait timeout in seconds. If no stable "
+"results available after timeout, a TimeoutError is raised."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:121
+msgid ""
+"If parts being waitied are failed instead of succeed, this function will "
+"*not* raise any exception. To get detailed info about status, call "
+"`get_analyze_status`."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:124
+msgid ""
+"For analyze in parallel, consider call this function in a seperate "
+"thread, since this function is wait by calling `threaing.Event`. This "
+"function's implementation is a good reference of judging if a file is "
+"finished analyzing."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:128
+msgid "File sha256 sum."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:129
+msgid "maxium wait time in seconds. If negative, wait forever."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:131
+msgid "pool interval in seconds. Raise error if not positive."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:137
+msgid ""
+"Return current state of each analyzers. Read API document about "
+"relationship between analyzer and results."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:144
+msgid "Get file sha256 by its md5."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:146
+msgid "File md5 hash."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst
+msgid "Return type"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:154
+msgid "Get all uploaded filenames for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:158
+msgid "A list of filenames."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:164
+msgid "Get MIME type for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:168
+msgid "MIME type string."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:174
+msgid "Get size in bytes of a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:178
+msgid "File size in bytes."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:184
+msgid "Get a list of files inside a compressed file identified by a sha256."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:186
+msgid "File sha256sum.  Returns:        int: File size in bytes."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:188
+msgid "Returns:"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:189
+msgid "int: File size in bytes."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:194
+msgid "Get all CVE names for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:201
+msgid "Get all licenses for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:205
+msgid "A list of license string."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:211
+msgid "Get all license short names for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:215
+msgid "A list of license short names."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:221
+msgid "Get all ASCII strings for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:225
+msgid "A list of ASCII strings."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:231
+msgid "Get SCA result for a given file."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:235
+msgid "A list of software components."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:241
+msgid "Fetch analysis overview from BinaryAI Beat server by file's sha256."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:243
+msgid "A key-value pair containing overview of the binary file"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:248
+msgid "Fetch file download link by file's sha256."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:250
+msgid "A link can be used to download link later. The link might expire."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:255
+msgid "Fetch offsets of functions from analysis."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:257
+msgid "list of function offset"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:262
+msgid ""
+"Parses the list of functions and returns a Function instance containing "
+"the given function's name, fileoffset, bytes, pseudocode and returns the "
+"list with a generator."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:267
+msgid "Batch size to get functions' info"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:269
+msgid "Function Iterator"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:274
+msgid ""
+"Fetch detailed information about the given function identified by its "
+"offset address."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:278
+#: ../../autoapi/binaryai/client/index.rst:291
+#: ../../autoapi/binaryai/client/index.rst:309
+msgid "Params:"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:278
+#: ../../autoapi/binaryai/client/index.rst:309
+msgid "offset: offset address of desired function"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:280
+msgid ""
+"Function instance containing the given function's name, fileoffset, "
+"bytes, pseudocode"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:286
+msgid ""
+"Fetch detailed information about the given functions identified by its "
+"offset address."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:290
+msgid ""
+"offsets: A list of offset addresses of desired functions batch_size: "
+"Batch size to get functions' info."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:293
+msgid "Function iterator"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst
+msgid "Raises"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:295
+msgid "invalid batch size"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:300
+msgid "Get functions' info in batches"
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:305
+msgid "Match functions about the given function identified by its offset address."
+msgstr ""
+
+#: ../../autoapi/binaryai/client/index.rst:311
+msgid ""
+"a List containing 10 match results, every result is a Dict the contains "
+"score and pseudocode. The List is sorted by score from high to low"
+msgstr ""
+
