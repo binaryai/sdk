@@ -94,7 +94,7 @@ class BinaryAIFile(object):
         Returns:
             List[str]: A list of ASCII strings.
         """
-        return self.get_all_ascii_strings(self.sha256)
+        return self._bai.get_all_ascii_strings(self.sha256)
 
     def get_sca_result(self) -> List[Component]:
         """Get SCA result.
@@ -102,7 +102,7 @@ class BinaryAIFile(object):
         Returns:
             List[Component]: A list of sortware components.
         """
-        return self.get_sca_result(self.sha256)
+        return self._bai.get_sca_result(self.sha256)
 
     def get_overview(self) -> Dict[str, str]:
         """Fetch analysis overview.
