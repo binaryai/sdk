@@ -1,0 +1,71 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-18 19:49+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../autoapi/binaryai/upload/index.rst:2
+msgid ":py:mod:`binaryai.upload`"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:8
+msgid "Module Contents"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:11
+msgid "Classes"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:19:<autosummary>:1
+msgid ":py:obj:`Uploader <binaryai.upload.Uploader>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:37
+#: ../../autoapi/binaryai/upload/index.rst:19:<autosummary>:1
+msgid "Uploads a file to server. See `binaryai.BinaryAI.upload` for detail."
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:21
+msgid "Attributes"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:27:<autosummary>:1
+msgid ":py:obj:`logger <binaryai.upload.logger>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:35
+msgid "Bases: :py:obj:`object`"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:41
+msgid "Starts the upload sequence."
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:46
+msgid "Checks if file exists on FileManager with filename and file's hashsum."
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:51
+msgid "Calculate the POS argument"
+msgstr ""
+
+#: ../../autoapi/binaryai/upload/index.rst:56
+msgid "Uploads file to FileManager."
+msgstr ""
+

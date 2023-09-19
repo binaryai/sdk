@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-19 11:09+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../quick_start.ipynb:9
+msgid "Quick start"
+msgstr "快速入门"
+
+#: ../../quick_start.ipynb:20
+msgid ""
+"This notebook give an example on how to use this SDK to upload, analysis "
+"and get the analysis result of a file."
+msgstr "下面给出了使用SDK上传和分析文件，并获取文件分析结果的示例。"
+
+#: ../../quick_start.ipynb:32
+msgid "Intialize"
+msgstr "初始化"
+
+#: ../../quick_start.ipynb:34
+msgid ""
+"To initialize the SDK, please prepare your Secret ID and Secret Key. "
+"Please `apply from us <https://www.binaryai.cn/doc/>`__ if you don' have "
+"one."
+msgstr "初始化SDK需要使用 Secret ID 和 Secret Key。"
+"如果您目前没有，请 `联系我们 <https://www.binaryai.cn/doc/>`__ 获取一个。"
+
+#: ../../quick_start.ipynb:36
+msgid ""
+"The Secret ID & Key is the only credential to access API, so please kept "
+"it safely. We recommend you read your keys to environment variable, "
+"instead of saving in your code:"
+msgstr "Secret ID 和 Secret Key 是您访问API的唯一凭据，请妥善保存。"
+"我们建议您将这些凭据放入环境变量中，而不是硬编码在代码里："
+
+#: ../../quick_start.ipynb:47
+msgid "Once those environment variables are set, our SDK can read them directly."
+msgstr "环境变量设置好后，SDK会自动读取他们。"
+
+#: ../../quick_start.ipynb:49
+msgid "To initialize the SDK:"
+msgstr "要初始化SDK："
+
+#: ../../quick_start.ipynb:77
+msgid "Great! If no exceptions raised, the client is initialized."
+msgstr "赞！如果没有异常发生，客户端就初始化好了。"
+
+#: ../../quick_start.ipynb:89
+msgid "Upload and analysis file"
+msgstr "上传并分析文件"
+
+#: ../../quick_start.ipynb:91
+msgid ""
+"Note: file upload might be rejected if file is too big or upload is too "
+"quick."
+msgstr "注意：如果文件过大或上传过于频繁，上传请求可能被拒绝。"
+
+#: ../../quick_start.ipynb:93
+msgid "Now you can upload by the file path:"
+msgstr "现在你可以使用本地文件路径上传文件："
+
+#: ../../quick_start.ipynb:145
+msgid "Get analysis result"
+msgstr "获得分析结果"
+
+#: ../../quick_start.ipynb:147
+msgid "You can get analysis result by giving hash of a file for each method:"
+msgstr "调用SDK的各个方法，并给出文件的sha256，即可访问分析结果："
+
+#: ../../quick_start.ipynb:282
+msgid "Or initialize a file object and call it:"
+msgstr "或者，你也可以初始化一个文件对象并调用："
+
+#: ../../quick_start.ipynb:343
+msgid ""
+"As shown above, you can always give a file hash (md5 or sha256) to get "
+"its analysis result."
+msgstr "如上所示，只要给出文件的哈希，即可访问结果。"
+
+#: ../../quick_start.ipynb:345
+msgid ""
+"Read ``examples/`` in SDK repository or read the SDK API document for "
+"more info."
+msgstr "你可以查看SDK代码仓库中的 ``examples/`` 文件夹，或浏览文档的其他部分来获取更多信息。"
+

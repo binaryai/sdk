@@ -9,6 +9,11 @@
 		// Update the 'dockerFile' property if you aren't using the standard 'Dockerfile' filename.
 		"dockerfile": "./Dockerfile"
 	},
+	"containerEnv": {
+		"BINARYAI_SECRET_ID": "${localEnv:BINARYAI_SECRET_ID}",
+		"BINARYAI_SECRET_KEY": "${localEnv:BINARYAI_SECRET_KEY}",
+		"BINARYAI_ENDPOINT": "${localEnv:BINARYAI_ENDPOINT}",
+	},
 	"features": {
 		"ghcr.io/devcontainers/features/python:1": {
 			"version": "none" // do not touch os python
@@ -25,7 +30,8 @@
 				"ms-python.pylint",
 				"ms-python.python",
 				"ms-python.flake8",
-				"ms-python.black-formatter"
+				"ms-python.black-formatter",
+				"ms-toolsai.jupyter"
 			],
 			"settings": {
 				"[python]": {
@@ -43,7 +49,7 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	// "forwardPorts": [],
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "poetry install --with=dev --no-interaction",
+	"postCreateCommand": "poetry install --with=dev --with=docs --no-interaction",
 	// Configure tool-specific properties.
 	// "customizations": {},
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.

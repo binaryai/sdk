@@ -1,0 +1,162 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-18 19:49+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../autoapi/binaryai/utils/index.rst:2
+msgid ":py:mod:`binaryai.utils`"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:8
+msgid "Module Contents"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:11
+msgid "Classes"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:18:<autosummary>:1
+msgid ":py:obj:`QCloudHttpxAuth <binaryai.utils.QCloudHttpxAuth>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:54
+#: ../../autoapi/binaryai/utils/index.rst:18:<autosummary>:1
+msgid "Auth class that allows us to connect to QCloud services"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:20
+msgid "Functions"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:29:<autosummary>:1
+msgid ":py:obj:`sha256sum <binaryai.utils.sha256sum>`\\ \\(→ str\\)"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:32
+#: ../../autoapi/binaryai/utils/index.rst:29:<autosummary>:1
+msgid "Computes sha256 hash sum of a file."
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:29:<autosummary>:1
+msgid ":py:obj:`sign <binaryai.utils.sign>`\\ \\(key\\, msg\\)"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:41
+#: ../../autoapi/binaryai/utils/index.rst:46
+#: ../../autoapi/binaryai/utils/index.rst:29:<autosummary>:1
+msgid ""
+"Modified from https://docs.aws.amazon.com/general/latest/gr/sigv4-signed-"
+"request-examples.html"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:29:<autosummary>:1
+msgid ""
+":py:obj:`getSignatureKey <binaryai.utils.getSignatureKey>`\\ \\(key\\, "
+"dateStamp\\, serviceName\\)"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst
+msgid "Parameters"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:34
+msgid "path of file"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst
+msgid "Returns"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:36
+msgid "hex digest of sha256"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:52
+msgid "Bases: :py:obj:`httpx.Auth`"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:63
+msgid "Adds the authorization headers required by QCloud Signature v3."
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:68
+msgid ""
+"Override get_qcloud_request_headers_handler() if you have a subclass that"
+" needs to call get_qcloud_request_headers() with an arbitrary set of "
+"QCloud credentials. The default implementation calls "
+"get_qcloud_request_headers() with self.qcloud_access_key, and "
+"self.qcloud_secret_access_key"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:77
+msgid ""
+"Returns a dictionary containing the necessary headers for Amazon's "
+"signature version 4 signing process. An example return value might look "
+"like"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:82
+msgid "{"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:82
+msgid "'Authorization': '...', '...',"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:84
+msgid "}"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:90
+msgid "Create canonical path. According to QCloud, this should always be \"/\""
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:96
+msgid ""
+"Create the canonical query string. According to QCloud, by the end of "
+"this function our query string values must be URL-encoded (space=%20) and"
+" the parameters must be sorted by name."
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:101
+msgid ""
+"This method assumes that the query params in `r` are *already* url "
+"encoded.  If they are not url encoded by the time they make it to this "
+"function, QCloud may complain that the signature for your request is "
+"incorrect."
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:107
+msgid "It appears elasticsearc-py url encodes query paramaters on its own:"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:107
+msgid ""
+"https://github.com/elastic/elasticsearch-"
+"py/blob/5dfd6985e5d32ea353d2b37d01c2521b2089ac2b/elasticsearch/connection/http_requests.py#L64"
+msgstr ""
+
+#: ../../autoapi/binaryai/utils/index.rst:109
+msgid ""
+"If you are using a different client than elasticsearch-py, it will be "
+"your responsibility to urleconde your query params before this method is "
+"called."
+msgstr ""
+

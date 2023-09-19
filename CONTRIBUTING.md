@@ -8,6 +8,12 @@ Install development dependencies:
 poetry install --with=dev
 ```
 
+If you also want to modify documents, install related documents:
+
+```bash
+poetry install --with=dev --with=docs
+```
+
 ## (Optional) Re-generate query file
 
 If the client is modified for a new verion's schema, run the code generator:
@@ -19,7 +25,7 @@ poetry run ariadne-codegen
 
 ## Formatter and linter
 
-Recommend to run following commands
+Run following commands before commit:
 
 ```sh
 poetry run flake8 . && \

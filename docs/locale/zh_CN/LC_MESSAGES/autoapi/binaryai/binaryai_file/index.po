@@ -1,0 +1,224 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-18 19:49+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:2
+msgid ":py:mod:`binaryai.binaryai_file`"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:8
+msgid "Module Contents"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:11
+msgid "Classes"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:19:<autosummary>:1
+msgid ":py:obj:`BinaryAIFile <binaryai.binaryai_file.BinaryAIFile>`\\"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:19:<autosummary>:1
+msgid "BinaryAIFile represent the file already analyzed by BinaryAI."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:23
+msgid "Bases: :py:obj:`object`"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:25
+msgid ""
+"BinaryAIFile represent the file already analyzed by BinaryAI. Users can "
+"receive the detailed results by using this conveniently. Note: This is "
+"not thread safe!!!"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:31
+msgid "Get all uploaded filenames."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst
+msgid "Returns"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:33
+msgid "A list of filenames."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst
+msgid "Return type"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:39
+msgid "Get MIME type"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:41
+msgid "MIME type string."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:47
+msgid "Get size in bytes."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:49
+msgid "File size in bytes."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:55
+msgid "Get a list of files inside a compressed file identified."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:57
+msgid "A list of compressed files."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:63
+msgid "Get all CVEs."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:65
+msgid "A list of CVE objects."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:71
+msgid "Get all CVE names."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:73
+msgid "A list of CVE names."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:79
+msgid "Get all licenses."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:81
+msgid "A list of license objects."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:87
+msgid "Get all license short names."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:89
+msgid "A list of license short names."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:95
+msgid "Get all ASCII strings."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:97
+msgid "A list of ASCII strings."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:103
+msgid "Get SCA result."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:105
+msgid "A list of sortware components."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:111
+msgid "Fetch analysis overview."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:113
+msgid "A key-value pair containing overview of the file"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:119
+msgid "Fetch offsets of functions."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:121
+msgid "A list of function offsets"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:127
+msgid ""
+"Parses the list of functions and returns a Function instance containing "
+"the given function's name, fileoffset, bytes, pseudocode and returns the "
+"list with a generator."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:131
+msgid "A Function iterator"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:137
+msgid ""
+"Fetch detailed information about the given function identified by its "
+"offset address."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:142
+#: ../../autoapi/binaryai/binaryai_file/index.rst:156
+#: ../../autoapi/binaryai/binaryai_file/index.rst:169
+msgid "Params:"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:141
+msgid ""
+"offset: Offset address of desired function with_embedding: if True, try "
+"get the embedding representation of each function."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:144
+msgid ""
+"A Function instance containing the given function's name, fileoffset, "
+"bytes, pseudocode"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:151
+msgid ""
+"Fetch detailed information about the given functions identified by its "
+"offset address."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:155
+msgid ""
+"offset: List of offset address of desired function with_embedding: if "
+"True, try get the embedding representation of each function."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:158
+msgid ""
+"A iterator Functions instance containing the given function's name, "
+"fileoffset, bytes, pseudocode."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:165
+msgid "Match functions about the given function identified by its offset address."
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:169
+msgid "offset: Offset address of desired function"
+msgstr ""
+
+#: ../../autoapi/binaryai/binaryai_file/index.rst:171
+msgid ""
+"a List containing 10 match results, every result is a Dict the contains "
+"score and pseudocode. The List is sorted by score from high to low."
+msgstr ""
+

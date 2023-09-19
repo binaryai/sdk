@@ -1,0 +1,49 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2020-2023, binaryai <binaryai@tencent.com>
+# This file is distributed under the same license as the BinaryAI SDK
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2023.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: BinaryAI SDK \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2023-09-18 19:49+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh_CN\n"
+"Language-Team: zh_CN <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.12.1\n"
+
+#: ../../autoapi/binaryai/exceptions/index.rst:2
+msgid ":py:mod:`binaryai.exceptions`"
+msgstr ""
+
+#: ../../autoapi/binaryai/exceptions/index.rst:8
+msgid "Module Contents"
+msgstr ""
+
+#: ../../autoapi/binaryai/exceptions/index.rst:13
+#: ../../autoapi/binaryai/exceptions/index.rst:23
+msgid "Bases: :py:obj:`Exception`"
+msgstr ""
+
+#: ../../autoapi/binaryai/exceptions/index.rst:15
+msgid ""
+"FileNotExistError means the sha256 just uploaded is not found. Normally "
+"this error does not occur. If it does, it means that there is a problem "
+"with the server"
+msgstr ""
+
+#: ../../autoapi/binaryai/exceptions/index.rst:25
+msgid ""
+"FileRequiredError means BinaryAI requires the file, but you are not "
+"providing it. This error might occur if you are only providing hash to "
+"the BinaryAI. Consider provide the original file as well."
+msgstr ""
+
