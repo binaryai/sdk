@@ -1,7 +1,15 @@
-cff-version: 1.0
-message: "If you use BinaryAI, please cite it as below."
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: BinaryAI
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
 authors:
-- family-names: "Tencent Security Keen Lab"
-title: "BinaryAI"
-date-released: 2021-08-11
-url: "https://binaryai.cn"
+  - name: Tencent Security Keen Lab
+    website: 'https://keenlab.tencent.com'
+    email: KeenSecurityLab@tencent.com
+url: 'https://www.binaryai.cn'
+date-released: '2021-08-11'
