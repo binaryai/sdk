@@ -9,13 +9,13 @@
 a simple client to upload file and get analysis result. It also works as
 a demo on calling BinaryAI's GraphQL API directly.
 
-To use SDK, you need a valid credentials. Read [BinaryAI docs](https://www.binaryai.cn/doc/) about detailed instructions.
+To use SDK, you need a valid credential. Read [BinaryAI docs](https://www.binaryai.cn/doc/) about detailed instructions.
 
 ## Dependency
 
 Python >= 3.9
 
-## Download and installation
+## Download and install
 
 ```bash
 python3 -m pip install binaryai
@@ -51,3 +51,9 @@ Read the [Changelog](https://www.binaryai.cn/doc/zh/releasenotes/releasenotes.ht
 
 1. Yu, Zeping, et al. "Codecmr: Cross-modal retrieval for function-level binary source code matching." Advances in Neural Information Processing Systems 33 (2020): 3872-3883.
 2. Yu, Zeping, et al. "Order matters: Semantic-aware neural networks for binary code similarity detection." Proceedings of the AAAI conference on artificial intelligence. Vol. 34. No. 01. 2020.
+3. Li, Zongjie, et al. "Unleashing the power of compiler intermediate representation to enhance neural program embeddings." Proceedings of the 44th International Conference on Software Engineering. 2022.
+4. Wong, Wai Kin, et al. "Deceiving Deep Neural Networks-Based Binary Code Matching with Adversarial Programs." 2022 IEEE International Conference on Software Maintenance and Evolution (ICSME). IEEE, 2022.
+5. Wang, Huaijin, et al. "Enhancing DNN-Based Binary Code Function Search With Low-Cost Equivalence Checking." IEEE Transactions on Software Engineering 49.1 (2022): 226-250.
+6. Jia, Ang, et al. "1-to-1 or 1-to-n? Investigating the Effect of Function Inlining on Binary Similarity Analysis." ACM Transactions on Software Engineering and Methodology 32.4 (2023): 1-26.
+7. Wang, Huaijin, et al. "sem2vec: Semantics-aware Assembly Tracelet Embedding." ACM Transactions on Software Engineering and Methodology 32.4 (2023): 1-34.
+8. Jiang, Ling, et al. "Third-Party Library Dependency for Large-Scale SCA in the C/C++ Ecosystem: How Far Are We?." Proceedings of the 32nd ACM SIGSOFT International Symposium on Software Testing and Analysis. 2023.

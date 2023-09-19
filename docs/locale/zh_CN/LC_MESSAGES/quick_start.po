@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BinaryAI SDK \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-19 11:09+0000\n"
+"POT-Creation-Date: 2023-09-19 12:15+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -25,34 +25,38 @@ msgid "Quick start"
 msgstr "快速入门"
 
 #: ../../quick_start.ipynb:20
+#, fuzzy
 msgid ""
-"This notebook give an example on how to use this SDK to upload, analysis "
-"and get the analysis result of a file."
+"This notebook gives an example on how to use this SDK to upload, start "
+"analysis and get the analysis result of a file."
 msgstr "下面给出了使用SDK上传和分析文件，并获取文件分析结果的示例。"
 
 #: ../../quick_start.ipynb:32
-msgid "Intialize"
+#, fuzzy
+msgid "Initialize"
 msgstr "初始化"
 
 #: ../../quick_start.ipynb:34
+#, fuzzy
 msgid ""
 "To initialize the SDK, please prepare your Secret ID and Secret Key. "
-"Please `apply from us <https://www.binaryai.cn/doc/>`__ if you don' have "
-"one."
-msgstr "初始化SDK需要使用 Secret ID 和 Secret Key。"
-"如果您目前没有，请 `联系我们 <https://www.binaryai.cn/doc/>`__ 获取一个。"
+"Please `apply from us <https://www.binaryai.cn/doc/>`__ if you don't have"
+" one."
+msgstr ""
+"初始化SDK需要使用 Secret ID 和 Secret Key。如果你目前没有，请 `联系我们 "
+"<https://www.binaryai.cn/doc/>`__ 获取一个。"
 
 #: ../../quick_start.ipynb:36
+#, fuzzy
 msgid ""
-"The Secret ID & Key is the only credential to access API, so please kept "
-"it safely. We recommend you read your keys to environment variable, "
+"The Secret ID & Key is the *only* credential to access API, so please "
+"keep it safely. We recommend you read your keys to environment variable, "
 "instead of saving in your code:"
-msgstr "Secret ID 和 Secret Key 是您访问API的唯一凭据，请妥善保存。"
-"我们建议您将这些凭据放入环境变量中，而不是硬编码在代码里："
+msgstr "Secret ID 和 Secret Key 是访问API的**唯一凭据**，请妥善保存。我们建议将这些凭据放入环境变量中，而不是硬编码在代码里："
 
 #: ../../quick_start.ipynb:47
 msgid "Once those environment variables are set, our SDK can read them directly."
-msgstr "环境变量设置好后，SDK会自动读取他们。"
+msgstr "环境变量设置好后，SDK会自动读取它们。"
 
 #: ../../quick_start.ipynb:49
 msgid "To initialize the SDK:"
@@ -63,7 +67,8 @@ msgid "Great! If no exceptions raised, the client is initialized."
 msgstr "赞！如果没有异常发生，客户端就初始化好了。"
 
 #: ../../quick_start.ipynb:89
-msgid "Upload and analysis file"
+#, fuzzy
+msgid "Upload and analyze file"
 msgstr "上传并分析文件"
 
 #: ../../quick_start.ipynb:91

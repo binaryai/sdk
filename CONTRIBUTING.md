@@ -23,6 +23,21 @@ rm -r src/binaryai/client_stub && \
 poetry run ariadne-codegen
 ```
 
+## Document and translation generation
+
+We use Sphinx for document generation. After modified texts, you should re-generate the LOCALE files:
+
+```bash
+cd docs/
+make getpo
+```
+
+And you can modify `*.po` files. To have a preview:
+
+```bash
+make all
+```
+
 ## Formatter and linter
 
 Run following commands before commit:
