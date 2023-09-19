@@ -62,7 +62,6 @@ msgstr ""
 " API的一个参考"
 
 #: ../../../README.md:13
-#, fuzzy
 msgid ""
 "To use SDK, you need a valid credential. Read [BinaryAI "
 "docs](https://www.binaryai.cn/doc/) about detailed instructions."
@@ -77,7 +76,6 @@ msgid "Python >= 3.9"
 msgstr ""
 
 #: ../../../README.md:19
-#, fuzzy
 msgid "Download and install"
 msgstr "下载和安装"
 

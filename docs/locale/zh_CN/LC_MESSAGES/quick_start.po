@@ -25,19 +25,16 @@ msgid "Quick start"
 msgstr "快速入门"
 
 #: ../../quick_start.ipynb:20
-#, fuzzy
 msgid ""
 "This notebook gives an example on how to use this SDK to upload, start "
 "analysis and get the analysis result of a file."
 msgstr "下面给出了使用SDK上传和分析文件，并获取文件分析结果的示例。"
 
 #: ../../quick_start.ipynb:32
-#, fuzzy
 msgid "Initialize"
 msgstr "初始化"
 
 #: ../../quick_start.ipynb:34
-#, fuzzy
 msgid ""
 "To initialize the SDK, please prepare your Secret ID and Secret Key. "
 "Please `apply from us <https://www.binaryai.cn/doc/>`__ if you don't have"
@@ -47,7 +44,6 @@ msgstr ""
 "<https://www.binaryai.cn/doc/>`__ 获取一个。"
 
 #: ../../quick_start.ipynb:36
-#, fuzzy
 msgid ""
 "The Secret ID & Key is the *only* credential to access API, so please "
 "keep it safely. We recommend you read your keys to environment variable, "
@@ -67,7 +63,6 @@ msgid "Great! If no exceptions raised, the client is initialized."
 msgstr "赞！如果没有异常发生，客户端就初始化好了。"
 
 #: ../../quick_start.ipynb:89
-#, fuzzy
 msgid "Upload and analyze file"
 msgstr "上传并分析文件"
 
