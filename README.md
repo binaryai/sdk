@@ -47,7 +47,7 @@ Version = "2023-04-15"
 
 ## Additional Reading
 
-Read the [Changelog](https://www.binaryai.cn/doc/zh/releasenotes/releasenotes.html) of our product, and hope you can also have fun reading papers related to our job:
+Read the [Changelog](https://www.binaryai.cn/doc/zh/releasenotes/) of our product, and hope you can also have fun reading papers related to our job:
 
 1. Yu, Zeping, et al. "Codecmr: Cross-modal retrieval for function-level binary source code matching." Advances in Neural Information Processing Systems 33 (2020): 3872-3883.
 2. Yu, Zeping, et al. "Order matters: Semantic-aware neural networks for binary code similarity detection." Proceedings of the AAAI conference on artificial intelligence. Vol. 34. No. 01. 2020.
