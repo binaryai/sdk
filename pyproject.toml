@@ -24,7 +24,7 @@ pydantic = "^2.3.0"
 flake8 = "4.0.1"
 black = "22.6.0"
 isort = "5.10.1"
-ariadne-codegen = "^0.9.0"
+ariadne-codegen = "^0.13.0"
 pytest = "^7.4.2"
 
 [tool.poetry.group.docs.dependencies]

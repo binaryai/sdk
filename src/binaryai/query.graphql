@@ -213,6 +213,19 @@ query FunctionMatch($sha256: String!, $offset: BigInt!) {
     }
 }
 
+query FileKHash($sha256: String!) {
+    file: fileByHash(input: { sha256: $sha256 }) {
+        decompileResult {
+            kHashInfo {
+                hash {
+                    hash
+                    version
+                }
+            }
+        }
+    }
+}
+
 query CompressedFile($sha256: String!) {
     file: fileByHash(input: { sha256: $sha256 }) {
         decompressed {

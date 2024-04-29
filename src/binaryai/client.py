@@ -57,11 +57,13 @@ class BinaryAI(object):
         *,
         secret_id: Optional[str] = os.environ.get("BINARYAI_SECRET_ID"),
         secret_key: Optional[str] = os.environ.get("BINARYAI_SECRET_KEY"),
-        endpoint: str = os.environ.get("BINARYAI_ENDPOINT", DEFAULT_ENDPOINT),
+        endpoint: str = os.environ.get("BINARYAI_ENDPOINT") or DEFAULT_ENDPOINT,
     ) -> None:
         super().__init__()
-        if secret_id is None or secret_key is None:
+        if not (secret_id and secret_key):
             raise ValueError("Please set secret id and key in your code or environ")
+        if not endpoint:
+            raise ValueError("Please set endpoint, or leave it as empty if you have no idea")
         transport = httpx.HTTPTransport(
             verify=True,
             retries=3,
@@ -197,10 +199,10 @@ class BinaryAI(object):
         Returns:
             str: File sha256sum.
         """
-        f = self._client.sha256(md5).file
+        f = self._client.sha_256(md5).file
         if not f:
             raise FileNotExistError("File not exists or no permission")
-        return f.sha256
+        return f.sha_256
 
     def get_filenames(self, sha256: str) -> List[str]:
         """Get all uploaded filenames for a given file.
@@ -225,7 +227,7 @@ class BinaryAI(object):
         Returns:
             str: MIME type string.
         """
-        f = self._client.m_i_m_e_type(sha256).file
+        f = self._client.mime_type(sha256).file
         if not f:
             raise FileNotExistError("File not exists or no permission")
         return f.mime_type
@@ -263,7 +265,7 @@ class BinaryAI(object):
                 file_list.append(
                     CompressedFile(
                         path=compressed_file.path,
-                        sha256=compressed_file.sha256,
+                        sha256=compressed_file.sha_256,
                     )
                 )
         return file_list
@@ -274,7 +276,7 @@ class BinaryAI(object):
         Args:
             sha256: File sha256sum.
         """
-        f = self._client.c_v_e_name(sha256).file
+        f = self._client.cve_name(sha256).file
         if not f:
             raise FileNotExistError("File not exists or no permission")
 
@@ -345,7 +347,7 @@ class BinaryAI(object):
         Returns:
             List[str]: A list of ASCII strings.
         """
-        f = self._client.a_s_c_i_i_string(sha256).file
+        f = self._client.ascii_string(sha256).file
         if not f:
             raise FileNotExistError("File not exists or no permission")
 
@@ -363,7 +365,7 @@ class BinaryAI(object):
         Returns:
             List[Component]: A list of software components.
         """
-        f = self._client.s_c_a(sha256).file
+        f = self._client.sca(sha256).file
         if not f:
             raise FileNotExistError("File not exists or no permission")
 
@@ -374,7 +376,7 @@ class BinaryAI(object):
                     name=elem.name,
                     version=elem.version,
                     description=elem.description,
-                    source_code_url=elem.source_code_u_r_l,
+                    source_code_url=elem.source_code_url,
                     summary=elem.summary,
                 )
             )

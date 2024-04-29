@@ -66,7 +66,7 @@ class Uploader(object):
         ticket_type = ticket.typename__
 
         if ticket_type == "File":
-            return ticket.sha256
+            return ticket.sha_256
 
         reply_pos = None
 
@@ -79,12 +79,12 @@ class Uploader(object):
         else:
             raise ValueError("unknown upload type, upgrade SDK or contact developers")
 
-        ticket_id = ticket.ticket_i_d
+        ticket_id = ticket.ticket_id
         logger.info("creating file")
         req = client_stub.CreateFileInput(ticketID=ticket_id, ownershipPoS=reply_pos)
         verify_response = self._client.create_file(req)
 
-        return verify_response.create_file.sha256
+        return verify_response.create_file.sha_256
 
     def __create_ticket(
         self, *, filename: Optional[str] = None, sha256: Optional[str] = None, md5: Optional[str] = None
