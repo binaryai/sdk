@@ -5,8 +5,8 @@ from typing import List, Tuple
 
 from binaryai import BinaryAI, Function
 
-DEFAULT_SHA256 = "29b54fcc694f39f108ce0cf6cbf3b8f2b43165b72bfda95e755b52b037a443a7"
-DEFAULT_SHA256_1 = "b02c811c053054e2973aec8df4e4027ddf9d5d614bf383cfff62843d635a8d5a"
+DEFAULT_SHA256 = "bbe34331e5068d7dc5b990fbef10002358b4ef8e07ab92c0d5620ed60fc36b30"
+DEFAULT_SHA256_1 = "289616b59a145e2033baddb8a8a9b5a8fb01bdbba1b8cf9acadcdd92e6cc0562"
 
 
 def run_thread(sha256: str) -> Tuple[str, List[Function]]:

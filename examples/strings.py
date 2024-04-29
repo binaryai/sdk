@@ -4,7 +4,7 @@ import argparse
 
 from binaryai import BinaryAI
 
-DEFAULT_SHA256 = "29b54fcc694f39f108ce0cf6cbf3b8f2b43165b72bfda95e755b52b037a443a7"
+DEFAULT_SHA256 = "bbe34331e5068d7dc5b990fbef10002358b4ef8e07ab92c0d5620ed60fc36b30"
 
 
 def main():

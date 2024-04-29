@@ -4,7 +4,7 @@
 from binaryai import BinaryAI
 
 # sha256 and md5 of the same file
-DEFAULT_MD5 = "dc62248e4b521c1884a0c4a4261c52b8"
+DEFAULT_MD5 = "c46b449d5460d45ecec2bb88a1975b3b"
 
 
 def main():
