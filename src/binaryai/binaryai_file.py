@@ -171,3 +171,11 @@ class BinaryAIFile(object):
             The List is sorted by score from high to low.
         """
         return self._bai.get_func_match(self.sha256, offset)
+
+    def get_khash_info(self) -> tuple[bytes, str]:
+        """Return the KHash of this file. See website for detailed introduction on KHash.
+
+        Returns:
+            Tuple[bytes, str]: KHash's value and version. Only compare if version is same.
+        """
+        return self._bai.get_khash_info(self.sha256)

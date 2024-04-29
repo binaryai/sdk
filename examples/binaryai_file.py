@@ -20,6 +20,7 @@ def main():
 
     print(bf1_files)
     print(bf2_files)
+    print(bf1.get_khash_info())
 
     print("done")
 

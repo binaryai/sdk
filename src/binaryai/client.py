@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+import binascii
 import logging
 import os
 import threading
@@ -564,3 +565,23 @@ class BinaryAI(object):
             )
             matched_func_list.append(matched_func)
         return matched_func_list
+
+    def get_khash_info(self, sha256: str) -> Optional[tuple[bytes, str]]:
+        """Return the KHash of this file. See website for detailed introduction on KHash.
+
+        Returns:
+            Optional[Tuple[bytes, str]]: KHash's value and version. Only compare if version is same.
+                                         You are not expected to parse version.
+        """
+        m = self._client.file_k_hash(sha256)
+        if not m.file:
+            return None
+        if not m.file.decompile_result:
+            return None
+        if not m.file.decompile_result.k_hash_info:
+            return None
+        # wiring protocol of hash value is a hex sequence
+        return (
+            binascii.unhexlify(m.file.decompile_result.k_hash_info.hash.hash),
+            m.file.decompile_result.k_hash_info.hash.version,
+        )

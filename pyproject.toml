@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "binaryai"
-version = "0.7.1"
+version = "0.8.0"
 description = "BinaryAI-SDK is a library provides an abstracted client module to simplify the procedure of uploading file for analysis."
 license = "GPLv3"
 authors = ["binaryai <binaryai@tencent.com>"]
@@ -26,6 +26,7 @@ black = "22.6.0"
 isort = "5.10.1"
 ariadne-codegen = "^0.13.0"
 pytest = "^7.4.2"
+scipy = "^1.13.0"
 
 [tool.poetry.group.docs.dependencies]
 sphinx-autoapi = "^2.1.1"
