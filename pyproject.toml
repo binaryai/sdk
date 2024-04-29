@@ -46,3 +46,6 @@ async_client = false
 
 [tool.black]
 exclude = "src/binaryai/client_stub/*"
+
+[tool.isort]
+skip_glob = "src/binaryai/client_stub/*"
