@@ -31,7 +31,9 @@
 				"ms-python.python",
 				"ms-python.flake8",
 				"ms-python.black-formatter",
-				"ms-toolsai.jupyter"
+				"ms-toolsai.jupyter",
+				"GraphQL.vscode-graphql",
+				"esbenp.prettier-vscode"
 			],
 			"settings": {
 				"[python]": {
