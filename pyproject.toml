@@ -43,3 +43,6 @@ queries_path = "./src/binaryai/query.graphql"
 target_package_name = "client_stub"
 target_package_path = "./src/binaryai"
 async_client = false
+
+[tool.black]
+exclude = "src/binaryai/client_stub/*"
