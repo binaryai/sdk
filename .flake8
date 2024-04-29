@@ -17,6 +17,7 @@ exclude =
     .cache,
     .eggs
     .venv
-    venv
+    venv,
+    src/binaryai/client_stub/*
 
 max-line-length = 120
