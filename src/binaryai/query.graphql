@@ -226,6 +226,17 @@ query FileKHash($sha256: String!) {
     }
 }
 
+query FileMalwareProbability($sha256: String!) {
+    file: fileByHash(input: { sha256: $sha256 }) {
+        decompileResult {
+            malwareProbability
+        }
+        analyzeStatus(analyzer: SmartBeat) {
+            status
+        }
+    }
+}
+
 query CompressedFile($sha256: String!) {
     file: fileByHash(input: { sha256: $sha256 }) {
         decompressed {

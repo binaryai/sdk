@@ -179,3 +179,13 @@ class BinaryAIFile(object):
             Tuple[bytes, str]: KHash's value and version. Only compare if version is same.
         """
         return self._bai.get_khash_info(self.sha256)
+
+    def get_malware_probability(self):
+        """Return the malware probability of this file. 0 usually mean a white file, while 1 mean the file is risky.
+
+        This is a experimental feature. This might be changed without noticed.
+
+        Returns:
+            Optional[float]: Probability of the file. None means no result is available.
+        """
+        return self._bai.get_malware_probability(self.sha256)

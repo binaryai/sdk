@@ -13,6 +13,7 @@ from .create_file import CreateFile
 from .cve_name import CVEName
 from .download_link import DownloadLink
 from .file_k_hash import FileKHash
+from .file_malware_probability import FileMalwareProbability
 from .file_size import FileSize
 from .filename import Filename
 from .function_info import FunctionInfo
@@ -460,6 +461,33 @@ class Client(BaseClient):
         )
         data = self.get_data(response)
         return FileKHash.model_validate(data)
+
+    def file_malware_probability(
+        self, sha_256: str, **kwargs: Any
+    ) -> FileMalwareProbability:
+        query = gql(
+            """
+            query FileMalwareProbability($sha256: String!) {
+              file: fileByHash(input: {sha256: $sha256}) {
+                decompileResult {
+                  malwareProbability
+                }
+                analyzeStatus(analyzer: SmartBeat) {
+                  status
+                }
+              }
+            }
+            """
+        )
+        variables: Dict[str, object] = {"sha256": sha_256}
+        response = self.execute(
+            query=query,
+            operation_name="FileMalwareProbability",
+            variables=variables,
+            **kwargs
+        )
+        data = self.get_data(response)
+        return FileMalwareProbability.model_validate(data)
 
     def compressed_file(self, sha_256: str, **kwargs: Any) -> CompressedFile:
         query = gql(

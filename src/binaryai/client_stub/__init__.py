@@ -41,6 +41,7 @@ from .enums import (
     AntivirusSafeLevel,
     ExecuteType,
     FileType,
+    MalwareFamilyTag,
     MatchAlgorithm,
     NoopReason,
     PseudoCodeAnnotationType,
@@ -64,6 +65,12 @@ from .file_k_hash import (
     FileKHashFileDecompileResult,
     FileKHashFileDecompileResultKHashInfo,
     FileKHashFileDecompileResultKHashInfoHash,
+)
+from .file_malware_probability import (
+    FileMalwareProbability,
+    FileMalwareProbabilityFile,
+    FileMalwareProbabilityFileAnalyzeStatus,
+    FileMalwareProbabilityFileDecompileResult,
 )
 from .file_size import FileSize, FileSizeFile
 from .filename import Filename, FilenameFile
@@ -190,6 +197,10 @@ __all__ = [
     "FileKHashFileDecompileResult",
     "FileKHashFileDecompileResultKHashInfo",
     "FileKHashFileDecompileResultKHashInfoHash",
+    "FileMalwareProbability",
+    "FileMalwareProbabilityFile",
+    "FileMalwareProbabilityFileAnalyzeStatus",
+    "FileMalwareProbabilityFileDecompileResult",
     "FileSize",
     "FileSizeFile",
     "FileType",
@@ -236,6 +247,7 @@ __all__ = [
     "LicenseShortNameFileScainfo",
     "MIMEType",
     "MIMETypeFile",
+    "MalwareFamilyTag",
     "MatchAlgorithm",
     "MatchTargetInput",
     "NoopReason",

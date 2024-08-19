@@ -585,3 +585,22 @@ class BinaryAI(object):
             binascii.unhexlify(m.file.decompile_result.k_hash_info.hash.hash),
             m.file.decompile_result.k_hash_info.hash.version,
         )
+
+    def get_malware_probability(self, sha256: str) -> Optional[float]:
+        """Return the malware probability of this file. 0 usually mean a white file, while 1 mean the file is risky.
+
+        This is a experimental feature. This might be changed without noticed.
+
+        Returns:
+            Optional[float]: Probability of the file. None means no result is available.
+        """
+        m = self._client.file_malware_probability(sha256)
+        if not m.file:
+            return None
+        if not m.file.analyze_status:
+            return None
+        if m.file.analyze_status.status != client_stub.Status.Success:
+            return None
+        if not m.file.decompile_result:
+            return None
+        return m.file.decompile_result.malware_probability

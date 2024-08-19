@@ -41,6 +41,18 @@ class FileType(str, Enum):
     COFF = "COFF"
 
 
+class MalwareFamilyTag(str, Enum):
+    TROJAN = "TROJAN"
+    VIRUS = "VIRUS"
+    WORM = "WORM"
+    DOWNLOADER = "DOWNLOADER"
+    C2 = "C2"
+    RANSOM = "RANSOM"
+    COINMINER = "COINMINER"
+    ADWARE = "ADWARE"
+    BOTNET = "BOTNET"
+
+
 class MatchAlgorithm(str, Enum):
     Normal = "Normal"
     Professional = "Professional"
