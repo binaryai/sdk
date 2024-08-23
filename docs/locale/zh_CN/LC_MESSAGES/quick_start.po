@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: BinaryAI SDK \n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2023-09-19 12:15+0000\n"
+"POT-Creation-Date: 2024-08-23 07:36+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language: zh_CN\n"
@@ -18,7 +18,7 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Generated-By: Babel 2.12.1\n"
+"Generated-By: Babel 2.14.0\n"
 
 #: ../../quick_start.ipynb:9
 msgid "Quick start"
@@ -90,11 +90,23 @@ msgstr "或者，你也可以初始化一个文件对象并调用："
 
 #: ../../quick_start.ipynb:343
 msgid ""
+"You can also get a file's KHash, which can be used to compare "
+"similarities:"
+msgstr "通过获取一个文件的KHash，你可以计算文件之间的相似程度："
+
+#: ../../quick_start.ipynb:412
+msgid ""
+"In August 2024, we introduced a new feature to calculate a file's risky "
+"probability. A value ranged at ``[0, 1]`` might returned."
+msgstr "在2024年8月，我们推出了一个新特性，可用于计算文件的恶意程度，取值区间为``[0, 1]``。"
+
+#: ../../quick_start.ipynb:461
+msgid ""
 "As shown above, you can always give a file hash (md5 or sha256) to get "
 "its analysis result."
 msgstr "如上所示，只要给出文件的哈希，即可访问结果。"
 
-#: ../../quick_start.ipynb:345
+#: ../../quick_start.ipynb:463
 msgid ""
 "Read ``examples/`` in SDK repository or read the SDK API document for "
 "more info."
