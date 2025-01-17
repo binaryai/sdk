@@ -288,6 +288,5 @@ mutation CreateFile($input: CreateFileInput!) {
         name
         size
         mimeType
-        createTime
     }
 }

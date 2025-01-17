@@ -579,7 +579,6 @@ class Client(BaseClient):
                 name
                 size
                 mimeType
-                createTime
               }
             }
             """

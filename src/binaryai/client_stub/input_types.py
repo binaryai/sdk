@@ -15,7 +15,6 @@ class BindiffMatchInput(BaseModel):
 
 class CreateFileInput(BaseModel):
     ticket_id: str = Field(alias="ticketID")
-    ownership_po_s: Optional[str] = Field(alias="ownershipPoS", default=None)
 
 
 class CreateMatchInput(BaseModel):
@@ -31,6 +30,7 @@ class CreateUploadTicketInput(BaseModel):
     captcha_random_string: Optional[str] = Field(
         alias="captchaRandomString", default=None
     )
+    is_private_upload: Optional[bool] = Field(alias="isPrivateUpload", default=None)
 
 
 class KHashInput(BaseModel):
@@ -81,5 +81,21 @@ class SearchThirdLib(BaseModel):
     cves: Optional[List["SearchCVESec"]] = None
 
 
+class SessionLoginInput(BaseModel):
+    previous_session_token: Optional[str] = Field(
+        alias="previousSessionToken", default=None
+    )
+    weixin: Optional["WeixinSessionLoginInput"] = None
+
+
 class SymbolTableFilter(BaseModel):
     symbol_type: Optional[List[SymbolType]] = Field(alias="symbolType", default=None)
+
+
+class UpdateAccessKeyInput(BaseModel):
+    enabled: Optional[bool] = None
+    notes: Optional[str] = None
+
+
+class WeixinSessionLoginInput(BaseModel):
+    code: str

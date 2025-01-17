@@ -50,6 +50,7 @@ from .enums import (
     SearchBinaryStatisticKey,
     Status,
     SymbolType,
+    VulnerabilitySourceStatus,
     XRefType,
 )
 from .exceptions import (
@@ -118,7 +119,10 @@ from .input_types import (
     SearchCVESec,
     SearchFileInput,
     SearchThirdLib,
+    SessionLoginInput,
     SymbolTableFilter,
+    UpdateAccessKeyInput,
+    WeixinSessionLoginInput,
 )
 from .license import (
     License,
@@ -273,11 +277,15 @@ __all__ = [
     "SearchCVESec",
     "SearchFileInput",
     "SearchThirdLib",
+    "SessionLoginInput",
     "Sha256",
     "Sha256File",
     "Status",
     "SymbolTableFilter",
     "SymbolType",
+    "UpdateAccessKeyInput",
     "Upload",
+    "VulnerabilitySourceStatus",
+    "WeixinSessionLoginInput",
     "XRefType",
 ]

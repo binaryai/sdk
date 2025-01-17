@@ -101,6 +101,12 @@ class SymbolType(str, Enum):
     DATA_LABEL = "DATA_LABEL"
 
 
+class VulnerabilitySourceStatus(str, Enum):
+    NO_SOURCE_IDENTIFIED = "NO_SOURCE_IDENTIFIED"
+    UNPATCHED = "UNPATCHED"
+    PATCHED = "PATCHED"
+
+
 class XRefType(str, Enum):
     CALL = "CALL"
     DATA = "DATA"
