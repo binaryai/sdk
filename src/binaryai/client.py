@@ -61,7 +61,7 @@ class BinaryAI(object):
         endpoint: str = os.environ.get("BINARYAI_ENDPOINT") or DEFAULT_ENDPOINT,
     ) -> None:
         super().__init__()
-        if ( not secret_id ) != ( not secret_key ):
+        if (not secret_id) != (not secret_key):
             raise ValueError("Please set secret id and key in your code or environ, or unset both")
         if not endpoint:
             raise ValueError("Please set endpoint, or leave it as empty if you have no idea")
@@ -92,6 +92,7 @@ class BinaryAI(object):
         hooks: Optional[Dict] = None,
         sha256: Optional[str] = None,
         md5: Optional[str] = None,
+        is_private: Optional[bool] = True,
     ) -> str:
         """Uploads a file to server.
 
@@ -115,7 +116,7 @@ class BinaryAI(object):
             A actual sha256 that server calculates and returns.
         """
         uploader = Uploader(self._client, filepath=filepath, mem=mem, hooks=hooks, sha256=sha256, md5=md5)
-        return uploader.upload()
+        return uploader.upload(is_private=is_private)
 
     def _reanalyze(self, sha256: str):
         """Reanalyze target file.

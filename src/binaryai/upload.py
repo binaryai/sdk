@@ -58,11 +58,13 @@ class Uploader(object):
         if not self._sha256 and not self._md5:
             raise ValueError("no info provided, at least have one meaningful value")
 
-    def upload(self) -> str:
+    def upload(self, *, is_private: Optional[bool] = True) -> str:
         """
         Starts the upload sequence.
         """
-        ticket = self.__create_ticket(filename=self._filename, sha256=self._sha256, md5=self._md5)
+        ticket = self.__create_ticket(
+            filename=self._filename, sha256=self._sha256, md5=self._md5, is_private=is_private
+        )
         ticket_type = ticket.typename__
 
         if ticket_type == "File":
@@ -87,12 +89,23 @@ class Uploader(object):
         return verify_response.create_file.sha_256
 
     def __create_ticket(
-        self, *, filename: Optional[str] = None, sha256: Optional[str] = None, md5: Optional[str] = None
+        self,
+        *,
+        filename: Optional[str] = None,
+        sha256: Optional[str] = None,
+        md5: Optional[str] = None,
+        is_private: Optional[bool] = True,
     ):
         """
         Checks if file exists on FileManager with filename and file's hashsum.
         """
-        req = client_stub.CreateUploadTicketInput(name=filename, sha256=sha256, md5=md5)
+        # is_private_upload is marked as internal use, so just don't even use it for public upload
+        if is_private:
+            req = client_stub.CreateUploadTicketInput(
+                name=filename, sha256=sha256, md5=md5, is_private_upload=is_private
+            )
+        else:
+            req = client_stub.CreateUploadTicketInput(name=filename, sha256=sha256, md5=md5)
         try:
             response = self._client.check_or_upload(req)
         except client_stub.GraphQLClientGraphQLMultiError as err:

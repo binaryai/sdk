@@ -8,6 +8,7 @@ from binaryai import BinaryAI
 def main():
     parser = argparse.ArgumentParser(description="upload a file and analyze it")
     parser.add_argument("--file", "-f", required=True)
+    parser.add_argument("--public-upload", required=False, action=argparse.BooleanOptionalAction, default=False)
     args = parser.parse_args()
 
     # Initial BinaryAI client
@@ -17,7 +18,7 @@ def main():
     # If file exists on server, it will not actually
     # upload the file; otherwise, it will upload the
     # file to the server.
-    sha256 = bai.upload(args.file)
+    sha256 = bai.upload(args.file, is_private=(not args.public_upload))
     print(f"uploaded file: {sha256}")
 
     # Analyze a file identified by a sha256
