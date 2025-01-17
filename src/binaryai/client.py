@@ -61,24 +61,26 @@ class BinaryAI(object):
         endpoint: str = os.environ.get("BINARYAI_ENDPOINT") or DEFAULT_ENDPOINT,
     ) -> None:
         super().__init__()
-        if not (secret_id and secret_key):
-            raise ValueError("Please set secret id and key in your code or environ")
+        if ( not secret_id ) != ( not secret_key ):
+            raise ValueError("Please set secret id and key in your code or environ, or unset both")
         if not endpoint:
             raise ValueError("Please set endpoint, or leave it as empty if you have no idea")
         transport = httpx.HTTPTransport(
             verify=True,
             retries=3,
         )
-        auth = QCloudHttpxAuth(
-            secret_id,
-            secret_key,
-            urlparse(endpoint).netloc,  # netloc is real host header
-            "ap-shanghai",
-            "binaryai",
-            "BinaryAI",
-            "2023-04-15",
-        )
-        self._http_client = httpx.Client(auth=auth, transport=transport, headers=HEADER_REQUEST_SOURCE)
+        self._auth = None
+        if secret_id and secret_key:
+            self._auth = QCloudHttpxAuth(
+                secret_id,
+                secret_key,
+                urlparse(endpoint).netloc,  # netloc is real host header
+                "ap-shanghai",
+                "binaryai",
+                "BinaryAI",
+                "2023-04-15",
+            )
+        self._http_client = httpx.Client(auth=self._auth, transport=transport, headers=HEADER_REQUEST_SOURCE)
         self._client = client_stub.Client(url=endpoint, http_client=self._http_client)
         self._logger = logging.getLogger(__name__)
 
