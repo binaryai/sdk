@@ -18,10 +18,12 @@
 		"ghcr.io/devcontainers/features/python:1": {
 			"version": "none" // do not touch os python
 		},
-		"ghcr.io/devcontainers-contrib/features/black:2": {},
-		"ghcr.io/devcontainers-contrib/features/flake8:2": {},
-		"ghcr.io/devcontainers-contrib/features/pylint:2": {},
-		"ghcr.io/devcontainers-contrib/features/poetry:2": {}
+		"ghcr.io/devcontainers-extra/features/black:2": {},
+		"ghcr.io/devcontainers-extra/features/flake8:2": {},
+		"ghcr.io/devcontainers-extra/features/pylint:2": {},
+		"ghcr.io/devcontainers-extra/features/poetry:2": {
+			"version": "1.8.5"
+		}
 	},
 	"customizations": {
 		"vscode": {
