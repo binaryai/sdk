@@ -17,8 +17,8 @@ exclude = ["examples"]
 [tool.poetry.dependencies]
 python = "^3.9"
 deprecated = "^1.2.14"
-httpx = "^0.25.0"
-pydantic = "^2.3.0"
+httpx = "^0.25"
+pydantic = "^2.3"
 
 [tool.poetry.group.dev.dependencies]
 flake8 = "4.0.1"
